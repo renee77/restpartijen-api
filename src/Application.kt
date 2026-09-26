@@ -1,5 +1,6 @@
 package com.restpartijen.api
 
+import com.restpartijen.api.plugins.configureSerialization
 import io.ktor.server.application.Application
 import io.ktor.server.netty.EngineMain
 
@@ -18,5 +19,5 @@ fun main(args: Array<String>) {
  * Plugins and feature routing are added here in the next steps.
  */
 fun Application.module() {
-    // Intentionally empty for now; configureSerialization() follows in step 3c.
+    configureSerialization()
 }
