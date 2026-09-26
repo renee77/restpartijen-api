@@ -3,6 +3,7 @@ package com.restpartijen.api
 import com.restpartijen.api.plugins.configureSerialization
 import io.ktor.server.application.Application
 import io.ktor.server.netty.EngineMain
+import com.restpartijen.api.persistence.DatabaseFactory
 
 /**
  * Entry point of the application.
@@ -20,4 +21,5 @@ fun main(args: Array<String>) {
  */
 fun Application.module() {
     configureSerialization()
+    DatabaseFactory.init()
 }
