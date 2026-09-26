@@ -6,6 +6,21 @@ settings:
     serialization: json
   ktor:
     enabled: true
-    version: 3.5.2
+    version: 3.6.0
   jvm:
     mainClass: com.restpartijen.api.ApplicationKt
+
+dependencies:
+  - io.ktor:ktor-server-core
+  - io.ktor:ktor-server-netty
+  - io.ktor:ktor-server-config-yaml
+  - io.ktor:ktor-server-content-negotiation
+  - io.ktor:ktor-serialization-kotlinx-json
+  - org.jetbrains.exposed:exposed-core:1.5.0
+  - org.jetbrains.exposed:exposed-jdbc:1.5.0
+  - org.jetbrains.exposed:exposed-kotlin-datetime:1.5.0
+  - com.h2database:h2:2.4.240
+
+test-dependencies:
+  - io.ktor:ktor-server-test-host
+  - io.mockk:mockk:1.14.11

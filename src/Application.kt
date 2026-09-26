@@ -1,9 +1,22 @@
-// The package must match the folder path under src/ (com/restpartijen/api)
 package com.restpartijen.api
 
-// Entry point of the application.
-// module.yaml points here via mainClass: com.restpartijen.api.ApplicationKt
-// (Kotlin compiles top-level functions in Application.kt into a class named ApplicationKt).
-fun main() {
-    println("Restpartijen API: project builds and runs iets leuks")
+import io.ktor.server.application.Application
+import io.ktor.server.netty.EngineMain
+
+/**
+ * Entry point of the application.
+ * Hands control to Ktor's Netty EngineMain, which reads resources/application.yaml
+ * for the port and the module(s) to load.
+ */
+fun main(args: Array<String>) {
+    EngineMain.main(args)
+}
+
+/**
+ * The single place where the application is assembled (GI-2, decision 2.2).
+ * Referenced by name in application.yaml: com.restpartijen.api.ApplicationKt.module
+ * Plugins and feature routing are added here in the next steps.
+ */
+fun Application.module() {
+    // Intentionally empty for now; configureSerialization() follows in step 3c.
 }
