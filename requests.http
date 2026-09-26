@@ -1,0 +1,11 @@
+### F1 - Get existing product: expect 200 with JSON
+GET http://localhost:8080/api/v1/products/1
+Accept: application/json
+
+### F1 - Get unknown product: expect 404
+GET http://localhost:8080/api/v1/products/999
+Accept: application/json
+
+### F1 - Set invalid product: expect 400
+GET http://localhost:8080/api/v1/products/abc
+Accept: application/json
