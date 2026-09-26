@@ -5,5 +5,5 @@ package com.restpartijen.api
 // module.yaml points here via mainClass: com.restpartijen.api.ApplicationKt
 // (Kotlin compiles top-level functions in Application.kt into a class named ApplicationKt).
 fun main() {
-    println("Restpartijen API: project builds and runs")
+    println("Restpartijen API: project builds and runs iets leuks")
 }
