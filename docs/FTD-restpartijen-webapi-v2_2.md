@@ -121,7 +121,7 @@ Deze tabel volgt op de besluiten van 19 september. De kolom *Door* zegt wie besl
 | B-26 | Beheeroverzicht | `ProductReader.findAll()` wordt `findByStatus(statuses)`. Het beheeroverzicht toont standaard alles behalve `REMOVED`, en kan filteren op status | Eva als leverancier van `ProductReader`, 29 september 2026 | §5.9, §6, §10.1, §12.1 | Bevestigen in de pull request die het contract wijzigt |
 | B-27 | Nederlands commentaar | Een Nederlandse commentaarregel is een werknotitie voor de programmeur. Zij is weg vóór de merge naar `main` | Eva, 29 september 2026 | §3.2, §12.3 | Vast |
 | B-28 | Branches voor de gedeelde basis | Het patroon `shared/<naam>-<onderdeel>`, bijvoorbeeld `shared/lonneke-security` | Startsessie | §12.3 | Vast |
-| B-29 | Technische opzet | Packages als mappen direct onder `src/`, zonder `com/restpartijen/api`; start via `EngineMain` met `resources/application.yaml`; de `Authentication`-plugin, `JwtConfig` en de `/auth`-endpoints staan in `security` | Startsessie | §8.3, §13 (GI-2, GI-3) | Vast |
+| B-29 | Technische opzet | Packages als mappen direct onder `../server/src`, zonder `com/restpartijen/api`; start via `EngineMain` met `../server/resources`; de `Authentication`-plugin, `JwtConfig` en de `/auth`-endpoints staan in `security` | Startsessie | §8.3, §13 (GI-2, GI-3) | Vast |
 | B-30 | Namen in de sequence diagrams | De aanroepen in SD-2 en SD-4 heten zoals de functions in de contracten | Volgt uit de contracten | §8.5 | Vast |
 | B-31 | Seeddata en `REMOVED` | De seeddata bevat ook een partij met status `REMOVED` | Voorstel Eva, 29 september 2026 | §9.7 | Voorstel; bevestigen bij de review van v2.2 |
 | B-32 | Reserveren van een verwijderde partij | `404 Not Found`, net als bij `GET /products/{id}`: voor de publieke API bestaat een verwijderde partij niet | Voorstel Eva, 29 september 2026 | §5.5, §8.5 (SD-2), §9.5 | Voorstel; bevestigen bij de review van v2.2 |
@@ -263,9 +263,9 @@ Dit is een schoolproject binnen de proftaak van de module AI-powered software de
 | JDK | 25, door de toolchain zelf opgehaald | — | Bion (2026b) |
 | H2 | 2.x; Exposed 1.x ondersteunt H2 1.x niet meer | — | JetBrains s.r.o. (2026b) |
 
-De versies worden bij de start vastgezet en tijdens het project niet meer verhoogd, tenzij een fout daartoe dwingt of de docent het voorschrijft. Dat laatste is bij Ktor gebeurd: de docent heeft besloten dat we met 3.6.0 werken (P. de Mast, persoonlijke communicatie, 20 september 2026). Twee dingen om op te letten: `receiveNullable()` is in 3.6.0 deprecated, dus we gebruiken `receive<T?>()`, en de nieuwe typed authentication is experimenteel, dus die gebruiken we niet (JetBrains s.r.o., z.j.-n). De Kotlin Toolchain 0.12.0 levert standaard Kotlin 2.4.10; in `module.yaml` wordt de versie daarom expliciet op 2.4.20 gezet (JetBrains s.r.o., z.j.-j).
+De versies worden bij de start vastgezet en tijdens het project niet meer verhoogd, tenzij een fout daartoe dwingt of de docent het voorschrijft. Dat laatste is bij Ktor gebeurd: de docent heeft besloten dat we met 3.6.0 werken (P. de Mast, persoonlijke communicatie, 20 september 2026). Twee dingen om op te letten: `receiveNullable()` is in 3.6.0 deprecated, dus we gebruiken `receive<T?>()`, en de nieuwe typed authentication is experimenteel, dus die gebruiken we niet (JetBrains s.r.o., z.j.-n). De Kotlin Toolchain 0.12.0 levert standaard Kotlin 2.4.10; in `../server/module.yaml` wordt de versie daarom expliciet op 2.4.20 gezet (JetBrains s.r.o., z.j.-j).
 
-**Wat deze randvoorwaarde in de praktijk betekent.** De Kotlin Toolchain is de buildtool van JetBrains, voorheen Amper. Sinds juni 2026 heeft hij het stabiliteitsniveau Alpha (Bion, 2026a): JetBrains ondersteunt hem, maar de configuratie kan tussen versies nog veranderen. Bouwen, draaien en testen gaat met één commando, `kotlin`, en de configuratie staat in `module.yaml`. Gradle-plugins werken niet. Daardoor vallen Kover (testdekking) en Dokka (gegenereerde documentatie) af; hoe we daarmee omgaan staat in §14. Voorbeelden op internet en suggesties van AI-tooling gaan vrijwel altijd uit van Gradle en van Exposed 0.x. Dat is risico R-07 (§17). Alle drie hebben we IntelliJ IDEA 2026.2.1 of nieuwer nodig, met de Kotlin Toolchain-plugin (Bion, 2026b).
+**Wat deze randvoorwaarde in de praktijk betekent.** De Kotlin Toolchain is de buildtool van JetBrains, voorheen Amper. Sinds juni 2026 heeft hij het stabiliteitsniveau Alpha (Bion, 2026a): JetBrains ondersteunt hem, maar de configuratie kan tussen versies nog veranderen. Bouwen, draaien en testen gaat met één commando, `kotlin`, en de configuratie staat in `../server/module.yaml`. Gradle-plugins werken niet. Daardoor vallen Kover (testdekking) en Dokka (gegenereerde documentatie) af; hoe we daarmee omgaan staat in §14. Voorbeelden op internet en suggesties van AI-tooling gaan vrijwel altijd uit van Gradle en van Exposed 0.x. Dat is risico R-07 (§17). Alle drie hebben we IntelliJ IDEA 2026.2.1 of nieuwer nodig, met de Kotlin Toolchain-plugin (Bion, 2026b).
 
 ### 3.3 Ambitieniveau per rubriccriterium
 
@@ -637,7 +637,7 @@ Een pijl betekent: deze package gebruikt die package. De featurepackages gebruik
 
 Binnen elke featurepackage geldt dezelfde indeling: `model` (domeinklassen), `service` (domeinlogica), `repository` (persistentie), `routes` (Ktor-routing) en `dto` (request- en responsemodellen). Die herhaling is bewust: wie in één feature de weg kent, kent hem in alle drie.
 
-In de repository staan de packages als mappen direct onder `src/`. De map `src/product` hoort bij de package `com.restpartijen.api.product`, en zo verder. De mappen `com/restpartijen/api` ontbreken bewust: in een project met alleen Kotlin laat de Kotlin-conventie het gemeenschappelijke begin van de package weg uit de mappen (JetBrains s.r.o., z.j.-c). De package in de code blijft wel `com.restpartijen.api`.
+In de repository staan de packages als mappen direct onder `../server/src`. De map `../server/src` hoort bij de package `com.restpartijen.api.product`, en zo verder. De mappen `com/restpartijen/api` ontbreken bewust: in een project met alleen Kotlin laat de Kotlin-conventie het gemeenschappelijke begin van de package weg uit de mappen (JetBrains s.r.o., z.j.-c). De package in de code blijft wel `com.restpartijen.api`.
 
 ### 8.4 Klassendiagram
 
@@ -1672,9 +1672,9 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 | 2.2 | Moduleopbouw | Eén `Application.module()` die per feature een `configureXRouting()` aanroept | Voorkomt dat drie studenten in hetzelfde routingbestand schrijven. |
 | 2.3 | Configuratie | `application.yaml` met omgevingsvariabelen voor het JWT-secret | Secrets horen niet in de repository (§16.4). |
 | 2.4 | Engine | Netty | Standaardkeuze in de Ktor-projectgenerator; geen reden om af te wijken. |
-| 2.5 | Buildtool | Kotlin Toolchain 0.12.0, één module `jvm/app` met `settings.ktor` | Voorgeschreven door de module (§3.2). We houden de standaardindeling van de toolchain aan: `src/` voor productiecode, `test/` voor testen en `resources/` voor `application.yaml` (JetBrains s.r.o., z.j.-j). De wrapperscripts `kotlin` en `kotlin.bat` staan in de repository, zodat iedereen zonder installatie kan bouwen, ook de assessor. De packages staan als mappen direct onder `src/`, zonder `com/restpartijen/api` (§8.3). |
+| 2.5 | Buildtool | Kotlin Toolchain 0.12.0, één module `jvm/app` met `settings.ktor` | Voorgeschreven door de module (§3.2). We houden de standaardindeling van de toolchain aan: `../server/src` voor productiecode, `../server/test` voor testen en `../server/resources` voor `application.yaml` (JetBrains s.r.o., z.j.-j). De wrapperscripts `kotlin` en `kotlin.bat` staan in de repository, zodat iedereen zonder installatie kan bouwen, ook de assessor. De packages staan als mappen direct onder `../server/src`, zonder `com/restpartijen/api` (§8.3). |
 | 2.6 | Versies van dependencies | `libs.versions.toml` in de projectroot; Ktor-artefacten via de BOM van `settings.ktor` | Eén plek voor alle versies voorkomt dat twee studenten dezelfde library in een andere versie toevoegen (JetBrains s.r.o., z.j.-e). |
-| 2.7 | Starten | De `main` in `Application.kt` geeft de start door aan `EngineMain` van Netty. Die leest `resources/application.yaml`, en daarin staan de poort en de module `com.restpartijen.api.ApplicationKt.module` | Ktor leest `application.yaml` alleen met de dependency `ktor-server-config-yaml` (JetBrains s.r.o., z.j.-d). De configuratie staat zo vanaf het begin op één plek; het JWT-secret en de schakelaar voor H2 komen er later bij. Uitgevoerd in de startsessie (B-29). |
+| 2.7 | Starten | De `main` in `Application.kt` geeft de start door aan `EngineMain` van Netty. Die leest `../server/resources`, en daarin staan de poort en de module `com.restpartijen.api.ApplicationKt.module` | Ktor leest `application.yaml` alleen met de dependency `ktor-server-config-yaml` (JetBrains s.r.o., z.j.-d). De configuratie staat zo vanaf het begin op één plek; het JWT-secret en de schakelaar voor H2 komen er later bij. Uitgevoerd in de startsessie (B-29). |
 
 **Acceptatiecriteria.**
 - Een nieuwe feature is aan te haken door één regel toe te voegen aan `Application.module()`.
@@ -1751,7 +1751,7 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 | 6.4 | Dubbels voor repositories | Fakes, geen mocks | Een fake repository met een `MutableList` is leesbaarder en breekt niet bij elke refactor. Mocks worden alleen gebruikt waar gedrag geverifieerd moet worden, zoals de time-out van de externe client. |
 | 6.5 | Tijd in testen | Injecteerbare `kotlin.time.Clock`, nooit rechtstreeks `Clock.System` | Zonder vaste klok zijn de afprijsstaffels, het afgeleide afhaalvenster en de statusbewaking niet reproduceerbaar te testen. `Clock` en `Instant` zitten sinds Kotlin 2.3 in de standard library, en de documentatie raadt zelf aan een `Clock` door te geven in plaats van `Clock.System` aan te roepen (JetBrains s.r.o., z.j.-b). Dit is een harde regel, geen voorkeur. |
 | 6.6 | Testdatabase | H2 in-memory, per test leeggemaakt | Elke test start van een bekende toestand; geen volgorde-afhankelijkheid tussen testen. |
-| 6.7 | Plaats van de testen | De map `test/` van de module; MockK en `ktor-server-test-host` onder `test-dependencies` in `module.yaml` | Dit wijkt af van `src/test/kotlin` uit vrijwel elk voorbeeld. Vastleggen voorkomt dat testen op een plek belanden waar de toolchain ze niet vindt (JetBrains s.r.o., z.j.-l). |
+| 6.7 | Plaats van de testen | De map `../server/test` van de module; MockK en `ktor-server-test-host` onder `test-dependencies` in `../server/module.yaml` | Dit wijkt af van `../server/src` uit vrijwel elk voorbeeld. Vastleggen voorkomt dat testen op een plek belanden waar de toolchain ze niet vindt (JetBrains s.r.o., z.j.-l). |
 
 **Wat per laag getest wordt.**
 
@@ -1778,7 +1778,7 @@ Performance, beschikbaarheid en autorisatie staan als kwaliteitsscenario in §8.
 | ID | Onderwerp | Eigenschap | Meeteenheid | Drempel | Verificatie |
 |----|-----------|------------|-------------|---------|-------------|
 | NFR-03 | Servicelaag | testdekking | regeldekking | ≥ 80% | Coverage-run in IntelliJ IDEA; de export gaat in de testrapportage |
-| NFR-05 | Broncode | onderhoudbaarheid | aantal warnings bij compilatie | 0 | `allWarningsAsErrors` onder `settings.kotlin` in `module.yaml`: een warning laat de build falen |
+| NFR-05 | Broncode | onderhoudbaarheid | aantal warnings bij compilatie | 0 | `allWarningsAsErrors` onder `settings.kotlin` in `../server/module.yaml`: een warning laat de build falen |
 | NFR-06 | Prijsberekening | reproduceerbaarheid | afwijking bij gelijke klok | 0 | Unittest met een vaste `Clock` |
 
 De verificatie van NFR-03 en NFR-05 is in v1.1 aangepast aan de Kotlin Toolchain. De toolchain heeft in versie 0.12.0 geen instelling voor testdekking (JetBrains s.r.o., z.j.-j), en Kover bestaat als plugin voor Gradle en Maven. De dekking wordt daarom in de IDE gemeten en niet in de build. In de startsessie is vastgesteld dat die meting werkt op dit toolchain-project (B-16). De drempel van NFR-03 blijft daarmee staan. Dokka is een tip en geen eis (r.195); de KDoc in de broncode blijft leidend.
@@ -1986,7 +1986,7 @@ Twee dingen worden door deze flows zichtbaar. De prijs op het scherm kan ouder z
 | `DiscountPolicy` | De interface die de afprijsstaffels van één productsoort levert |
 | Statusbewaking | De periodieke taak die verlopen partijen en niet-opgehaalde reserveringen bijwerkt |
 | GI | Gedeelde infrastructuur; de zes onderdelen uit §13 |
-| Kotlin Toolchain | De buildtool van JetBrains, voorheen Amper: één commando `kotlin` en de configuratie in `module.yaml` |
+| Kotlin Toolchain | De buildtool van JetBrains, voorheen Amper: één commando `kotlin` en de configuratie in `../server/module.yaml` |
 | Contract | Een interface in `shared` waarlangs de ene feature iets aan de andere vraagt, zonder diens code te kennen; uitleg in bijlage A |
 | H2 | Relationele database die als library in de applicatie meedraait; de naam staat voor Hypersonic 2. Uitleg in bijlage B |
 | EU-allergenenlijst | De veertien allergenen uit bijlage II van Verordening (EU) nr. 1169/2011 |

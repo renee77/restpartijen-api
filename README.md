@@ -18,7 +18,7 @@ On Windows: `kotlin.bat run`
 
     ./kotlin test
 
-Tests live in `test/`, not in `src/test/kotlin`.
+Tests live in `server/test`, not in `server/src`.
 
 ## Working agreements
 

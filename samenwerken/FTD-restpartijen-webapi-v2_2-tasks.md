@@ -40,12 +40,12 @@ Bron: [[FTD-restpartijen-webapi-v2_2]], versie 2.2 van 29 september 2026. Persoo
 
 ### A5 HTTP-client en User-Agent voor Open Food Facts
 - Het FTD zegt dat `OpenFoodFactsClient` `suspend` is en een `User-Agent` met contactadres meestuurt (§5.2, §10.3), maar niet met welke HTTP-client en welk contactadres.
-- Een dependency komt pas in `module.yaml` na een besluit. Het advies van de docent (kotlinx boven Java, B-15) wijst naar de client van Ktor zelf.
+- Een dependency komt pas in `../server/module.yaml` na een besluit. Het advies van de docent (kotlinx boven Java, B-15) wijst naar de client van Ktor zelf.
 - Bevestigt: Eva, met review van de PR door Stefan en Lonneke.
 
 ### A6 Library voor BCrypt
 - GI-3 besluit 3.4 kiest BCrypt, maar niet welke library. Een kotlinx-variant is er niet, dus B-15 geeft geen antwoord.
-- Een dependency komt pas in `module.yaml` na een besluit.
+- Een dependency komt pas in `../server/module.yaml` na een besluit.
 - Bevestigt: Lonneke, met review van de PR door Eva en Stefan.
 
 ### A7 Exceptie voor 409 bij een bestaand e-mailadres
@@ -59,12 +59,12 @@ Bron: [[FTD-restpartijen-webapi-v2_2]], versie 2.2 van 29 september 2026. Persoo
 - Bevestigt: Lonneke.
 
 ### A9 Repository wijkt af van het FTD
-- Bij het opstellen van deze lijst bleek: de wrapper `kotlin` haalt Kotlin CLI 0.12.2 op, het FTD noemt 0.12.0 (§3.2). `libs.versions.toml` bestaat niet; de versies staan in `module.yaml` (GI-2 besluit 2.6). `README.md` verwijst naar FTD v2_1.
+- Bij het opstellen van deze lijst bleek: de wrapper `kotlin` haalt Kotlin CLI 0.12.2 op, het FTD noemt 0.12.0 (§3.2). `libs.versions.toml` bestaat niet; de versies staan in `../server/module.yaml` (GI-2 besluit 2.6). `README.md` verwijst naar FTD v2_1.
 - Het FTD en de code moeten hetzelfde zeggen, anders klopt de verantwoording bij het assessment niet.
 - Bevestigt: de profgroep in fase 0; Stefan voert de versiepunten uit in fase 4.
 
 ### A10 Oude taaknummers in FTD en code
-- §9.7 en §21 van het FTD en commentaar in de code (`ProductsTable.kt`, `ProductRoutes.kt`, `src/shared/z-package-info.md`) verwijzen naar taaknummers van een eerdere lijst: T2, T9, T15, T21, "F3 T1" en "blok 4".
+- §9.7 en §21 van het FTD en commentaar in de code (`ProductsTable.kt`, `ProductRoutes.kt`, `../server/src`) verwijzen naar taaknummers van een eerdere lijst: T2, T9, T15, T21, "F3 T1" en "blok 4".
 - Met deze lijst vervallen die nummers. Zo'n verwijzing is anders een losse draad.
 - Bevestigt: Eva. Ze vervangt de verwijzingen in fase 0 door fasenummers van deze lijst.
 
@@ -111,7 +111,7 @@ De begrippen uit het domein staan in [[FTD-restpartijen-webapi-v2_2#19. Begrippe
 ## Fase 0 — Voorbereiding en verificatie
 
 Basis: [[FTD-restpartijen-webapi-v2_2#3.2 Randvoorwaarden|§3.2]], [[FTD-restpartijen-webapi-v2_2#13. Gedeelde infrastructuur (GI-1 t/m GI-6)|§13]], [[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]], [[FTD-restpartijen-webapi-v2_2#Besluiten van de startsessie en daarna (v2.2)|Besluiten v2.2]]
-Raakt: `module.yaml`, `kotlin`, `README.md`, `.github/pull_request_template.md`, `FTD-restpartijen-webapi-v2_2.md`
+Raakt: `../server/module.yaml`, `kotlin`, `README.md`, `.github/pull_request_template.md`, `FTD-restpartijen-webapi-v2_2.md`
 Start na: —
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 0 — Voorbereiding en verificatie|Eva]], [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 0 — Voorbereiding en verificatie|Stefan]], [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 0 — Voorbereiding en verificatie|Lonneke]]
 
@@ -127,7 +127,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 0 — Voorbereiding en
 
 ### DoD
 - [ ] Alle drie draaien `./kotlin test` groen op `feature/walking-skeleton` op de eigen machine; bewijs is de uitvoer, per persoon in de PR van fase 1 ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2]])
-- [x] `module.yaml` zet Kotlin 2.4.20, Ktor 3.6.0 en Exposed 1.5.0: `grep -n "2.4.20\|3.6.0\|1.5.0" module.yaml` geeft drie of meer regels, zonder andere versies van deze drie ([[FTD-restpartijen-webapi-v2_2#3.2 Randvoorwaarden|§3.2]])
+- [x] `../server/module.yaml` zet Kotlin 2.4.20, Ktor 3.6.0 en Exposed 1.5.0: `grep -n "2.4.20\|3.6.0\|1.5.0" module.yaml` geeft drie of meer regels, zonder andere versies van deze drie ([[FTD-restpartijen-webapi-v2_2#3.2 Randvoorwaarden|§3.2]])
 - [ ] De kolom *Status* in de besluittabel v2.2 van het FTD zegt "Vast" bij B-24, B-31 en B-32 ([[FTD-restpartijen-webapi-v2_2#Besluiten van de startsessie en daarna (v2.2)|Besluiten v2.2]])
 - [ ] `README.md` noemt het pad van het AI-logboek, de testrapportage en de weekcheck (aanvulling, [[#A2 Vaste plek voor AI-logboek, testrapportage en weekcheck|A2]])
 - [ ] `.github/pull_request_template.md` staat op `feature/walking-skeleton` en bevat de acht punten van §7, de controle op Nederlands commentaar en een kopje "Bewijs" (aanvulling, [[#A1 PR-sjabloon met story-DoD en bewijs|A1]])
@@ -140,26 +140,26 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 0 — Voorbereiding en
 ## Fase 1 — GI-5 en GI-6 Gedeelde domeinkern en testopzet op main
 
 Basis: [[FTD-restpartijen-webapi-v2_2#13. Gedeelde infrastructuur (GI-1 t/m GI-6)|§13]], [[FTD-restpartijen-webapi-v2_2#GI-5 Gedeelde domeinkern — geen eigenaar, PR met review door alle drie|GI-5]], [[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6]], [[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]], [[FTD-restpartijen-webapi-v2_2#12.2 Wat bewust gedeeld blijft|§12.2]], [[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]], [[FTD-restpartijen-webapi-v2_2#17. Risico's|R-07]]
-Raakt: `src/shared/*.kt`, `src/shared/z-package-info.md`, `test/testsupport/*`, `test/shared/*`, `module.yaml`
+Raakt: `../server/src`, `../server/src`, `../server/test`, `../server/test`, `../server/module.yaml`
 Start na: fase 0
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 1 — GI-5 en GI-6 Gedeelde domeinkern en testopzet op main|Eva]], [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 1 — GI-5 en GI-6 Gedeelde domeinkern en testopzet op main|Lonneke]]; Stefan reviewt (gedeelde to-do)
 
 ### Gedeelde to-do
-- [ ] Vergelijk samen elke function in `src/shared/` met de contracttabel in §12.1: naam, parameters, returntype en `suspend` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] Vergelijk samen elke function in `../server/src` met de contracttabel in §12.1: naam, parameters, returntype en `suspend` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] Review de PR van `feature/walking-skeleton` naar `main` met z'n drieën; wijzigingen in `shared` vragen twee reviews naast de auteur ([[FTD-restpartijen-webapi-v2_2#GI-5 Gedeelde domeinkern — geen eigenaar, PR met review door alle drie|GI-5]])
 - [ ] Bevestig in die PR besluit B-26: `findByStatus(statuses)` vervangt `findAll()` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|B-26]])
 
 ### DoD
 - [ ] `main` bevat de walking skeleton: `git log origin/main --oneline | head -5` toont de merge van `feature/walking-skeleton` ([[FTD-restpartijen-webapi-v2_2#13. Gedeelde infrastructuur (GI-1 t/m GI-6)|§13]])
 - [ ] Op `main` is `./kotlin test` groen, inclusief `ProductRoutesTest` (één endpoint, één tabel, één test door de keten) ([[FTD-restpartijen-webapi-v2_2#17. Risico's|R-07]])
-- [ ] De contracten in `src/shared/` volgen de tabel in §12.1; de reviewers bevestigen dat in de PR ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] De contracten in `../server/src` volgen de tabel in §12.1; de reviewers bevestigen dat in de PR ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [x] `shared` importeert geen featurepackage: `grep -rn "import com.restpartijen.api.\(product\|reservation\|pricing\|security\|persistence\)" src/shared/` geeft niets ([[FTD-restpartijen-webapi-v2_2#GI-5 Gedeelde domeinkern — geen eigenaar, PR met review door alle drie|GI-5]])
-- [ ] `src/shared/` bevat alleen waardetypes, enums, excepties en interfaces; de reviewers bevestigen dat in de PR ([[FTD-restpartijen-webapi-v2_2#GI-5 Gedeelde domeinkern — geen eigenaar, PR met review door alle drie|GI-5 besluit 5.4]])
+- [ ] `../server/src` bevat alleen waardetypes, enums, excepties en interfaces; de reviewers bevestigen dat in de PR ([[FTD-restpartijen-webapi-v2_2#GI-5 Gedeelde domeinkern — geen eigenaar, PR met review door alle drie|GI-5 besluit 5.4]])
 - [ ] De omrekening van euro's naar centen rondt af naar de dichtstbijzijnde cent: de tests `3.49 → 349`, `0.29 → 29` en `349 → 3.49` zijn groen, en de test `0.29 → 29` is eerst rood gezien met afkappen ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
 - [ ] Er is één omrekening: `grep -rn "\* 100\|100.0" src/` toont alleen de regel in de gedeelde omrekening ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
-- [ ] Geen Nederlands commentaar in `src/shared/*.kt`; de reviewer bevestigt dat in de PR ([[FTD-restpartijen-webapi-v2_2#12.3 Git-werkwijze|B-27]])
-- [ ] `test/testsupport/FixedClock.kt` staat op `main` en `FixedClockTest` is groen ([[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6 besluit 6.5]])
-- [x] `module.yaml` bevat onder `test-dependencies` `ktor-server-test-host` en `mockk` ([[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6 besluit 6.7]])
+- [ ] Geen Nederlands commentaar in `../server/src`; de reviewer bevestigt dat in de PR ([[FTD-restpartijen-webapi-v2_2#12.3 Git-werkwijze|B-27]])
+- [ ] `../server/test` staat op `main` en `FixedClockTest` is groen ([[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6 besluit 6.5]])
+- [x] `../server/module.yaml` bevat onder `test-dependencies` `ktor-server-test-host` en `mockk` ([[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6 besluit 6.7]])
 
 Terugdraaien: de merge naar `main` terugdraaien met `git revert -m 1 <merge-commit>` via een nieuwe PR.
 
@@ -184,7 +184,7 @@ Toegewezen: iedereen, alleen gedeelde to-do's
 - [ ] Review een PR die `shared` wijzigt vóór je andere reviews ([[FTD-restpartijen-webapi-v2_2#17. Risico's|R-02]])
 - [ ] Noteer bij elke story het gebruik van AI-tooling in het AI-logboek, inclusief waar een AI-suggestie afweek van de officiële documentatie ([[FTD-restpartijen-webapi-v2_2#17. Risico's|R-07]])
 - [ ] Meld een blokkade door de toolchain dezelfde dag bij de docent ([[FTD-restpartijen-webapi-v2_2#17. Risico's|R-07]])
-- [ ] Verhoog geen versie in `module.yaml`, tenzij een fout daartoe dwingt of de docent het voorschrijft ([[FTD-restpartijen-webapi-v2_2#3.2 Randvoorwaarden|§3.2]])
+- [ ] Verhoog geen versie in `../server/module.yaml`, tenzij een fout daartoe dwingt of de docent het voorschrijft ([[FTD-restpartijen-webapi-v2_2#3.2 Randvoorwaarden|§3.2]])
 
 ### DoD
 - [ ] Er is een weekcheck voor elke week tussen de start van fase 1 en het inleveren ([[FTD-restpartijen-webapi-v2_2#17. Risico's|R-01]])
@@ -198,7 +198,7 @@ Toegewezen: iedereen, alleen gedeelde to-do's
 ## Fase 3 — GI-1 Persistentielaag
 
 Basis: [[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]], [[FTD-restpartijen-webapi-v2_2#9.6 Opslagkeuzes|§9.6]], [[FTD-restpartijen-webapi-v2_2#ADR-03 — Exposed-versie (vervallen in v1.1)|ADR-03]], [[FTD-restpartijen-webapi-v2_2#Bijlage B — H2 wat het is en hoe wij het gebruiken|bijlage B]], [[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]]
-Raakt: `src/persistence/*`, `resources/application.yaml`, `src/Application.kt` (één regel), `test/persistence/*`, `test/testsupport/*`
+Raakt: `../server/src`, `../server/resources`, `../server/src` (één regel), `../server/test`, `../server/test`
 Start na: fase 1
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 3 — GI-1 Persistentielaag|Eva]]
 
@@ -206,15 +206,15 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 3 — GI-1 Persistenti
 - [ ] Stefan en Lonneke lezen de KDoc van `Repository<T>` en bevestigen in de PR dat ze hem voor hun eigen entiteit kunnen implementeren ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.8]])
 
 ### DoD
-- [ ] `src/persistence/Repository.kt` bevat de generieke interface `Repository<T>` met `findById`, `findAll`, `save` en `delete` ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
+- [ ] `../server/src` bevat de generieke interface `Repository<T>` met `findById`, `findAll`, `save` en `delete` ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
 - [ ] De keuze of die functions `suspend` zijn, staat met reden in de KDoc van `Repository<T>` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|B-21]])
 - [ ] De persistentielaag kent geen feature: `grep -rn "import com.restpartijen.api.\(product\|reservation\|pricing\|security\)" src/persistence/` geeft niets ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
-- [ ] `ProductsTable` wordt aangemeld via het nieuwe mechanisme met één regel in `src/Application.kt`; `DatabaseFactory` noemt geen tabel ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
+- [ ] `ProductsTable` wordt aangemeld via het nieuwe mechanisme met één regel in `../server/src`; `DatabaseFactory` noemt geen tabel ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
 - [ ] De connection URL bevat `DB_CLOSE_DELAY=-1`: `grep -rn "DB_CLOSE_DELAY=-1" src/ resources/` geeft een regel ([[FTD-restpartijen-webapi-v2_2#Bijlage B — H2 wat het is en hoe wij het gebruiken|bijlage B]])
 - [ ] Standaard draait H2 in-memory: na `./kotlin run` ontstaat geen bestand `*.mv.db` in de projectroot ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.2]])
 - [ ] Met de schakelaar op bestand ontstaat een `.mv.db`-bestand, en `GET /api/v1/products/1` geeft na een herstart nog steeds `200` ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.2]])
 - [ ] Databasewerk loopt via `suspendTransaction` binnen `withContext(Dispatchers.IO)`; `grep -rn "newSuspendedTransaction" src/` geeft niets ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.6]])
-- [ ] Een testhelper maakt de database per test leeg zonder de productieconfiguratie te wijzigen; `test/persistence/CleanDatabaseTest.kt` bewijst dat twee testen elkaars rijen niet zien ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
+- [ ] Een testhelper maakt de database per test leeg zonder de productieconfiguratie te wijzigen; `../server/test` bewijst dat twee testen elkaars rijen niet zien ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
 - [ ] Het schema ontstaat bij het opstarten met `SchemaUtils.create` ([[FTD-restpartijen-webapi-v2_2#9.6 Opslagkeuzes|§9.6]])
 - [ ] De plek van `SeedData` is gekozen zonder dat `persistence` een feature importeert; de keuze staat in de PR ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
 
@@ -225,7 +225,7 @@ Terugdraaien: de commits op `shared/eva-persistence` terugdraaien; `main` wijzig
 ## Fase 4 — GI-2 Applicatie-opzet
 
 Basis: [[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2]], [[FTD-restpartijen-webapi-v2_2#ADR-04 — Ktor's eigen dependency-injectionplugin|ADR-04]], [[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]], [[FTD-restpartijen-webapi-v2_2#16.4 Secrets|§16.4]], [[FTD-restpartijen-webapi-v2_2#16.6 Afhankelijkheden|§16.6]], [[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|§14]]
-Raakt: `src/Application.kt`, `src/plugins/*`, `src/config/*`, `resources/application.yaml`, `module.yaml`, `libs.versions.toml`, `.env.example`, `README.md`
+Raakt: `../server/src`, `../server/src`, `../server/src`, `../server/resources`, `../server/module.yaml`, `libs.versions.toml`, `.env.example`, `README.md`
 Start na: fase 1
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 4 — GI-2 Applicatie-opzet|Stefan]]
 
@@ -235,11 +235,11 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 4 — GI-2 Applicat
 
 ### DoD
 - [ ] De DI-plugin van Ktor is geïnstalleerd en services komen uit DI. Een integratietest vervangt de repository van F1 door een fake zonder productiecode te wijzigen; de test is groen ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2]])
-- [ ] `src/Application.kt` roept per feature precies één `configure…Routing()` aan ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2 besluit 2.2]])
+- [ ] `../server/src` roept per feature precies één `configure…Routing()` aan ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2 besluit 2.2]])
 - [ ] `CORS` en `CallLogging` zijn geïnstalleerd: `grep -rn "install(CORS)\|install(CallLogging)" src/` geeft twee regels ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
-- [ ] De versies staan in `libs.versions.toml` in de projectroot; `module.yaml` verwijst ernaar met `$libs.`; Ktor-artefacten hebben geen eigen versie ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2 besluit 2.6]])
+- [ ] De versies staan in `libs.versions.toml` in de projectroot; `../server/module.yaml` verwijst ernaar met `$libs.`; Ktor-artefacten hebben geen eigen versie ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2 besluit 2.6]])
 - [ ] `settings.kotlin.allWarningsAsErrors` staat op `true`. Eerst rood: een ongebruikte variabele laat `./kotlin test` falen; na verwijderen is het weer groen ([[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|NFR-05]])
-- [ ] `resources/application.yaml` bevat voor het secret een placeholder en geen waarde; `.env.example` noemt de variabele zonder waarde ([[FTD-restpartijen-webapi-v2_2#16.4 Secrets|§16.4]])
+- [ ] `../server/resources` bevat voor het secret een placeholder en geen waarde; `.env.example` noemt de variabele zonder waarde ([[FTD-restpartijen-webapi-v2_2#16.4 Secrets|§16.4]])
 - [ ] Een request met de header `Authorization: Bearer test123` verschijnt in de log zonder `test123` ([[FTD-restpartijen-webapi-v2_2#16.7 Logging|§16.7]])
 - [ ] Een verse clone in een lege map start met `./kotlin run` en `GET /api/v1/products/1` geeft `200` ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2]])
 - [ ] `README.md` verwijst naar FTD v2_2 (aanvulling, [[#A9 Repository wijkt af van het FTD|A9]])
@@ -249,7 +249,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 4 — GI-2 Applicat
 ## Fase 5 — GI-3 Authenticatie en rollen
 
 Basis: [[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3]], [[FTD-restpartijen-webapi-v2_2#16.1 Authenticatie en sessiebeheer|§16.1]], [[FTD-restpartijen-webapi-v2_2#16.2 Autorisatiemodel|§16.2]], [[FTD-restpartijen-webapi-v2_2#15. Privacy by design|§15]], [[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|§10.1]], [[FTD-restpartijen-webapi-v2_2#Besluiten van 19 september 2026 (v2.0)|B-2 en B-5]]
-Raakt: `src/security/*`, `src/Application.kt` (één regel), `resources/application.yaml`, `module.yaml`, `test/security/*`
+Raakt: `../server/src`, `../server/src` (één regel), `../server/resources`, `../server/module.yaml`, `../server/test`
 Start na: fase 3 (`Repository<T>` en aanmelden van tabellen) en fase 4 (DI en configuratie)
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 5 — GI-3 Authenticatie en rollen|Lonneke]]
 
@@ -270,7 +270,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 5 — GI-3 Authent
 - [ ] Het antwoord op registreren en inloggen bevat nooit `password` of de hash; een test controleert de body ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3]])
 - [ ] De kolom `password_hash` bevat een BCrypt-hash (begint met `$2`); een test leest de rij ([[FTD-restpartijen-webapi-v2_2#16.1 Authenticatie en sessiebeheer|§16.1]])
 - [ ] Het gedeelde mechanisme bevat geen regels per endpoint; de reviewers bevestigen dat in de PR ([[FTD-restpartijen-webapi-v2_2#16.2 Autorisatiemodel|§16.2]])
-- [ ] `UsersTable` is toegevoegd zonder een bestand in `src/persistence/` te wijzigen: `git diff --stat origin/main` toont geen pad onder `src/persistence/` ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
+- [ ] `UsersTable` is toegevoegd zonder een bestand in `../server/src` te wijzigen: `git diff --stat origin/main` toont geen pad onder `../server/src` ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
 - [ ] De repository voor `USERS` implementeert `Repository<User>` ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
 - [ ] Een verse clone start zonder handmatige stappen volgens het besluit uit fase 4, en er staat geen secret in de repository: `git grep -n "secret" -- resources/` toont alleen de placeholder ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2]])
 - [ ] De log van een inlogverzoek bevat het wachtwoord niet ([[FTD-restpartijen-webapi-v2_2#16.7 Logging|§16.7]])
@@ -281,7 +281,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 5 — GI-3 Authent
 ## Fase 6 — GI-4 Foutafhandeling
 
 Basis: [[FTD-restpartijen-webapi-v2_2#GI-4 Foutafhandeling — uitvoering Stefan|GI-4]], [[FTD-restpartijen-webapi-v2_2#10.2 Validatie en foutafhandeling|§10.2]], [[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]]
-Raakt: `src/plugins/StatusPagesConfig.kt`, `src/plugins/RequestValidation.kt`, `src/Application.kt`, `test/plugins/*`
+Raakt: `../server/src`, `../server/src`, `../server/src`, `../server/test`
 Start na: fase 4
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 6 — GI-4 Foutafhandeling|Stefan]], [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 6 — GI-4 Foutafhandeling|Eva]]
 
@@ -300,7 +300,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 6 — GI-4 Foutafha
 ## Fase 7 — K-1 en K-6 Contracten van F1 geleverd
 
 Basis: [[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|K-1 en K-6]], [[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]], [[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]], [[FTD-restpartijen-webapi-v2_2#9.2 Entiteiten|§9.2]], [[FTD-restpartijen-webapi-v2_2#9.3 Vertaling van het objectmodel naar het relationele model|§9.3]], [[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]], [[FTD-restpartijen-webapi-v2_2#8.6 Architectuurbeslissingen|ADR-08]], [[FTD-restpartijen-webapi-v2_2#Bijlage A — Werken met contracten|bijlage A]]
-Raakt: `src/product/model/*`, `src/product/repository/*`, `test/product/*`
+Raakt: `../server/src`, `../server/src`, `../server/test`
 Start na: fase 3 en fase 5 (`UsersTable`, voor de foreign key van `suppliers`)
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 7 — K-1 en K-6 Contracten van F1 geleverd|Eva]], [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 7 — K-1 en K-6 Contracten van F1 geleverd|Lonneke]]
 
@@ -321,7 +321,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 7 — K-1 en K-6 Contr
 - [ ] Elke belofte van `ProductStatusUpdater` in §12.1 heeft een integratietest op H2, inclusief `false` bij `markReserved` en `markRemoved` op een partij die niet `LISTED` is ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] Twee gelijktijdige aanroepen van `markReserved` op dezelfde partij geven precies één keer `true` ([[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]])
 - [ ] Een `ProductView` bevat de aanbieder als `SupplierSummary` met id, naam en coördinaten ([[FTD-restpartijen-webapi-v2_2#Besluiten van de startsessie en daarna (v2.2)|B-20]])
-- [ ] `src/product/` importeert geen andere feature: `grep -rn "import com.restpartijen.api.\(reservation\|pricing\)" src/product/` geeft niets ([[FTD-restpartijen-webapi-v2_2#GI-5 Gedeelde domeinkern — geen eigenaar, PR met review door alle drie|GI-5]])
+- [ ] `../server/src` importeert geen andere feature: `grep -rn "import com.restpartijen.api.\(reservation\|pricing\)" src/product/` geeft niets ([[FTD-restpartijen-webapi-v2_2#GI-5 Gedeelde domeinkern — geen eigenaar, PR met review door alle drie|GI-5]])
 - [ ] `POST /auth/login` met een aanbiedersaccount geeft het `supplierId`; met een afhaler ontbreekt het. `grep -rn "import com.restpartijen.api.product" src/security/` geeft niets ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3]])
 
 ---
@@ -329,7 +329,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 7 — K-1 en K-6 Contr
 ## Fase 8 — US-01 Restpartij plaatsen
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.1 US-01 — Restpartij plaatsen|§5.1]], [[FTD-restpartijen-webapi-v2_2#SD-1 — Productgegevens opzoeken en restpartij plaatsen (US-01, US-02, US-10)|SD-1]], [[FTD-restpartijen-webapi-v2_2#9.10 Plausibiliteit van de houdbaarheidsdatum per productsoort|§9.10]], [[FTD-restpartijen-webapi-v2_2#8.7 Kwaliteitsscenario's|§8.7]], [[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]], [[FTD-restpartijen-webapi-v2_2#10.2 Validatie en foutafhandeling|§10.2]]
-Raakt: `src/product/*`, `test/product/*`, `requests.http`
+Raakt: `../server/src`, `../server/test`, `requests.http`
 Start na: fase 1 (omrekening euro's), fase 5, fase 6, fase 7
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 8 — US-01 Restpartij plaatsen|Eva]]
 
@@ -354,7 +354,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 8 — US-01 Restpartij
 ## Fase 9 — US-02 Productgegevens via barcode
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.2 US-02 — Productgegevens via barcode|§5.2]], [[FTD-restpartijen-webapi-v2_2#SD-1 — Productgegevens opzoeken en restpartij plaatsen (US-01, US-02, US-10)|SD-1]], [[FTD-restpartijen-webapi-v2_2#9.8 Allergenen|§9.8]], [[FTD-restpartijen-webapi-v2_2#10.3 Integratie met Open Food Facts|§10.3]], [[FTD-restpartijen-webapi-v2_2#8.7 Kwaliteitsscenario's|§8.7]]
-Raakt: `src/product/service/*`, `src/product/client/*`, `src/product/routes/*`, `module.yaml`, `test/product/*`, `requests.http`
+Raakt: `../server/src`, `../server/src`, `../server/src`, `../server/module.yaml`, `../server/test`, `requests.http`
 Start na: fase 8
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 9 — US-02 Productgegevens via barcode|Eva]]
 
@@ -378,7 +378,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 9 — US-02 Productgeg
 ## Fase 10 — US-03 Eigen aanbod beheren
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.3 US-03 — Eigen aanbod beheren|§5.3]], [[FTD-restpartijen-webapi-v2_2#16.2 Autorisatiemodel|§16.2]], [[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]], [[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]], [[FTD-restpartijen-webapi-v2_2#18.4 Request-flow tussen de app en de API|§18.4]]
-Raakt: `src/product/*`, `test/product/*`, `requests.http`
+Raakt: `../server/src`, `../server/test`, `requests.http`
 Start na: fase 8
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 10 — US-03 Eigen aanbod beheren|Eva]]
 
@@ -399,7 +399,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 10 — US-03 Eigen aan
 ## Fase 11 — US-10 Openingstijden vastleggen
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.10 US-10 — Openingstijden vastleggen|§5.10]], [[FTD-restpartijen-webapi-v2_2#9.9 Openingstijden en afhaalvenster|§9.9]], [[FTD-restpartijen-webapi-v2_2#4.1 F1 — Aanbod en productdata (Eva Bouwman)|§4.1]], [[FTD-restpartijen-webapi-v2_2#SD-1 — Productgegevens opzoeken en restpartij plaatsen (US-01, US-02, US-10)|SD-1]]
-Raakt: `src/product/model/OpeningHours.kt`, `src/product/service/PickupWindowCalculator.kt`, `src/product/repository/*`, `src/product/routes/*`, `test/product/*`, `requests.http`
+Raakt: `../server/src`, `../server/src`, `../server/src`, `../server/src`, `../server/test`, `requests.http`
 Start na: fase 8, en het besluit uit de weekcheck (fase 2) dat US-10 doorgaat
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 11 — US-10 Openingstijden vastleggen|Eva]]
 
@@ -428,7 +428,7 @@ Vervalt US-10 volgens de weekcheck, dan sluit deze fase met alleen het eerste Do
 ## Fase 12 — US-04 Aanbod zoeken en filteren
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.4 US-04 — Aanbod zoeken en filteren|§5.4]], [[FTD-restpartijen-webapi-v2_2#SD-2 — Zoeken en reserveren met autorisatie (US-04, US-05)|SD-2]], [[FTD-restpartijen-webapi-v2_2#5.7 US-07 — Actuele prijs zien|§5.7]], [[FTD-restpartijen-webapi-v2_2#11.2 Stefan Pellikaan — F2 Zoeken en reserveren|§11.2]], [[FTD-restpartijen-webapi-v2_2#18.3 Wat de API nu al biedt voor periode 2|§18.3]]
-Raakt: `src/reservation/service/ProductSearchService.kt`, `src/reservation/model/SearchCriteria.kt`, `src/reservation/routes/*`, `src/reservation/dto/*`, `test/reservation/*`, `requests.http`
+Raakt: `../server/src`, `../server/src`, `../server/src`, `../server/src`, `../server/test`, `requests.http`
 Start na: fase 6 en fase 7 (voor de integratietest); unittests kunnen eerder met fakes
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 12 — US-04 Aanbod zoeken en filteren|Stefan]]
 
@@ -453,7 +453,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 12 — US-04 Aanbod
 ## Fase 13 — US-05 Partij reserveren
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.5 US-05 — Partij reserveren|§5.5]], [[FTD-restpartijen-webapi-v2_2#SD-2 — Zoeken en reserveren met autorisatie (US-04, US-05)|SD-2]], [[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]], [[FTD-restpartijen-webapi-v2_2#9.6 Opslagkeuzes|§9.6]], [[FTD-restpartijen-webapi-v2_2#11.2 Stefan Pellikaan — F2 Zoeken en reserveren|§11.2]], [[FTD-restpartijen-webapi-v2_2#ADR-06 — Staffels in plaats van doorlopende afprijscurves|ADR-06]]
-Raakt: `src/reservation/*`, `src/Application.kt` (één regel), `test/reservation/*`, `requests.http`
+Raakt: `../server/src`, `../server/src` (één regel), `../server/test`, `requests.http`
 Start na: fase 5, fase 6 en fase 7
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 13 — US-05 Partij reserveren|Stefan]]
 
@@ -470,7 +470,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 13 — US-05 Partij
 - [ ] De prijs van het moment van reserveren staat in `reserved_price_cents` en verandert niet als de partij daarna in een volgende staffel valt ([[FTD-restpartijen-webapi-v2_2#5.5 US-05 — Partij reserveren|§5.5]])
 - [ ] `markReserved` en de insert van de reservering vallen in één transactie: faalt de insert, dan is de partij weer `LISTED` ([[FTD-restpartijen-webapi-v2_2#9.6 Opslagkeuzes|§9.6]])
 - [ ] `ReservationStateMachine` weigert elke combinatie buiten de tabel in §9.5 met `IllegalStateTransitionException` ([[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]])
-- [ ] `ReservationsTable` is toegevoegd zonder een bestand in `src/persistence/` te wijzigen ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
+- [ ] `ReservationsTable` is toegevoegd zonder een bestand in `../server/src` te wijzigen ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
 - [ ] `ReservationRepository` implementeert `Repository<Reservation>` ([[FTD-restpartijen-webapi-v2_2#11.2 Stefan Pellikaan — F2 Zoeken en reserveren|§11.2]])
 - [ ] `GET /api/v1/reservations` geeft alleen de eigen reserveringen, volgens de criteria uit A3 (aanvulling, [[#A3 Criteria voor GET reservations|A3]])
 - [ ] Een antwoord met een reservering bevat geen e-mailadres van de afhaler ([[FTD-restpartijen-webapi-v2_2#15. Privacy by design|§15]])
@@ -481,7 +481,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 13 — US-05 Partij
 ## Fase 14 — US-06 Reservering intrekken
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.6 US-06 — Reservering intrekken|§5.6]], [[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]], [[FTD-restpartijen-webapi-v2_2#18.4 Request-flow tussen de app en de API|§18.4]]
-Raakt: `src/reservation/*`, `test/reservation/*`, `requests.http`
+Raakt: `../server/src`, `../server/test`, `requests.http`
 Start na: fase 13
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 14 — US-06 Reservering intrekken|Stefan]]
 
@@ -498,7 +498,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 14 — US-06 Reserv
 ## Fase 15 — US-11 Ophalen bevestigen
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.11 US-11 — Ophalen bevestigen|§5.11]], [[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]], [[FTD-restpartijen-webapi-v2_2#18.4 Request-flow tussen de app en de API|§18.4]]
-Raakt: `src/reservation/*`, `test/reservation/*`, `requests.http`
+Raakt: `../server/src`, `../server/test`, `requests.http`
 Start na: fase 13
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 15 — US-11 Ophalen bevestigen|Stefan]]
 
@@ -516,7 +516,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 15 — US-11 Ophale
 ## Fase 16 — US-07 Actuele prijs zien
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.7 US-07 — Actuele prijs zien|§5.7]], [[FTD-restpartijen-webapi-v2_2#9.4 Afprijsstaffels per productsoort|§9.4]], [[FTD-restpartijen-webapi-v2_2#SD-3 — Productdetail met actuele prijs, polymorfe afprijzing (US-07)|SD-3]], [[FTD-restpartijen-webapi-v2_2#ADR-02 — Afprijzing als aparte policy-hiërarchie|ADR-02]], [[FTD-restpartijen-webapi-v2_2#ADR-06 — Staffels in plaats van doorlopende afprijscurves|ADR-06]], [[FTD-restpartijen-webapi-v2_2#8.6 Architectuurbeslissingen|ADR-08]], [[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]], [[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|§14]]
-Raakt: `src/pricing/*`, `src/shared/PriceBreakdown.kt`, `src/product/service/ProductService.kt`, `src/product/dto/*`, `src/Application.kt` (één regel), `test/pricing/*`, `test/product/*`
+Raakt: `../server/src`, `../server/src`, `../server/src`, `../server/src`, `../server/src` (één regel), `../server/test`, `../server/test`
 Start na: fase 1; het detail met prijs (Eva) start na de `PricingService` van Lonneke
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 16 — US-07 Actuele prijs zien|Lonneke]], [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 16 — US-07 Actuele prijs zien|Eva]]
 
@@ -530,12 +530,12 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 16 — US-07 Actue
 - [ ] `PricingService` krijgt de `Clock` van buiten; `grep -rn "Clock.System" src/pricing/` geeft niets ([[FTD-restpartijen-webapi-v2_2#5.7 US-07 — Actuele prijs zien|§5.7]])
 - [ ] `DiscountPolicy` heeft `discountPercentage()` en `maxDiscount()` als default implementatie; elke policy levert alleen `tiers()` ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
 - [ ] `DiscountPolicyResolver` is een `object` en kiest de policy per categorie ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
-- [ ] `src/pricing/` importeert geen andere feature en `src/product/` bevat geen afprijsregels: `grep -rn "discount" -i src/product/model/` geeft niets ([[FTD-restpartijen-webapi-v2_2#ADR-02 — Afprijzing als aparte policy-hiërarchie|ADR-02]])
+- [ ] `../server/src` importeert geen andere feature en `../server/src` bevat geen afprijsregels: `grep -rn "discount" -i src/product/model/` geeft niets ([[FTD-restpartijen-webapi-v2_2#ADR-02 — Afprijzing als aparte policy-hiërarchie|ADR-02]])
 - [ ] De oude namen zijn weg: `grep -rn "discountFactor\|\.factor" src/` geeft niets ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
 - [ ] `GET /api/v1/products/{id}` toont `originalPrice`, `discountPercentage` en `currentPrice` in euro's; de integratietest van TC-07 draait tegen deze endpoint ([[FTD-restpartijen-webapi-v2_2#6. Traceability matrix|§6]])
 - [ ] Een partij over de datum geeft bij `GET /api/v1/products/{id}` `200` met status `EXPIRED` en zonder prijs ([[FTD-restpartijen-webapi-v2_2#5.7 US-07 — Actuele prijs zien|§5.7]])
 - [ ] `ProductService` kent de afprijsregels niet en vraagt de prijs via `PriceProvider` ([[FTD-restpartijen-webapi-v2_2#SD-3 — Productdetail met actuele prijs, polymorfe afprijzing (US-07)|SD-3]])
-- [ ] `PricingService` is in `src/Application.kt` geregistreerd als `PriceProvider` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] `PricingService` is in `../server/src` geregistreerd als `PriceProvider` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] De acht punten van §7 zijn afgevinkt in de PR van deze story ([[FTD-restpartijen-webapi-v2_2#7. Definition of Done|§7]])
 
 ---
@@ -543,7 +543,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 16 — US-07 Actue
 ## Fase 17 — US-08 Automatische statusbewaking
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.8 US-08 — Automatische statusbewaking|§5.8]], [[FTD-restpartijen-webapi-v2_2#SD-4 — Automatische statusbewaking (US-08)|SD-4]], [[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]], [[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|K-5 en K-6]], [[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]]
-Raakt: `src/pricing/service/ExpiryScheduler.kt`, `src/pricing/routes/*`, `src/reservation/service/*` (Stefan), `src/Application.kt` (één regel), `test/pricing/*`, `test/reservation/*`, `requests.http`
+Raakt: `../server/src`, `../server/src`, `../server/src` (Stefan), `../server/src` (één regel), `../server/test`, `../server/test`, `requests.http`
 Start na: fase 7 (`markExpired`) en fase 13 (reserveringen)
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 17 — US-08 Automatische statusbewaking|Lonneke]], [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 17 — US-08 Automatische statusbewaking|Stefan]]
 
@@ -558,7 +558,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 17 — US-08 Autom
 - [ ] Zonder token: `401`; een andere rol dan `ADMIN`: `403` ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|§10.1]])
 - [ ] `lapseOverdue` van F2 laat vervallen via de statusmachine (`LAPSE`) en geeft het aantal ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] De statusbewaking draait ook periodiek via `launch`, met het interval uit A8 (aanvulling, [[#A8 Interval van de periodieke statusbewaking|A8]])
-- [ ] `ReservationMaintenance` is in `src/Application.kt` geregistreerd ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] `ReservationMaintenance` is in `../server/src` geregistreerd ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] `requests.http` bevat een voorbeeld ([[FTD-restpartijen-webapi-v2_2#1.7 Succescriteria|§1.7]])
 - [ ] De acht punten van §7 zijn afgevinkt in de PR van deze story ([[FTD-restpartijen-webapi-v2_2#7. Definition of Done|§7]])
 
@@ -567,7 +567,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 17 — US-08 Autom
 ## Fase 18 — US-09 Aanbod verwijderen als beheerder
 
 Basis: [[FTD-restpartijen-webapi-v2_2#5.9 US-09 — Aanbod verwijderen als beheerder|§5.9]], [[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]], [[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|K-5 en K-6]], [[FTD-restpartijen-webapi-v2_2#Besluiten van de startsessie en daarna (v2.2)|B-26]]
-Raakt: `src/pricing/service/AdminProductService.kt`, `src/pricing/routes/*`, `src/reservation/service/*` (Stefan), `test/pricing/*`, `test/reservation/*`, `requests.http`
+Raakt: `../server/src`, `../server/src`, `../server/src` (Stefan), `../server/test`, `../server/test`, `requests.http`
 Start na: fase 17
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 18 — US-09 Aanbod verwijderen als beheerder|Lonneke]], [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 18 — US-09 Aanbod verwijderen als beheerder|Stefan]]
 
@@ -590,7 +590,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 18 — US-09 Aanbo
 ## Fase 19 — Seeddata compleet
 
 Basis: [[FTD-restpartijen-webapi-v2_2#9.7 Seeddata|§9.7]], [[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]], [[FTD-restpartijen-webapi-v2_2#1.7 Succescriteria|§1.7]], [[FTD-restpartijen-webapi-v2_2#Bijlage B — H2 wat het is en hoe wij het gebruiken|bijlage B]]
-Raakt: het bestand van `SeedData` (plek gekozen in fase 3), `test/persistence/*`, `requests.http`, `README.md`
+Raakt: het bestand van `SeedData` (plek gekozen in fase 3), `../server/test`, `requests.http`, `README.md`
 Start na: fase 5 (gebruikers en hashing), fase 7, fase 11 (of het besluit dat US-10 vervalt) en fase 13
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 19 — Seeddata compleet|Eva]]
 
@@ -670,7 +670,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 21 — Inleveren|Eva]]
 - [ ] Alleen de DSL van Exposed: `grep -rn "LongEntity\|IntEntity" src/` geeft niets ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.1]])
 - [ ] Eén repository per entiteit; de reviewers bevestigen dat bij de laatste PR ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.3]])
 - [ ] Elke wijziging in `shared` ging via een PR met twee reviews; controle via `git log -- src/shared/` en de PR's ([[FTD-restpartijen-webapi-v2_2#GI-5 Gedeelde domeinkern — geen eigenaar, PR met review door alle drie|GI-5]])
-- [ ] `settings.kotlin.allWarningsAsErrors` staat nog op `true` in `module.yaml` ([[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|NFR-05]])
+- [ ] `settings.kotlin.allWarningsAsErrors` staat nog op `true` in `../server/module.yaml` ([[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|NFR-05]])
 - [ ] Alle fasen 0 tot en met 21 zijn gesloten ([[FTD-restpartijen-webapi-v2_2#7. Definition of Done|§7]])
 - [ ] Elke open vraag hieronder is beantwoord, of bewust open gelaten met een reden ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
 

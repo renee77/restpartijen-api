@@ -23,4 +23,4 @@ Voor src/shared/package-info.md, bijvoorbeeld:
 "Shared domain core: enums, value types, DomainException hierarchy and all cross-feature contracts. No implementations, no feature imports. Changes via PR with two reviews (GI-5)."
 
 
-Eigenaar: iedereen (duh)
+Eigenaar: iedereen (duh)==

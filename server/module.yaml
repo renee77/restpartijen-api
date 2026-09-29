@@ -9,6 +9,8 @@ settings:
     version: 3.6.0
   jvm:
     mainClass: com.restpartijen.api.ApplicationKt
+    jdk:
+      version: 25
 
 dependencies:
   - io.ktor:ktor-server-core
