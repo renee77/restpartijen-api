@@ -1,5 +1,6 @@
 package com.restpartijen.api.shared
 
+import ProductStatus
 import kotlin.time.Instant
 
 /**
@@ -22,7 +23,17 @@ interface ProductReader {
     /** Products still LISTED whose best-before moment is at or before [now]. */
     suspend fun findExpiredListings(now: Instant): List<ProductView>
 
-    /** All products in every status, for the admin overview. */
-    // na kijken of REMOVED ook getoond wordt wij denken van niet
-    suspend fun findAll(): List<ProductView>
+    /**
+     * Products whose status is one of [statuses], for the admin overview (B-26).
+     *
+     * The caller decides which statuses it needs: the admin overview asks for every
+     * status except REMOVED by default, and for REMOVED only when filtering on it.
+     * An empty set returns an empty list.
+     */
+//    Alleen de verwijderde	findByStatus(setOf(REMOVED))	Alle partijen met status REMOVED
+//    Alleen de gereserveerde	findByStatus(setOf(RESERVED))	Alle partijen met status RESERVED
+//    Twee statussen samen	findByStatus(setOf(LISTED, RESERVED))	Alles wat LISTED of RESERVED is
+//    Alle lopende partijen	findByStatus(ProductStatus.entries.toSet() - REMOVED)	Alles behalve REMOVED
+
+    suspend fun findByStatus(statuses: Set<ProductStatus>): List<ProductView>
 }
