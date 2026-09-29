@@ -1,3 +1,5 @@
+package com.restpartijen.api.shared
+
 /**
  * The three product kinds (§9.3).
  *

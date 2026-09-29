@@ -1,3 +1,5 @@
+package com.restpartijen.api.shared
+
 /**
  * Lifecycle status of a surplus product (§9.5).
  *

@@ -1,6 +1,5 @@
 package com.restpartijen.api.shared
 
-import ProductStatus
 import kotlin.time.Instant
 
 /**

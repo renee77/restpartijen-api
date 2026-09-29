@@ -1,3 +1,5 @@
+package com.restpartijen.api.shared
+
 /**
  * The role of a user, stored as the `role` claim in the JWT (GI-3, decisions 3.2 and 3.3).
  *

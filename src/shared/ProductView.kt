@@ -1,7 +1,5 @@
 package com.restpartijen.api.shared
 
-
-// restpartijen-api/src/shared/ProductView.kt
 /**
  * Read-only view of a surplus product for other features (K-1, K-6).
  * Provided by: F1 (Eva), implemented by SurplusProduct.
@@ -12,7 +10,8 @@ package com.restpartijen.api.shared
  */
 interface ProductView : PricedProduct {
     val id: Long
-    val supplier: SupplierSummary   // decision point 5
+    /** Name and coordinates of the supplier, so a search result can show them (§5.4, B-20). */
+    val supplier: SupplierSummary
     val name: String
     val status: ProductStatus
     val pickupWindow: PickupWindow
