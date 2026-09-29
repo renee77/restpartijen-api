@@ -40,9 +40,9 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 1 — GI-5 en GI-6 Gede
       ```
 
 ### To-do
-- [ ] Haal het Nederlandse commentaar in `src/shared/PriceBreakdown.kt` weg of vervang het door Engelse KDoc ([[FTD-restpartijen-webapi-v2_2#12.3 Git-werkwijze|B-27]])
+- [ ] Haal het Nederlandse commentaar in `../server/src` weg of vervang het door Engelse KDoc ([[FTD-restpartijen-webapi-v2_2#12.3 Git-werkwijze|B-27]])
 - [ ] Besluit of `Money` een privé constructor krijgt, met een factory voor centen en een voor euro's ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
-- [ ] Schrijf de omrekening van euro's naar centen op één plek, bij voorkeur in `src/shared/Money.kt`: vermenigvuldig met 100 en rond af naar de dichtstbijzijnde cent met `roundToLong()`, nooit afkappen ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
+- [ ] Schrijf de omrekening van euro's naar centen op één plek, bij voorkeur in `../server/src`: vermenigvuldig met 100 en rond af naar de dichtstbijzijnde cent met `roundToLong()`, nooit afkappen ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
 - [ ] Schrijf op dezelfde plek de omrekening van centen naar euro's voor de antwoorden ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
 - [ ] Schrijf eerst de test `0.29 → 29` en draai hem met afkappen (`toLong()`); zie hem falen met 28 ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
       ```bash
@@ -69,12 +69,12 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 5 — GI-3 Authenticati
 
 ### To-do
 - [ ] Besluit welke BCrypt-library je gebruikt en noteer de reden in de PR (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A6 Library voor BCrypt|A6]])
-- [ ] Voeg `io.ktor:ktor-server-auth`, `io.ktor:ktor-server-auth-jwt` en de BCrypt-library toe aan `module.yaml` ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.1]])
-- [ ] Maak `src/security/UsersTable.kt` met de kolommen van `USERS` uit het ERD, en meld hem aan in `src/Application.kt` ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
-- [ ] Maak `src/security/User.kt` en `UserRepository`, die `Repository<User>` implementeert. Dit is je voorbeeld van generics ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
+- [ ] Voeg `io.ktor:ktor-server-auth`, `io.ktor:ktor-server-auth-jwt` en de BCrypt-library toe aan `../server/module.yaml` ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.1]])
+- [ ] Maak `../server/src` met de kolommen van `USERS` uit het ERD, en meld hem aan in `../server/src` ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
+- [ ] Maak `../server/src` en `UserRepository`, die `Repository<User>` implementeert. Dit is je voorbeeld van generics ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
 - [ ] Maak een hasher die wachtwoorden met BCrypt hasht en controleert ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.4]])
-- [ ] Maak `src/security/JwtConfig.kt`: bouwt en controleert tokens, met het secret uit de configuratie van Stefan, één claim `role` met de enumnaam en 24 uur geldigheid. Neem de tijd van een meegegeven `Clock` ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.5]])
-- [ ] Maak in `src/security/` een function `configureSecurity()` die `install(Authentication)` met JWT doet; gebruik de nieuwe typed authentication niet ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.1]])
+- [ ] Maak `../server/src`: bouwt en controleert tokens, met het secret uit de configuratie van Stefan, één claim `role` met de enumnaam en 24 uur geldigheid. Neem de tijd van een meegegeven `Clock` ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.5]])
+- [ ] Maak in `../server/src` een function `configureSecurity()` die `install(Authentication)` met JWT doet; gebruik de nieuwe typed authentication niet ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.1]])
 - [ ] Roep `configureSecurity()` één keer aan in `Application.module()`, na de plugins en vóór de routing ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.9]])
 - [ ] Maak de kern van de rolcheck: een hulpfunction waarmee een feature in de eigen routing zegt welke rol een endpoint vraagt. Zet er geen regels per endpoint in ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.6]])
 - [ ] Maak een hulpfunction die uit de principal de gebruiker en de rol haalt, voor de services van de features ([[FTD-restpartijen-webapi-v2_2#16.2 Autorisatiemodel|§16.2]])
@@ -83,7 +83,7 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 5 — GI-3 Authenticati
 - [ ] Gooi bij een bestaand e-mailadres de exceptie uit het besluit over A7 (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A7 Exceptie voor 409 bij een bestaand e-mailadres|A7]])
 - [ ] Voeg `POST /api/v1/auth/login` toe: controleer de hash; een verkeerd wachtwoord geeft `UnauthorizedException`; het antwoord bevat het token en de rol ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.8]])
 - [ ] Laat het antwoord van register en login nooit het wachtwoord of de hash bevatten ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3]])
-- [ ] Schrijf in `test/security/` een testroute die de rol `ADMIN` vraagt, en de testen: zonder token `401`, verkeerde rol `403`, juiste rol `200` ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3]])
+- [ ] Schrijf in `../server/test` een testroute die de rol `ADMIN` vraagt, en de testen: zonder token `401`, verkeerde rol `403`, juiste rol `200` ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3]])
 - [ ] Schrijf de testen voor registreren: `201` met rol `COLLECTOR` ook met `"role":"ADMIN"` in de body, `409` bij een bestaand e-mailadres, de regels uit A11 ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
 - [ ] Schrijf de testen voor inloggen: token en rol in het antwoord, `401` bij een verkeerd wachtwoord, geen `password` of hash in de body ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3]])
 - [ ] Schrijf de test die de claim `role` uitleest, en de test die met een vaste klok controleert dat `exp` min `iat` 24 uur is ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3]])
@@ -115,19 +115,19 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 16 — US-07 Actuele pr
       ```
 
 ### To-do
-- [ ] Maak `src/pricing/model/DiscountTier.kt`: een data class met `appliesFrom: Duration` en `percentage: Int` ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
-- [ ] Maak `src/pricing/model/DiscountPolicy.kt`: een interface met `appliesTo()` en `tiers()`, en met `discountPercentage(remaining)` en `maxDiscount()` als default implementatie ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
+- [ ] Maak `../server/src`: een data class met `appliesFrom: Duration` en `percentage: Int` ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
+- [ ] Maak `../server/src`: een interface met `appliesTo()` en `tiers()`, en met `discountPercentage(remaining)` en `maxDiscount()` als default implementatie ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
 - [ ] Schrijf de extension function `List<DiscountTier>.tierFor(Duration)`, die de staffel voor een resterende houdbaarheid vindt; op de grens geldt de hogere korting ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
 - [ ] Maak `FreshDiscountPolicy`, `FrozenDiscountPolicy` en `AmbientDiscountPolicy` met de staffels uit §9.4 ([[FTD-restpartijen-webapi-v2_2#9.4 Afprijsstaffels per productsoort|§9.4]])
 - [ ] Maak `DiscountPolicyResolver` als `object`, met de map van categorie naar policy als `by lazy` ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
-- [ ] Maak `src/pricing/service/PricingService.kt`: implementeert `PriceProvider`, krijgt een `Clock` in de constructor en ziet een partij alleen als `PricedProduct` ([[FTD-restpartijen-webapi-v2_2#SD-3 — Productdetail met actuele prijs, polymorfe afprijzing (US-07)|SD-3]])
+- [ ] Maak `../server/src`: implementeert `PriceProvider`, krijgt een `Clock` in de constructor en ziet een partij alleen als `PricedProduct` ([[FTD-restpartijen-webapi-v2_2#SD-3 — Productdetail met actuele prijs, polymorfe afprijzing (US-07)|SD-3]])
 - [ ] Reken de prijs uit als `originalPrice × (100 − korting) / 100` in hele centen: eerst vermenigvuldigen, dan delen ([[FTD-restpartijen-webapi-v2_2#9.4 Afprijsstaffels per productsoort|B-24]])
 - [ ] Geef `null` terug als de resterende houdbaarheid nul of negatief is ([[FTD-restpartijen-webapi-v2_2#Besluiten van de startsessie en daarna (v2.2)|B-18]])
 - [ ] Schrijf eerst de test "349 cent met 60% korting geeft 139 cent" en draai hem met de verkeerde volgorde `(100 − korting) / 100`; zie hem falen. Zet daarna de volgorde goed ([[FTD-restpartijen-webapi-v2_2#9.4 Afprijsstaffels per productsoort|B-24]])
 - [ ] Schrijf de unittests voor alle zeven staffelgrenzen, telkens precies op de grens en één seconde erboven (TC-07) ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
 - [ ] Schrijf de unittests: percentage nooit hoger dan de hoogste staffel, prijs nooit negatief, nooit hoger dan de oorspronkelijke, verlopen geeft `null` ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
 - [ ] Schrijf de unittest: twee aanroepen met dezelfde vaste klok geven dezelfde prijs ([[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|NFR-06]])
-- [ ] Registreer `PricingService` in `src/Application.kt` als `PriceProvider` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] Registreer `PricingService` in `../server/src` als `PriceProvider` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] Laat Eva en Stefan weten dat `PricingService` op `main` staat ([[FTD-restpartijen-webapi-v2_2#Bijlage A — Werken met contracten|bijlage A]])
 - [ ] Start na: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 16 — US-07 Actuele prijs zien|Eva — het productdetail met prijs staat op `main`]]
 - [ ] Schrijf de integratietest van TC-07 tegen `GET /api/v1/products/{id}`: de drie prijsvelden in euro's, en een verlopen partij geeft `200` met `EXPIRED` en zonder prijs ([[FTD-restpartijen-webapi-v2_2#6. Traceability matrix|§6]])
@@ -139,10 +139,10 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 16 — US-07 Actuele pr
 Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 17 — US-08 Automatische statusbewaking|algemene lijst]]
 
 ### To-do
-- [ ] Maak `src/pricing/service/ExpiryScheduler.kt` met `ReservationMaintenance`, `ProductReader`, `ProductStatusUpdater` en `Clock` in de constructor ([[FTD-restpartijen-webapi-v2_2#SD-4 — Automatische statusbewaking (US-08)|SD-4]])
+- [ ] Maak `../server/src` met `ReservationMaintenance`, `ProductReader`, `ProductStatusUpdater` en `Clock` in de constructor ([[FTD-restpartijen-webapi-v2_2#SD-4 — Automatische statusbewaking (US-08)|SD-4]])
 - [ ] Schrijf `runMaintenance()`: stap 1 `lapseOverdue(clock.now())`, stap 2 `findExpiredListings(clock.now())` en `markExpired`. Geef een rapport terug met de aantallen per overgang ([[FTD-restpartijen-webapi-v2_2#SD-4 — Automatische statusbewaking (US-08)|SD-4]])
 - [ ] Log het rapport met `also` ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
-- [ ] Voeg `POST /api/v1/admin/maintenance/expire` toe in `src/pricing/routes/` met de rolregel `ADMIN` ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|§10.1]])
+- [ ] Voeg `POST /api/v1/admin/maintenance/expire` toe in `../server/src` met de rolregel `ADMIN` ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|§10.1]])
 - [ ] Besluit het interval van de periodieke statusbewaking (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A8 Interval van de periodieke statusbewaking|A8]])
 - [ ] Start de periodieke statusbewaking met `launch` bij het opstarten van de applicatie, met dat interval (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A8 Interval van de periodieke statusbewaking|A8]])
 - [ ] Schrijf de unittests met fakes: een verlopen partij wordt `EXPIRED` (TC-08), een opgehaalde partij blijft ongewijzigd, een tweede run meldt nul ([[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]])
@@ -159,7 +159,7 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 17 — US-08 Automatisc
 Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 18 — US-09 Aanbod verwijderen als beheerder|algemene lijst]]
 
 ### To-do
-- [ ] Maak `src/pricing/service/AdminProductService.kt` met `ProductReader`, `ProductStatusUpdater` en `ReservationMaintenance` in de constructor ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] Maak `../server/src` met `ProductReader`, `ProductStatusUpdater` en `ReservationMaintenance` in de constructor ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] Start na: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 18 — US-09 Aanbod verwijderen als beheerder|Stefan — `lapseActiveFor` staat op `main`]]
 - [ ] Schrijf `delete(productId)`: niet gevonden geeft `NotFoundException`; `COLLECTED`, `EXPIRED` of `REMOVED` geeft `IllegalStateTransitionException`; bij `RESERVED` eerst `lapseActiveFor`, dan `markRemoved` ([[FTD-restpartijen-webapi-v2_2#5.9 US-09 — Aanbod verwijderen als beheerder|§5.9]])
 - [ ] Zet beide aanroepen in één transactie met de helper van GI-1 ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.4]])

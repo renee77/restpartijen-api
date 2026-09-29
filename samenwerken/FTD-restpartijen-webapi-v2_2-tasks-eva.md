@@ -33,7 +33,7 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 0 — Voorbereiding en 
       # Find references to task numbers of the earlier list (T2, T9, T15, T21, "blok 4")
       grep -rnw -e 'T[0-9]\{1,2\}' -e 'blok 4' src/ test/
       ```
-      Verwacht: onder andere `src/product/repository/ProductsTable.kt`, `src/product/routes/ProductRoutes.kt`, `src/shared/z-package-info.md` en `src/pricing/package-info.md`.
+      Verwacht: onder andere `../server/src`, `../server/src`, `../server/src` en `../server/src`.
 - [ ] Vervang elke gevonden verwijzing door het fasenummer uit deze lijst, bijvoorbeeld "T15" door "fase 6" (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A10 Oude taaknummers in FTD en code|A10]])
 - [ ] Vervang in §9.7 en §21 van het FTD "T21" en "T9" door de fasen 19 en 3 (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A10 Oude taaknummers in FTD en code|A10]])
 - [ ] Zet na de bevestiging in de groep de kolom *Status* bij B-24, B-31 en B-32 op "Vast" ([[FTD-restpartijen-webapi-v2_2#Besluiten van de startsessie en daarna (v2.2)|Besluiten v2.2]])
@@ -45,7 +45,7 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 0 — Voorbereiding en 
 Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 1 — GI-5 en GI-6 Gedeelde domeinkern en testopzet op main|algemene lijst]]
 
 ### To-do
-- [ ] Haal in `src/shared/ProductReader.kt` de vier Nederlandse commentaarregels boven `findByStatus` weg; de voorbeelden staan al in de KDoc of komen er in het Engels bij ([[FTD-restpartijen-webapi-v2_2#12.3 Git-werkwijze|B-27]])
+- [ ] Haal in `../server/src` de vier Nederlandse commentaarregels boven `findByStatus` weg; de voorbeelden staan al in de KDoc of komen er in het Engels bij ([[FTD-restpartijen-webapi-v2_2#12.3 Git-werkwijze|B-27]])
 - [ ] Open een PR van `feature/walking-skeleton` naar `main`, vul het sjabloon in en vraag Stefan en Lonneke als reviewer ([[FTD-restpartijen-webapi-v2_2#13. Gedeelde infrastructuur (GI-1 t/m GI-6)|§13]])
 - [ ] Merge de PR pas na twee goedkeuringen, omdat hij `shared` bevat ([[FTD-restpartijen-webapi-v2_2#GI-5 Gedeelde domeinkern — geen eigenaar, PR met review door alle drie|GI-5]])
 
@@ -61,19 +61,19 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 3 — GI-1 Persistentie
       ```
 
 ### To-do
-- [ ] Maak `src/persistence/Repository.kt` met de generieke interface `Repository<T>`: `findById(id: Long): T?`, `findAll(): List<T>`, `save(entity: T): T` en `delete(id: Long): Boolean`, met KDoc ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.8]])
+- [ ] Maak `../server/src` met de generieke interface `Repository<T>`: `findById(id: Long): T?`, `findAll(): List<T>`, `save(entity: T): T` en `delete(id: Long): Boolean`, met KDoc ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.8]])
 - [ ] Besluit of deze functions `suspend` zijn en schrijf de reden in de KDoc. B-21 geldt voor contracten die de database raken; §8.4 toont `Repository<T>` zonder `suspend` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|B-21]])
-- [ ] Voeg in `src/persistence/DatabaseFactory.kt` een `suspend`-helper toe die `suspendTransaction` binnen `withContext(Dispatchers.IO)` uitvoert, bijvoorbeeld `dbQuery { }` ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.6]])
-- [ ] Laat `ExposedProductRepository.findById` in `src/product/repository/ProductRepository.kt` de helper gebruiken in plaats van `transaction { }` ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.6]])
-      Als het misgaat: de testen in `test/product/` compileren niet meer, omdat ze nu een `suspend`-function aanroepen. Zet de body van de test in `runTest { }` of `runBlocking { }`, afhankelijk van de uitkomst van de `runTest`-controle in fase 0.
+- [ ] Voeg in `../server/src` een `suspend`-helper toe die `suspendTransaction` binnen `withContext(Dispatchers.IO)` uitvoert, bijvoorbeeld `dbQuery { }` ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.6]])
+- [ ] Laat `ExposedProductRepository.findById` in `../server/src` de helper gebruiken in plaats van `transaction { }` ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.6]])
+      Als het misgaat: de testen in `../server/test` compileren niet meer, omdat ze nu een `suspend`-function aanroepen. Zet de body van de test in `runTest { }` of `runBlocking { }`, afhankelijk van de uitkomst van de `runTest`-controle in fase 0.
 - [ ] Verander `DatabaseFactory.init()` zo dat hij de tabellen als parameter krijgt, en haal de import van `ProductsTable` weg ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
-- [ ] Geef in `src/Application.kt` `ProductsTable` mee aan `DatabaseFactory.init()`, in één regel ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
-- [ ] Kies de plek van `SeedData`: het bestand schrijft in alle tabellen, maar `persistence` mag geen feature importeren. Een voor de hand liggende plek is naast `src/Application.kt`. Schrijf de keuze in de PR ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
+- [ ] Geef in `../server/src` `ProductsTable` mee aan `DatabaseFactory.init()`, in één regel ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
+- [ ] Kies de plek van `SeedData`: het bestand schrijft in alle tabellen, maar `persistence` mag geen feature importeren. Een voor de hand liggende plek is naast `../server/src`. Schrijf de keuze in de PR ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
 - [ ] Verplaats de twee walking-skeleton-partijen uit `DatabaseFactory` naar `SeedData` op de gekozen plek ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
-- [ ] Voeg in `resources/application.yaml` een instelling toe voor H2: in-memory of op bestand, standaard in-memory ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.2]])
+- [ ] Voeg in `../server/resources` een instelling toe voor H2: in-memory of op bestand, standaard in-memory ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.2]])
 - [ ] Laat `Application.module()` die instelling lezen en aan `DatabaseFactory.init()` doorgeven; kies op basis daarvan `jdbc:h2:mem:restpartijen;DB_CLOSE_DELAY=-1` of `jdbc:h2:./restpartijen` ([[FTD-restpartijen-webapi-v2_2#Bijlage B — H2 wat het is en hoe wij het gebruiken|bijlage B]])
-- [ ] Maak in `test/testsupport/` een helper die alle tabellen leegmaakt vóór een test ([[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6 besluit 6.6]])
-- [ ] Schrijf `test/persistence/CleanDatabaseTest.kt`: test één schrijft een rij, test twee ziet die rij niet. Schrijf deze eerste test zelf, volgens Arrange-Act-Assert ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
+- [ ] Maak in `../server/test` een helper die alle tabellen leegmaakt vóór een test ([[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6 besluit 6.6]])
+- [ ] Schrijf `../server/test`: test één schrijft een rij, test twee ziet die rij niet. Schrijf deze eerste test zelf, volgens Arrange-Act-Assert ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
 - [ ] Draai de testen ([[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6]])
       ```bash
       # Run all tests
@@ -98,7 +98,7 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 6 — GI-4 Foutafhandel
 ### To-do
 - [ ] Start na: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 6 — GI-4 Foutafhandeling|Stefan — `StatusPages` staat op `main`]]
 - [ ] Laat `ProductService.getProduct` een `NotFoundException` gooien als de partij niet bestaat, in plaats van `null` terug te geven ([[FTD-restpartijen-webapi-v2_2#10.2 Validatie en foutafhandeling|§10.2]])
-- [ ] Haal in `src/product/routes/ProductRoutes.kt` het eigen antwoord `HttpStatusCode.NotFound` weg; `StatusPages` maakt nu de `404` ([[FTD-restpartijen-webapi-v2_2#GI-4 Foutafhandeling — uitvoering Stefan|GI-4 besluit 4.1]])
+- [ ] Haal in `../server/src` het eigen antwoord `HttpStatusCode.NotFound` weg; `StatusPages` maakt nu de `404` ([[FTD-restpartijen-webapi-v2_2#GI-4 Foutafhandeling — uitvoering Stefan|GI-4 besluit 4.1]])
 - [ ] Gooi in dezelfde route een `ValidationException` als het id geen getal is, in plaats van zelf `BadRequest` te sturen ([[FTD-restpartijen-webapi-v2_2#10.2 Validatie en foutafhandeling|§10.2]])
 - [ ] Pas `ProductServiceTest` aan: de test voor een onbekend id verwacht nu de exceptie met `assertFailsWith<NotFoundException>` ([[FTD-restpartijen-webapi-v2_2#10.2 Validatie en foutafhandeling|§10.2]])
 - [ ] Draai `./kotlin test`; `ProductRoutesTest` blijft groen, dus `GET /api/v1/products/999` geeft nog steeds `404` ([[FTD-restpartijen-webapi-v2_2#10.2 Validatie en foutafhandeling|§10.2]])
@@ -116,25 +116,25 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 7 — K-1 en K-6 Contra
       ```
 
 ### To-do
-- [ ] Maak `src/product/model/SurplusProduct.kt`: een `sealed` abstracte class met de velden uit het klassendiagram, die `ProductView` implementeert ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
+- [ ] Maak `../server/src`: een `sealed` abstracte class met de velden uit het klassendiagram, die `ProductView` implementeert ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
 - [ ] Geef `status` een privé setter: `var status: ProductStatus` met `private set` ([[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]])
 - [ ] Schrijf in de basisklasse `shelfLifeRemaining(clock)` en `isExpired(clock)`; de tijd komt altijd uit de meegegeven `Clock` ([[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6 besluit 6.5]])
-- [ ] Maak `FreshProduct`, `FrozenProduct` en `AmbientProduct` in `src/product/model/`; elke subklasse overschrijft `category` en `maxShelfLife()`: 14, 1095 en 1825 dagen ([[FTD-restpartijen-webapi-v2_2#9.10 Plausibiliteit van de houdbaarheidsdatum per productsoort|§9.10]])
-- [ ] Schrijf zelf, volgens Arrange-Act-Assert, de unittest voor `shelfLifeRemaining` met `FixedClock` uit `test/testsupport/` ([[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]])
-- [ ] Breid `ProductsTable` in `src/product/repository/ProductsTable.kt` uit met alle kolommen van `SURPLUS_PRODUCTS` uit het ERD; `original_price_cents` is `long`, tijden zijn `timestamp()` ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
-- [ ] Maak `src/product/repository/SuppliersTable.kt` voor `suppliers`, met een foreign key `user_id` naar de `UsersTable` van Lonneke ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
-- [ ] Maak `src/product/repository/ProductAllergensTable.kt` voor `product_allergens` ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
-- [ ] Meld de twee nieuwe tabellen aan in `src/Application.kt`, op dezelfde manier als `ProductsTable` ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
+- [ ] Maak `FreshProduct`, `FrozenProduct` en `AmbientProduct` in `../server/src`; elke subklasse overschrijft `category` en `maxShelfLife()`: 14, 1095 en 1825 dagen ([[FTD-restpartijen-webapi-v2_2#9.10 Plausibiliteit van de houdbaarheidsdatum per productsoort|§9.10]])
+- [ ] Schrijf zelf, volgens Arrange-Act-Assert, de unittest voor `shelfLifeRemaining` met `FixedClock` uit `../server/test` ([[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]])
+- [ ] Breid `ProductsTable` in `../server/src` uit met alle kolommen van `SURPLUS_PRODUCTS` uit het ERD; `original_price_cents` is `long`, tijden zijn `timestamp()` ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
+- [ ] Maak `../server/src` voor `suppliers`, met een foreign key `user_id` naar de `UsersTable` van Lonneke ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
+- [ ] Maak `../server/src` voor `product_allergens` ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
+- [ ] Meld de twee nieuwe tabellen aan in `../server/src`, op dezelfde manier als `ProductsTable` ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1]])
 - [ ] Maak `ProductFactory` als companion object: `from(row)` kiest met een `when` over `ProductCategory` de subklasse, zonder `else` ([[FTD-restpartijen-webapi-v2_2#9.3 Vertaling van het objectmodel naar het relationele model|§9.3]])
 - [ ] Werk de extension function `ResultRow.toProduct()` bij zodat hij `ProductFactory` gebruikt; de omzetting van `Long` naar `Money` is één regel ([[FTD-restpartijen-webapi-v2_2#9.3 Vertaling van het objectmodel naar het relationele model|§9.3]])
-- [ ] Verwijder `src/product/model/Product.kt`, en vervang het gebruik ervan in `src/product/` en `test/product/` door `SurplusProduct`. De testen blijven, met de nieuwe klasse ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
+- [ ] Verwijder `../server/src`, en vervang het gebruik ervan in `../server/src` en `../server/test` door `SurplusProduct`. De testen blijven, met de nieuwe klasse ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
 - [ ] Laat de repository van F1 `Repository<SurplusProduct>` implementeren ([[FTD-restpartijen-webapi-v2_2#GI-1 Persistentielaag — uitvoering Eva|GI-1 besluit 1.8]])
-- [ ] Maak `src/product/repository/ExposedProductReader.kt`, die `ProductReader` implementeert volgens de beloftes in §12.1 ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
-- [ ] Maak `src/product/repository/ExposedProductStatusUpdater.kt`, die `ProductStatusUpdater` implementeert ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] Maak `../server/src`, die `ProductReader` implementeert volgens de beloftes in §12.1 ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] Maak `../server/src`, die `ProductStatusUpdater` implementeert ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] Schrijf `markReserved` als één voorwaardelijke update: alleen waar de status nog `LISTED` is. Het aantal gewijzigde rijen bepaalt `true` of `false` ([[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]])
-- [ ] Registreer beide implementaties in DI, in `src/Application.kt` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] Registreer beide implementaties in DI, in `../server/src` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] Schrijf de unittest: de factory kiest per categorie de juiste subklasse ([[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]])
-- [ ] Schrijf per belofte van `ProductReader` en `ProductStatusUpdater` een integratietest op H2 in `test/product/` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] Schrijf per belofte van `ProductReader` en `ProductStatusUpdater` een integratietest op H2 in `../server/test` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] Schrijf een test waarin twee coroutines tegelijk `markReserved` aanroepen op dezelfde partij; precies één krijgt `true` ([[FTD-restpartijen-webapi-v2_2#5.5 US-05 — Partij reserveren|§5.5]])
 - [ ] Spreek met Lonneke af hoe `/auth/login` het `supplierId` krijgt, en bouw de kant van F1 (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A15 Het supplierId bij inloggen|A15]])
 - [ ] Draai `./kotlin test`, open de PR en meld Stefan en Lonneke dat de contracten van F1 op `main` staan zodra hij gemerged is ([[FTD-restpartijen-webapi-v2_2#Bijlage A — Werken met contracten|bijlage A]])
@@ -151,11 +151,11 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 8 — US-01 Restpartij 
 ### To-do
 - [ ] Schrijf `validateForListing(clock)` in `SurplusProduct`: datum in de toekomst, afhaalvenster niet na de datum, aantal minstens 1, en resterende houdbaarheid niet langer dan `maxShelfLife()`. Een overtreding gooit `DomainRuleException`; bij de laatste regel noemt de melding de grens ([[FTD-restpartijen-webapi-v2_2#9.10 Plausibiliteit van de houdbaarheidsdatum per productsoort|§9.10]])
 - [ ] Maak een command-object voor het plaatsen, met named en default arguments: `barcode` en het afhaalvenster zijn optioneel ([[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]])
-- [ ] Maak in `src/product/dto/` een `@Serializable` request-DTO voor `POST /products`, met de prijs in euro's en de allergenen als `Set<Allergen>` ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
+- [ ] Maak in `../server/src` een `@Serializable` request-DTO voor `POST /products`, met de prijs in euro's en de allergenen als `Set<Allergen>` ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
 - [ ] Reken de prijs om naar `Money` met de gedeelde omrekening van Lonneke; schrijf geen eigen omrekening ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
 - [ ] Schrijf `ProductService.createProduct(command)`: kies de subklasse, roep `validateForListing` aan en sla op. Zonder afhaalvenster en zonder openingstijden gooit de service `DomainRuleException` ([[FTD-restpartijen-webapi-v2_2#SD-1 — Productgegevens opzoeken en restpartij plaatsen (US-01, US-02, US-10)|SD-1]])
 - [ ] Bepaal de aanbieder uit de gebruiker in het token, nooit uit de request body ([[FTD-restpartijen-webapi-v2_2#16.2 Autorisatiemodel|§16.2]])
-- [ ] Voeg de route `POST /api/v1/products` toe in `src/product/routes/ProductRoutes.kt`, binnen `authenticate`, met de rolregel `SUPPLIER` die je zelf schrijft met het mechanisme van Lonneke; lees de body met `call.receive<T>()` ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.6]])
+- [ ] Voeg de route `POST /api/v1/products` toe in `../server/src`, binnen `authenticate`, met de rolregel `SUPPLIER` die je zelf schrijft met het mechanisme van Lonneke; lees de body met `call.receive<T>()` ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.6]])
 - [ ] Schrijf de unittests voor `validateForListing`: datum in het verleden, venster na de datum, aantal 0 ([[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]])
 - [ ] Schrijf per productsoort twee unittests: precies op de grens van `maxShelfLife` toegestaan, één dag erover `DomainRuleException` met de grens in de melding ([[FTD-restpartijen-webapi-v2_2#9.10 Plausibiliteit van de houdbaarheidsdatum per productsoort|§9.10]])
 - [ ] Schrijf de integratietest: de prijs `3.49` in de request body staat na plaatsen als 349 cent in de database ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
@@ -170,17 +170,17 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 9 — US-02 Productgege
 
 ### To-do
 - [ ] Besluit welke HTTP-client je gebruikt en welk contactadres in de `User-Agent` komt; de client van Ktor sluit aan bij B-15 (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A5 HTTP-client en User-Agent voor Open Food Facts|A5]])
-- [ ] Voeg de client toe aan `module.yaml`. Neem voor de header-test ook de test-dependency voor een nep-engine mee, zoals `ktor-client-mock` (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A5 HTTP-client en User-Agent voor Open Food Facts|A5]])
+- [ ] Voeg de client toe aan `../server/module.yaml`. Neem voor de header-test ook de test-dependency voor een nep-engine mee, zoals `ktor-client-mock` (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A5 HTTP-client en User-Agent voor Open Food Facts|A5]])
       ```bash
       # After editing module.yaml: build and test to check the new dependencies resolve
       ./kotlin test
       ```
-- [ ] Maak `src/product/client/OpenFoodFactsClient.kt` met `suspend fun fetchProduct(barcode)`, die `GET https://world.openfoodfacts.org/api/v2/product/{barcode}.json` aanroept ([[FTD-restpartijen-webapi-v2_2#10.3 Integratie met Open Food Facts|§10.3]])
+- [ ] Maak `../server/src` met `suspend fun fetchProduct(barcode)`, die `GET https://world.openfoodfacts.org/api/v2/product/{barcode}.json` aanroept ([[FTD-restpartijen-webapi-v2_2#10.3 Integratie met Open Food Facts|§10.3]])
 - [ ] Zet een time-out van drie seconden; bij een time-out geeft de client een leeg resultaat ([[FTD-restpartijen-webapi-v2_2#10.3 Integratie met Open Food Facts|§10.3]])
 - [ ] Stuur bij elke aanroep de header `User-Agent` mee met applicatienaam, versie en contactadres ([[FTD-restpartijen-webapi-v2_2#5.2 US-02 — Productgegevens via barcode|§5.2]])
 - [ ] Bewaar opgehaalde gegevens per barcode in het geheugen, voor de duur van de applicatiesessie ([[FTD-restpartijen-webapi-v2_2#10.3 Integratie met Open Food Facts|§10.3]])
 - [ ] Behandel een weigering door de rate limit als "handmatige invoer nodig", niet als fout ([[FTD-restpartijen-webapi-v2_2#10.3 Integratie met Open Food Facts|§10.3]])
-- [ ] Maak `src/product/service/AllergenMapper.kt` met `fromTags(tags)`: een pure function die de tags uit de tabel in §9.8 vertaalt en een onbekende tag negeert met een logregel ([[FTD-restpartijen-webapi-v2_2#9.8 Allergenen|§9.8]])
+- [ ] Maak `../server/src` met `fromTags(tags)`: een pure function die de tags uit de tabel in §9.8 vertaalt en een onbekende tag negeert met een logregel ([[FTD-restpartijen-webapi-v2_2#9.8 Allergenen|§9.8]])
 - [ ] Schrijf `ProductService.lookupProduct(barcode)`: naam en allergenen als voorzet, `NotFoundException` bij een onbekende barcode, en een veld voor handmatige invoer bij een leeg resultaat ([[FTD-restpartijen-webapi-v2_2#5.2 US-02 — Productgegevens via barcode|§5.2]])
 - [ ] Voeg de route `GET /api/v1/products/lookup/{barcode}` toe met de rolregel `SUPPLIER` ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|§10.1]])
 - [ ] Controleer de tags met één echte aanroep vanaf je eigen machine, met een product dat allergenen heeft ([[FTD-restpartijen-webapi-v2_2#9.8 Allergenen|§9.8]])
@@ -207,7 +207,7 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 10 — US-03 Eigen aanb
 
 ### To-do
 - [ ] Besluit welke velden een aanbieder mag wijzigen en in welke status; schrijf het besluit in de PR en in §21 van het FTD (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A13 Wijzigen van een partij|A13]])
-- [ ] Maak `src/product/service/OwnershipGuard.kt`: vergelijk de aanbieder van de partij met de aanbieder van de gebruiker uit het token, en gooi anders `ForbiddenException` ([[FTD-restpartijen-webapi-v2_2#16.2 Autorisatiemodel|§16.2]])
+- [ ] Maak `../server/src`: vergelijk de aanbieder van de partij met de aanbieder van de gebruiker uit het token, en gooi anders `ForbiddenException` ([[FTD-restpartijen-webapi-v2_2#16.2 Autorisatiemodel|§16.2]])
 - [ ] Schrijf `ProductService.updateProduct`, met de eigenaarscontrole en de regels uit A13; de prijs komt in euro's binnen ([[FTD-restpartijen-webapi-v2_2#5.3 US-03 — Eigen aanbod beheren|§5.3]])
 - [ ] Voeg de route `PUT /api/v1/products/{id}` toe met de rolregel `SUPPLIER` ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|§10.1]])
 - [ ] Schrijf `ProductService.deleteProduct`: alleen `LISTED` wordt `REMOVED`; een andere status gooit `IllegalStateTransitionException` ([[FTD-restpartijen-webapi-v2_2#5.3 US-03 — Eigen aanbod beheren|§5.3]])
@@ -229,12 +229,12 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 11 — US-10 Openingsti
 - [ ] Controleer in de weekcheck dat US-10 doorgaat; vervalt de story, noteer dat dan in §21 van het FTD en sla deze fase over ([[FTD-restpartijen-webapi-v2_2#4.1 F1 — Aanbod en productdata (Eva Bouwman)|§4.1]])
 
 ### To-do
-- [ ] Maak `src/product/model/OpeningHours.kt`: een data class met `DayOfWeek`, `opensAt` en `closesAt` als `LocalTime` ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
-- [ ] Maak `src/product/repository/SupplierOpeningHoursTable.kt` voor `supplier_opening_hours`, met `supplier_id` en `day_of_week` samen als primary key, en meld hem aan in `src/Application.kt` ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
+- [ ] Maak `../server/src`: een data class met `DayOfWeek`, `opensAt` en `closesAt` als `LocalTime` ([[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]])
+- [ ] Maak `../server/src` voor `supplier_opening_hours`, met `supplier_id` en `day_of_week` samen als primary key, en meld hem aan in `../server/src` ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
 - [ ] Schrijf in de service: een sluitingstijd die niet na de openingstijd ligt, gooit `DomainRuleException` ([[FTD-restpartijen-webapi-v2_2#5.10 US-10 — Openingstijden vastleggen|§5.10]])
 - [ ] Voeg `PUT /api/v1/suppliers/{id}/opening-hours` toe met de rolregel `SUPPLIER` en `OwnershipGuard` ([[FTD-restpartijen-webapi-v2_2#5.10 US-10 — Openingstijden vastleggen|§5.10]])
 - [ ] Voeg de openbare route `GET /api/v1/suppliers/{id}/opening-hours` toe ([[FTD-restpartijen-webapi-v2_2#5.10 US-10 — Openingstijden vastleggen|§5.10]])
-- [ ] Maak `src/product/service/PickupWindowCalculator.kt` met `defaultWindow(hours, now, bestBeforeAt): PickupWindow?`, zonder repository en zonder Ktor, met de tijdzone `Europe/Amsterdam` via kotlinx-datetime ([[FTD-restpartijen-webapi-v2_2#9.9 Openingstijden en afhaalvenster|§9.9]])
+- [ ] Maak `../server/src` met `defaultWindow(hours, now, bestBeforeAt): PickupWindow?`, zonder repository en zonder Ktor, met de tijdzone `Europe/Amsterdam` via kotlinx-datetime ([[FTD-restpartijen-webapi-v2_2#9.9 Openingstijden en afhaalvenster|§9.9]])
 - [ ] Roep de calculator aan in `createProduct` als er geen afhaalvenster is opgegeven; `null` wordt `DomainRuleException` ([[FTD-restpartijen-webapi-v2_2#SD-1 — Productgegevens opzoeken en restpartij plaatsen (US-01, US-02, US-10)|SD-1]])
 - [ ] Schrijf de unittests voor de calculator: start nu als de aanbieder open is, anders het eerstvolgende openingsmoment; einde op `bestBeforeAt` als de aanbieder dan open is; een gesloten dag wordt overgeslagen; geen openingsmoment vóór de datum geeft `null` ([[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]])
 - [ ] Schrijf de unittest met het voorbeeld uit §9.9: verloopt om 15.00 uur, open tot 18.00 uur, venster eindigt om 15.00 uur ([[FTD-restpartijen-webapi-v2_2#9.9 Openingstijden en afhaalvenster|§9.9]])
@@ -251,7 +251,7 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 16 — US-07 Actuele pr
 ### To-do
 - [ ] Laat `ProductService` een `PriceProvider` krijgen via de constructor; test met een fake zolang de echte er niet is ([[FTD-restpartijen-webapi-v2_2#Bijlage A — Werken met contracten|bijlage A]])
 - [ ] Laat `getProduct` de prijsopbouw opvragen met `priceBreakdown()`; bij `null` geeft het detail status `EXPIRED` en geen prijs ([[FTD-restpartijen-webapi-v2_2#SD-3 — Productdetail met actuele prijs, polymorfe afprijzing (US-07)|SD-3]])
-- [ ] Breid `ProductResponse` in `src/product/dto/ProductResponse.kt` uit met de aanbieder, `originalPrice`, `discountPercentage` en `currentPrice`, de bedragen in euro's via de gedeelde omrekening ([[FTD-restpartijen-webapi-v2_2#5.7 US-07 — Actuele prijs zien|§5.7]])
+- [ ] Breid `ProductResponse` in `../server/src` uit met de aanbieder, `originalPrice`, `discountPercentage` en `currentPrice`, de bedragen in euro's via de gedeelde omrekening ([[FTD-restpartijen-webapi-v2_2#5.7 US-07 — Actuele prijs zien|§5.7]])
 - [ ] Schrijf de unittests met een fake `PriceProvider`: prijsvelden gevuld; bij `null` status `EXPIRED` zonder prijs ([[FTD-restpartijen-webapi-v2_2#5.7 US-07 — Actuele prijs zien|§5.7]])
 - [ ] Start na: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 16 — US-07 Actuele prijs zien|Lonneke — `PricingService` staat op `main`]]
 - [ ] Review de integratietest van TC-07 van Lonneke tegen `GET /api/v1/products/{id}` ([[FTD-restpartijen-webapi-v2_2#6. Traceability matrix|§6]])

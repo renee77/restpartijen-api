@@ -27,7 +27,7 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 0 — Voorbereiding en 
 - [ ] Lees bijlage B van het FTD: H2 ([[FTD-restpartijen-webapi-v2_2#Bijlage B — H2 wat het is en hoe wij het gebruiken|bijlage B]])
 
 ### To-do
-- [ ] Maak op een testbranch het bestand `test/RunTestCheck.kt` met één test die `import kotlinx.coroutines.test.runTest` gebruikt en `runTest { }` aanroept ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
+- [ ] Maak op een testbranch het bestand `../server/test` met één test die `import kotlinx.coroutines.test.runTest` gebruikt en `runTest { }` aanroept ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
 - [ ] Draai de testen ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
       ```bash
       # Compile and run all tests, including the check file
@@ -35,7 +35,7 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 0 — Voorbereiding en 
       ```
       Verwacht: groen als `runTest` beschikbaar is; anders een fout "Unresolved reference".
       Als het misgaat: `runTest` is niet beschikbaar. Noteer dat en stel voor `org.jetbrains.kotlinx:kotlinx-coroutines-test` toe te voegen onder `test-dependencies`; dat besluit neemt de groep.
-- [ ] Noteer de uitkomst in het AI-logboek en verwijder `test/RunTestCheck.kt` en de testbranch ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
+- [ ] Noteer de uitkomst in het AI-logboek en verwijder `../server/test` en de testbranch ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
 
 ## Fase 4 — GI-2 Applicatie-opzet
 
@@ -50,19 +50,19 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 4 — GI-2 Applicatie-o
 
 ### To-do
 - [ ] Maak `libs.versions.toml` in de projectroot en zet daarin Exposed 1.5.0, H2 2.4.240 en MockK 1.14.11 ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2 besluit 2.6]])
-- [ ] Vervang in `module.yaml` de coördinaten van die drie door `$libs.<key>`; de Ktor-artefacten houden geen versie, die komt van `settings.ktor` ([[FTD-restpartijen-webapi-v2_2#16.6 Afhankelijkheden|§16.6]])
-- [ ] Voeg in `module.yaml` onder `settings.kotlin` de regel `allWarningsAsErrors: true` toe ([[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|NFR-05]])
-- [ ] Controleer dat de instelling werkt: zet tijdelijk `val unused = 1` in een function in `src/Application.kt` en draai `./kotlin test` ([[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|NFR-05]])
+- [ ] Vervang in `../server/module.yaml` de coördinaten van die drie door `$libs.<key>`; de Ktor-artefacten houden geen versie, die komt van `settings.ktor` ([[FTD-restpartijen-webapi-v2_2#16.6 Afhankelijkheden|§16.6]])
+- [ ] Voeg in `../server/module.yaml` onder `settings.kotlin` de regel `allWarningsAsErrors: true` toe ([[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|NFR-05]])
+- [ ] Controleer dat de instelling werkt: zet tijdelijk `val unused = 1` in een function in `../server/src` en draai `./kotlin test` ([[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|NFR-05]])
       Verwacht: de build faalt op een warning. Haal de regel weg en draai opnieuw: groen.
-- [ ] Voeg de dependencies `io.ktor:ktor-server-di`, `io.ktor:ktor-server-cors` en `io.ktor:ktor-server-call-logging` toe aan `module.yaml` ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
+- [ ] Voeg de dependencies `io.ktor:ktor-server-di`, `io.ktor:ktor-server-cors` en `io.ktor:ktor-server-call-logging` toe aan `../server/module.yaml` ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
 - [ ] Registreer in `Application.module()` de repository en de service van de walking skeleton via de DI-plugin, in plaats van ze met de hand aan te maken ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2 besluit 2.1]])
 - [ ] Laat elke feature aanhaken met één regel `configure…Routing()` in `Application.module()` ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2 besluit 2.2]])
 - [ ] Schrijf een integratietest die in `testApplication` de repository van F1 vervangt door een fake, zonder productiecode te wijzigen ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2]])
-- [ ] Maak `src/plugins/Cors.kt` en installeer `CORS` ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
-- [ ] Maak `src/plugins/Logging.kt` en installeer `CallLogging` ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
+- [ ] Maak `../server/src` en installeer `CORS` ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
+- [ ] Maak `../server/src` en installeer `CallLogging` ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
 - [ ] Spreek met Lonneke de naam van de omgevingsvariabele voor het JWT-secret af ([[FTD-restpartijen-webapi-v2_2#16.4 Secrets|§16.4]])
-- [ ] Zet in `resources/application.yaml` een placeholder voor het secret die naar die omgevingsvariabele verwijst ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2 besluit 2.3]])
-- [ ] Maak in `src/config/` een klasse die het secret uit de configuratie leest; lees alleen in, bouw geen tokens ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.9]])
+- [ ] Zet in `../server/resources` een placeholder voor het secret die naar die omgevingsvariabele verwijst ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2 besluit 2.3]])
+- [ ] Maak in `../server/src` een klasse die het secret uit de configuratie leest; lees alleen in, bouw geen tokens ([[FTD-restpartijen-webapi-v2_2#GI-3 Authenticatie en rollen — uitvoering Lonneke|GI-3 besluit 3.9]])
 - [ ] Maak `.env.example` in de projectroot met de naam van de variabele en zonder waarde ([[FTD-restpartijen-webapi-v2_2#16.4 Secrets|§16.4]])
 - [ ] Besluit met Lonneke hoe starten zonder handmatige stappen samengaat met het secret, en noteer het in §21 van het FTD ([[FTD-restpartijen-webapi-v2_2#21. Open punten|§21]])
 - [ ] Werk `README.md` bij: verwijs naar FTD v2_2 en noem de omgevingsvariabele (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A9 Repository wijkt af van het FTD|A9]])
@@ -92,15 +92,15 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 6 — GI-4 Foutafhandel
       ```
 
 ### To-do
-- [ ] Voeg `io.ktor:ktor-server-status-pages` en `io.ktor:ktor-server-request-validation` toe aan `module.yaml` ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
-- [ ] Maak `src/shared/ErrorResponse.kt`: een `@Serializable` data class met `code`, `message` en `field` (nullable). Dit is een wijziging in `shared`, dus twee reviews ([[FTD-restpartijen-webapi-v2_2#12.2 Wat bewust gedeeld blijft|§12.2]])
-- [ ] Maak `src/plugins/StatusPagesConfig.kt` met per exceptie uit §10.2 een eigen regel `exception<…> { … }` die de statuscode en een `ErrorResponse` stuurt ([[FTD-restpartijen-webapi-v2_2#GI-4 Foutafhandeling — uitvoering Stefan|GI-4 besluit 4.1]])
+- [ ] Voeg `io.ktor:ktor-server-status-pages` en `io.ktor:ktor-server-request-validation` toe aan `../server/module.yaml` ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
+- [ ] Maak `../server/src`: een `@Serializable` data class met `code`, `message` en `field` (nullable). Dit is een wijziging in `shared`, dus twee reviews ([[FTD-restpartijen-webapi-v2_2#12.2 Wat bewust gedeeld blijft|§12.2]])
+- [ ] Maak `../server/src` met per exceptie uit §10.2 een eigen regel `exception<…> { … }` die de statuscode en een `ErrorResponse` stuurt ([[FTD-restpartijen-webapi-v2_2#GI-4 Foutafhandeling — uitvoering Stefan|GI-4 besluit 4.1]])
 - [ ] Voeg een regel toe voor Ktor's `BadRequestException`, zodat een body die niet te deserialiseren is `400` geeft in dezelfde vorm ([[FTD-restpartijen-webapi-v2_2#10.2 Validatie en foutafhandeling|§10.2]])
 - [ ] Voeg als laatste een regel toe voor `Throwable`: `500` met een algemene melding, en de stacktrace alleen in de log ([[FTD-restpartijen-webapi-v2_2#GI-4 Foutafhandeling — uitvoering Stefan|GI-4 besluit 4.4]])
 - [ ] Voeg de exceptie uit het besluit over A7 toe, als de groep daarvoor kiest (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A7 Exceptie voor 409 bij een bestaand e-mailadres|A7]])
-- [ ] Maak `src/plugins/RequestValidation.kt` en installeer `RequestValidation` ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
+- [ ] Maak `../server/src` en installeer `RequestValidation` ([[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden|ADR-05]])
 - [ ] Roep beide aan in `Application.module()`, vóór de routing ([[FTD-restpartijen-webapi-v2_2#GI-2 Applicatie-opzet — uitvoering Stefan|GI-2 besluit 2.2]])
-- [ ] Schrijf in `test/plugins/StatusPagesTest.kt` per statuscode een integratietest met een testroute die de exceptie gooit; controleer ook de velden van het foutantwoord ([[FTD-restpartijen-webapi-v2_2#GI-4 Foutafhandeling — uitvoering Stefan|GI-4]])
+- [ ] Schrijf in `../server/test` per statuscode een integratietest met een testroute die de exceptie gooit; controleer ook de velden van het foutantwoord ([[FTD-restpartijen-webapi-v2_2#GI-4 Foutafhandeling — uitvoering Stefan|GI-4]])
 - [ ] Schrijf de test voor de onverwachte exceptie: `500`, en de body bevat geen `at com.` of `Exception` ([[FTD-restpartijen-webapi-v2_2#GI-4 Foutafhandeling — uitvoering Stefan|GI-4]])
 - [ ] Open de PR naar `main` en vraag Eva en Lonneke als reviewer ([[FTD-restpartijen-webapi-v2_2#GI-5 Gedeelde domeinkern — geen eigenaar, PR met review door alle drie|GI-5]])
 - [ ] Laat Eva weten dat `StatusPages` op `main` staat ([[FTD-restpartijen-webapi-v2_2#10.2 Validatie en foutafhandeling|§10.2]])
@@ -117,16 +117,16 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 12 — US-04 Aanbod zoe
       ```
 
 ### To-do
-- [ ] Maak in `test/reservation/` een `FakeProductReader` en een `FakePriceProvider`, elk met een `MutableList` of vaste antwoorden ([[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6 besluit 6.4]])
-- [ ] Maak `src/reservation/model/SearchCriteria.kt`: een data class met `category`, `maxPrice` en `minShelfLifeHours`, alle drie optioneel met een default ([[FTD-restpartijen-webapi-v2_2#11.2 Stefan Pellikaan — F2 Zoeken en reserveren|§11.2]])
+- [ ] Maak in `../server/test` een `FakeProductReader` en een `FakePriceProvider`, elk met een `MutableList` of vaste antwoorden ([[FTD-restpartijen-webapi-v2_2#GI-6 Testopzet — uitvoering gezamenlijk in de startsessie|GI-6 besluit 6.4]])
+- [ ] Maak `../server/src`: een data class met `category`, `maxPrice` en `minShelfLifeHours`, alle drie optioneel met een default ([[FTD-restpartijen-webapi-v2_2#11.2 Stefan Pellikaan — F2 Zoeken en reserveren|§11.2]])
 - [ ] Lees in de route `category` in; een waarde buiten `ProductCategory` geeft `ValidationException` met `ProductCategory.entries` in de melding ([[FTD-restpartijen-webapi-v2_2#5.4 US-04 — Aanbod zoeken en filteren|§5.4]])
 - [ ] Reken `maxPrice` van euro's om naar `Money` met de gedeelde omrekening ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|B-25]])
-- [ ] Maak `src/reservation/service/ProductSearchService.kt` met `ProductReader`, `PriceProvider` en `Clock` in de constructor ([[FTD-restpartijen-webapi-v2_2#SD-2 — Zoeken en reserveren met autorisatie (US-04, US-05)|SD-2]])
+- [ ] Maak `../server/src` met `ProductReader`, `PriceProvider` en `Clock` in de constructor ([[FTD-restpartijen-webapi-v2_2#SD-2 — Zoeken en reserveren met autorisatie (US-04, US-05)|SD-2]])
 - [ ] Schrijf `search(criteria)`: haal `findAvailable(clock.now())` op, vraag per partij `priceBreakdown()` op en laat partijen met `null` weg ([[FTD-restpartijen-webapi-v2_2#SD-2 — Zoeken en reserveren met autorisatie (US-04, US-05)|SD-2]])
 - [ ] Filter met predicaten van het type `(ProductView) -> Boolean`, vergelijk `maxPrice` met de actuele prijs, en sorteer oplopend op `shelfLifeRemaining(clock)` ([[FTD-restpartijen-webapi-v2_2#5.4 US-04 — Aanbod zoeken en filteren|§5.4]])
 - [ ] Besluit hoe `Page<T>` in het zoekresultaat past en bouw hem (aanvulling, [[FTD-restpartijen-webapi-v2_2-tasks#A14 Paginering met Page|A14]])
-- [ ] Maak in `src/reservation/dto/` het antwoord per partij: naam en coördinaten van de aanbieder, en `originalPrice`, `discountPercentage` en `currentPrice` in euro's ([[FTD-restpartijen-webapi-v2_2#5.4 US-04 — Aanbod zoeken en filteren|§5.4]])
-- [ ] Voeg de openbare route `GET /api/v1/products` toe in `src/reservation/routes/` ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|§10.1]])
+- [ ] Maak in `../server/src` het antwoord per partij: naam en coördinaten van de aanbieder, en `originalPrice`, `discountPercentage` en `currentPrice` in euro's ([[FTD-restpartijen-webapi-v2_2#5.4 US-04 — Aanbod zoeken en filteren|§5.4]])
+- [ ] Voeg de openbare route `GET /api/v1/products` toe in `../server/src` ([[FTD-restpartijen-webapi-v2_2#10.1 Endpoints|§10.1]])
 - [ ] Schrijf de unittests met de fakes: filter op categorie (TC-04), maximumprijs op de afgeprijsde prijs, combinatie werkt als EN, `minShelfLifeHours`, sortering ([[FTD-restpartijen-webapi-v2_2#11.2 Stefan Pellikaan — F2 Zoeken en reserveren|§11.2]])
 - [ ] Schrijf de unittest: een partij die nog `LISTED` is maar over de datum, komt niet in het resultaat ([[FTD-restpartijen-webapi-v2_2#11.2 Stefan Pellikaan — F2 Zoeken en reserveren|§11.2]])
 - [ ] Schrijf de unittest: een fake `PriceProvider` die `null` geeft, laat die partij wegvallen ([[FTD-restpartijen-webapi-v2_2#SD-2 — Zoeken en reserveren met autorisatie (US-04, US-05)|SD-2]])
@@ -143,10 +143,10 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 13 — US-05 Partij res
 - [ ] Start na: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 7 — K-1 en K-6 Contracten van F1 geleverd|Eva — de contracten van F1 staan op `main`]]
 
 ### To-do
-- [ ] Maak `src/reservation/model/ReservationStatus.kt` (`ACTIVE`, `COLLECTED`, `CANCELLED`, `LAPSED`) en `ReservationEvent.kt` (`RESERVE`, `COLLECT`, `CANCEL`, `LAPSE`) ([[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]])
-- [ ] Maak `src/reservation/service/ReservationStateMachine.kt` met `transition(ProductStatus, ReservationEvent)` en `allowedEvents(ProductStatus)`, precies volgens de tabel in §9.5; elke andere combinatie gooit `IllegalStateTransitionException` ([[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]])
-- [ ] Maak `src/reservation/repository/ReservationsTable.kt` met de kolommen van `RESERVATIONS` uit het ERD, en meld hem aan in `src/Application.kt` ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
-- [ ] Maak `src/reservation/model/Reservation.kt` en `ReservationRepository`, die `Repository<Reservation>` implementeert ([[FTD-restpartijen-webapi-v2_2#11.2 Stefan Pellikaan — F2 Zoeken en reserveren|§11.2]])
+- [ ] Maak `../server/src` (`ACTIVE`, `COLLECTED`, `CANCELLED`, `LAPSED`) en `ReservationEvent.kt` (`RESERVE`, `COLLECT`, `CANCEL`, `LAPSE`) ([[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]])
+- [ ] Maak `../server/src` met `transition(ProductStatus, ReservationEvent)` en `allowedEvents(ProductStatus)`, precies volgens de tabel in §9.5; elke andere combinatie gooit `IllegalStateTransitionException` ([[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|§9.5]])
+- [ ] Maak `../server/src` met de kolommen van `RESERVATIONS` uit het ERD, en meld hem aan in `../server/src` ([[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]])
+- [ ] Maak `../server/src` en `ReservationRepository`, die `Repository<Reservation>` implementeert ([[FTD-restpartijen-webapi-v2_2#11.2 Stefan Pellikaan — F2 Zoeken en reserveren|§11.2]])
 - [ ] Schrijf `ReservationService.reserve(productId, collectorId)` in deze volgorde: niet gevonden of `REMOVED` → `NotFoundException`; niet `LISTED` of over de datum → `IllegalStateTransitionException`; venster voorbij → `DomainRuleException` ([[FTD-restpartijen-webapi-v2_2#SD-2 — Zoeken en reserveren met autorisatie (US-04, US-05)|SD-2]])
 - [ ] Laat de controle op `REMOVED` vóór de controle op `LISTED` staan, zodat een verwijderde partij `404` geeft ([[FTD-restpartijen-webapi-v2_2#9.5 Statusmachine|B-32]])
 - [ ] Vraag daarna de overgang aan de statusmachine, de prijs via `currentPrice()`, en roep `markReserved` aan; `false` wordt `IllegalStateTransitionException` ([[FTD-restpartijen-webapi-v2_2#SD-2 — Zoeken en reserveren met autorisatie (US-04, US-05)|SD-2]])
@@ -197,9 +197,9 @@ Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 15 — US-11 Ophalen be
 Status en DoD: [[FTD-restpartijen-webapi-v2_2-tasks#Fase 17 — US-08 Automatische statusbewaking|algemene lijst]]
 
 ### To-do
-- [ ] Maak `src/reservation/service/ExposedReservationMaintenance.kt`, die `ReservationMaintenance` implementeert ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] Maak `../server/src`, die `ReservationMaintenance` implementeert ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] Schrijf `lapseOverdue(now)`: zoek de actieve reserveringen waarvan het venster voorbij is of die 24 uur oud zijn, zet ze via `LAPSE` op `LAPSED`, roep per partij `markListed` aan en geef het aantal terug ([[FTD-restpartijen-webapi-v2_2#SD-4 — Automatische statusbewaking (US-08)|SD-4]])
-- [ ] Registreer de implementatie in DI, in `src/Application.kt` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
+- [ ] Registreer de implementatie in DI, in `../server/src` ([[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|§12.1]])
 - [ ] Schrijf de unittests: een reservering ouder dan 24 uur vervalt ook binnen het venster; een reservering na het venster vervalt; een reservering binnen beide grenzen blijft `ACTIVE` ([[FTD-restpartijen-webapi-v2_2#11.2 Stefan Pellikaan — F2 Zoeken en reserveren|§11.2]])
 - [ ] Open de PR en laat Lonneke weten dat `lapseOverdue` op `main` staat ([[FTD-restpartijen-webapi-v2_2#Bijlage A — Werken met contracten|bijlage A]])
 
