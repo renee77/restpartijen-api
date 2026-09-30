@@ -22,6 +22,11 @@ dependencies:
   - org.jetbrains.exposed:exposed-jdbc:1.5.0
   - org.jetbrains.exposed:exposed-kotlin-datetime:1.5.0
   - com.h2database:h2:2.4.240
+  ############ Security dependencies ############
+  - io.ktor:ktor-server-auth
+  - io.ktor:ktor-server-auth-jwt
+  # BCrypt library. Chosen because it is a well-known and widely used library for password hashing in Java/Kotlin applications.
+  - at.favre.lib:bcrypt:0.10.2
 
 test-dependencies:
   - io.ktor:ktor-server-test-host
