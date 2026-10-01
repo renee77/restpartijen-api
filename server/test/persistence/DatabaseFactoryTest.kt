@@ -2,7 +2,6 @@ package com.restpartijen.api.persistence
 
 import com.restpartijen.api.config.DatabaseSettings
 import com.restpartijen.api.config.DbMode
-import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -12,13 +11,6 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-
-// Minimal table for these tests, so persistence is tested without depending on a feature.
-private object TestTable : Table("test_rows") {
-    val id = long("id").autoIncrement()
-    val text = varchar("text", length = 50)
-    override val primaryKey = PrimaryKey(id)
-}
 
 class DatabaseFactoryTest {
 
