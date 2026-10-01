@@ -4,7 +4,6 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.SignatureVerificationException
 import com.auth0.jwt.exceptions.TokenExpiredException
-import com.restpartijen.api.security.service.JWTSettings
 import com.restpartijen.api.shared.Role
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -42,8 +41,8 @@ class TestTokensTest {
         )
         val decoded = JWT.decode(token)
         // Assert. Verify that the decoded token contains the expected userId and role.
-        // Subject is the default location of an id within a JWT token, and the role is stored as a claim.
-        assertEquals("1", decoded.subject)
+        // Both are located within claims.
+        assertEquals(1L, decoded.getClaim("userId").asLong())
         assertEquals(Role.COLLECTOR.name, decoded.getClaim("role").asString())
     }
 

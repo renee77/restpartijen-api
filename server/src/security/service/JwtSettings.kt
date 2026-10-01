@@ -6,7 +6,7 @@ import kotlin.time.Duration.Companion.hours
 /**
  * JWT settings. Within production, it is filled with values from config, in tests it is filled with fixed test values
 */
-data class JWTSettings(
+data class JwtSettings(
     val secret: String,
     val issuer: String,
     val audience: String,

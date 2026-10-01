@@ -2,7 +2,7 @@ package com.restpartijen.api.security
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import com.restpartijen.api.security.service.JWTSettings
+import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import kotlin.time.Clock
@@ -12,7 +12,7 @@ import java.util.Date
 /** Creating an object with default JWT settings for testing purposes, so I can test tokens without having to provide settings every time.
 */
 object TestJwtSettings {
-    val default = JWTSettings(
+    val default = JwtSettings(
         secret = "test-secret",
         issuer = "test-issuer",
         audience = "test-audience"
@@ -26,7 +26,7 @@ class TestTokens {
     fun createTestToken(
         userId: Long,
         role: Role,
-        settings: JWTSettings = TestJwtSettings.default,
+        settings: JwtSettings = TestJwtSettings.default,
         clock: Clock = defaultClock,
     ): String {
         val now = clock.now()
@@ -36,7 +36,7 @@ class TestTokens {
         return JWT.create()
             .withIssuer(settings.issuer)
             .withAudience(settings.audience)
-            .withSubject(userId.toString())
+            .withClaim("userId", userId)
             .withClaim("role", role.name)
             .withIssuedAt(Date(now.toEpochMilliseconds()))
             .withExpiresAt(Date((now + settings.validity).toEpochMilliseconds()))
