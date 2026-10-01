@@ -5,6 +5,7 @@ import com.restpartijen.api.security.service.PROVIDER_NAME
 import com.restpartijen.api.security.service.configureSecurity
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.shared.UnauthorizedException
+import com.restpartijen.api.shared.ForbiddenException
 import com.restpartijen.api.testsupport.FixedClock
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
@@ -36,6 +37,9 @@ class SecurityTest {
             exception<Throwable> { call, cause ->
                 cause.printStackTrace()
                 call.respond(HttpStatusCode.InternalServerError)
+            }
+            exception<ForbiddenException> { call, _ ->
+                call.respond(HttpStatusCode.Forbidden)
             }
         }
     }

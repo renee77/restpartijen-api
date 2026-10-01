@@ -3,7 +3,6 @@ package com.restpartijen.api.security.service
 import com.restpartijen.api.shared.ForbiddenException
 import com.restpartijen.api.shared.Role
 import io.ktor.server.application.createRouteScopedPlugin
-import io.ktor.server.application.install
 import io.ktor.server.auth.AuthenticationChecked
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
@@ -19,7 +18,7 @@ class RoleCheckConfig {
 private val RoleCheck = createRouteScopedPlugin("RoleCheck", ::RoleCheckConfig) {
     val allowedRoles = pluginConfig.roles
     require(allowedRoles.isNotEmpty()) { "requireRole needs at least one role" }
-
+    // The plugin runs after authentication, so the principal is available. It checks the role claim in the JWT and compares it to the allowed roles.
     on(AuthenticationChecked) { call ->
         // No principal means authentication failed; the challenge already answers that with a 401.
         val principal = call.principal<JWTPrincipal>() ?: return@on
