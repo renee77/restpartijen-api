@@ -19,15 +19,17 @@ object TestJwtSettings {
     )
 }
 
+object TestClock {
+    val fixed = FixedClock(Instant.parse("2026-09-26T12:00:00Z"))
+}
 /** A helper class to create test tokens for testing purposes. It uses the default JWT settings and a fixed clock to ensure consistent token generation.
  */
 class TestTokens {
-    private val defaultClock = FixedClock(Instant.parse("2026-09-26T12:00:00Z"))
     fun createTestToken(
         userId: Long,
         role: Role,
         settings: JwtSettings = TestJwtSettings.default,
-        clock: Clock = defaultClock,
+        clock: Clock = TestClock.fixed,
     ): String {
         val now = clock.now()
 

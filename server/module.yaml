@@ -31,3 +31,4 @@ dependencies:
 test-dependencies:
   - io.ktor:ktor-server-test-host
   - io.mockk:mockk:1.14.11
+  - io.ktor:ktor-server-status-pages:3.6.0
