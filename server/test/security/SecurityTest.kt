@@ -1,8 +1,5 @@
 package com.restpartijen.api.security
 
-import com.restpartijen.api.security.service.JwtConfig
-import com.restpartijen.api.security.service.PROVIDER_NAME
-import com.restpartijen.api.security.service.configureSecurity
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.shared.UnauthorizedException
 import com.restpartijen.api.shared.ForbiddenException
@@ -23,6 +20,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import com.restpartijen.api.security.service.*
+import io.ktor.client.statement.bodyAsText
 
 class SecurityTest {
     private val jwtConfig = JwtConfig(TestJwtSettings.default, TestClock.fixed)
@@ -52,6 +51,19 @@ class SecurityTest {
         routing {
             authenticate(PROVIDER_NAME) {
                 get("/test/protected") { call.respondText("ok") }
+            }
+
+            // A route that requires a specific role (COLLECTOR) for testing the role-based access control.
+            requireRole(Role.COLLECTOR) {
+                get("/test/role-protected-collector") { call.respondText("ok") }
+            }
+
+            // A route that can have a current user with any role, for testing purposes.
+            authenticate(PROVIDER_NAME) {
+                get("/test/current-user") {
+                    val currentUser = call.currentUser()
+                    call.respondText("ok, role: ${currentUser.role} and id: ${currentUser.id}")
+                }
             }
         }
     }
@@ -122,5 +134,74 @@ class SecurityTest {
 
         // Assert: the response status should be 401 Unauthorized, indicating that the token's role is not valid
         assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+
+    // Happy path -> Admin get access to the admin only route.
+    @Test
+    fun `token with valid role for route gets access`() = testApplication {
+        // Arrange: Set up the test application with security and a role-protected route
+        application { setUpTestApp() }
+
+        val token = TestTokens().createTestToken(
+            userId = 1L,
+            role = Role.COLLECTOR,
+            clock = Clock.System
+        )
+
+        // Act: Make a GET request to the role-protected route with a valid token that has the required role
+        val response = client.get("/test/role-protected-collector") {
+            bearerAuth(token)
+        }
+
+        // Assert. Verify that the decoded token contains the expected userId and role.
+        assertEquals(HttpStatusCode.OK, response.status)
+    }
+
+    // Sad path -> User with a role that is not allowed for the route should get a 403 Forbidden response.
+    @Test
+    fun `token with invalid role for route gets a 403`() = testApplication {
+        // Arrange: Set up the test application with security and a role-protected route
+        application { setUpTestApp() }
+
+        val token = TestTokens().createTestToken(
+            userId = 1L,
+            role = Role.ADMIN,
+            clock = Clock.System
+        )
+
+        // Act: Make a GET request to the role-protected route with a valid token that has the required role
+        val response = client.get("/test/role-protected-collector") {
+            bearerAuth(token)
+        }
+
+        // Assert. Verify that the decoded token contains the expected userId and role.
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+    }
+
+
+    // Happy path -> Current user information can be retrieved from a valid token.
+    @Test
+    fun `current user information can be retrieved from a valid token`() = testApplication {
+        // Arrange: Set up the test application with security and a route to retrieve user information
+        application { setUpTestApp() }
+
+        val token = TestTokens().createTestToken(
+            userId = 42L,
+            role = Role.SUPPLIER,
+            clock = Clock.System
+        )
+
+        // Act: Make a GET request to the user information route with a valid token
+        val response = client.get("/test/current-user") {
+            bearerAuth(token)
+        }
+
+        // Retrieve the response body as text to verify the user information
+        val responseBody = response.bodyAsText()
+
+        // Assert. Verify that the response contains the expected user information.
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("ok, role: SUPPLIER and id: 42", responseBody)
     }
 }
