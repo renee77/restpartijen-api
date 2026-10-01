@@ -26,7 +26,8 @@ dependencies:
   - io.ktor:ktor-server-auth
   - io.ktor:ktor-server-auth-jwt
   # Library. Chosen because it is a well-known and widely used library for password hashing in Java/Kotlin applications.
-
+  - org.springframework.security:spring-security-crypto:7.1.1
+  - org.bouncycastle:bcprov-jdk18on:1.86
 
 test-dependencies:
   - io.ktor:ktor-server-test-host
