@@ -6,11 +6,17 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import com.restpartijen.api.product.repository.ProductsTable
+import com.restpartijen.api.config.DatabaseSettings
+import com.restpartijen.api.config.DbMode
 
 object DatabaseFactory {
-    fun init() {
+    fun init(settings: DatabaseSettings) {
+        val url = when (settings.mode) {
+            DbMode.MEMORY -> "jdbc:h2:mem:restpartijen;DB_CLOSE_DELAY=-1"
+            DbMode.FILE -> "jdbc:h2:file:${settings.filePath}"
+        }
         Database.connect(
-            url = "jdbc:h2:mem:restpartijen;DB_CLOSE_DELAY=-1",
+            url = url,
             driver = "org.h2.Driver"
         )
         transaction {
