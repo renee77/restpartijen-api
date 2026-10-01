@@ -8,6 +8,7 @@ import com.restpartijen.api.security.service.JWTSettings
 import com.restpartijen.api.shared.Role
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import com.restpartijen.api.testsupport.FixedClock
 import kotlin.time.Instant
 import kotlin.time.Duration
@@ -68,5 +69,35 @@ class TestTokensTest {
 
         // Assert
         assertEquals(Duration.parse("24h"), validity)
+    }
+
+    // Sad path. The token is signed with another secret, so it should fail verification and throw a SignatureVerificationException.
+    @Test
+    fun `token signed with another secret fails` () {
+        // Arange. Create a test token with the default settings and clock.
+        val token = TestTokens().createTestToken(
+            userId = 1L,
+            role = Role.COLLECTOR
+        )
+        // Act. We define the other secret.
+        val otherSecret = "other-secret"
+
+        // Assert.We expect it will throw a SignatureVerificationException, because the token was signed with a different secret.
+        assertFailsWith<SignatureVerificationException> { verifyToken(token, otherSecret) }
+    }
+
+    // Sad path. The token is expired, so it should fail verification and throw a TokenExpiredException.
+    @Test
+    fun `token is expired and rejected` () {
+        // Arrange. Create the clock with a time in the past, so the token will be expired when we verify it.
+        val pastClock = FixedClock(Instant.parse("2026-09-25T12:00:00Z")) // 24 hours in the past
+        val testToken = TestTokens().createTestToken(
+            userId = 1L,
+            role = Role.COLLECTOR,
+            settings = testSettings,
+            clock = pastClock
+        )
+        // Act and Assert. We expect it will throw a TokenExpiredException, because the token was created with a past expiration time.
+        assertFailsWith<TokenExpiredException> { verifyToken(testToken, testSettings.secret) }
     }
 }
