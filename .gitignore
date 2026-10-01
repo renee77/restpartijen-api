@@ -4,3 +4,6 @@ build/
 .kotlin/
 *.mv.db
 .env
+# H2 database in file mode (DB_MODE=file), local only.
+# TODO (Eva): check with Stefan on Saturday; he planned to add this too.
+data/
