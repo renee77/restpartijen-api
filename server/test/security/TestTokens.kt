@@ -11,7 +11,7 @@ import java.util.Date
 
 /** Creating an object with default JWT settings for testing purposes, so I can test tokens without having to provide settings every time.
 */
-object testJwtSettings {
+object TestJwtSettings {
     val default = JWTSettings(
         secret = "test-secret",
         issuer = "test-issuer",
@@ -26,7 +26,7 @@ class TestTokens {
     fun createTestToken(
         userId: Long,
         role: Role,
-        settings: JWTSettings = testJwtSettings.default,
+        settings: JWTSettings = TestJwtSettings.default,
         clock: Clock = defaultClock,
     ): String {
         val now = clock.now()
@@ -40,6 +40,7 @@ class TestTokens {
             .withClaim("role", role.name)
             .withIssuedAt(Date(now.toEpochMilliseconds()))
             .withExpiresAt(Date((now + settings.validity).toEpochMilliseconds()))
+            // Sign the token with the HMAC256 algorithm using the secret from the settings.
             .sign(Algorithm.HMAC256(settings.secret))
     }
 }
