@@ -1,10 +1,12 @@
 package com.restpartijen.api
 
+import com.restpartijen.api.config.databaseSettings
 import com.restpartijen.api.plugins.configureSerialization
 import io.ktor.server.application.Application
 import io.ktor.server.netty.EngineMain
 import com.restpartijen.api.persistence.DatabaseFactory
 import com.restpartijen.api.product.repository.ExposedProductRepository
+import com.restpartijen.api.product.repository.ProductsTable
 import com.restpartijen.api.product.routes.configureProductRouting
 import com.restpartijen.api.product.service.ProductService
 
@@ -24,7 +26,7 @@ fun main(args: Array<String>) {
  */
 fun Application.module() {
     configureSerialization()
-    DatabaseFactory.init()
+    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable)
     val exposedProductRepository = ExposedProductRepository()
     val productService = ProductService(exposedProductRepository)
     configureProductRouting(productService)
