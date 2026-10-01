@@ -24,7 +24,7 @@ fun Application.configureSecurity(jwtConfig: JwtConfig) {
                 val role = payload.getClaim("role").asString()
 
                 // Check if the userId is not null and the role is a valid Role enum entry. If so, return a JWTPrincipal with the payload; otherwise, return null to indicate invalid credentials.
-                if (userId != null && (role != null && Role.entries.any { it.name == role })) {
+                if (userId != null && role != null && Role.entries.any { it.name == role }) {
                     JWTPrincipal(payload)
                 } else {
                     null

@@ -5,12 +5,13 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
+import java.util.Date
 import kotlin.time.Clock
 import kotlin.time.Instant
-import java.util.Date
 
-/** Creating an object with default JWT settings for testing purposes, so I can test tokens without having to provide settings every time.
-*/
+/**
+ * Default JWT settings for tests, so tokens can be created without providing settings every time.
+ */
 object TestJwtSettings {
     val default = JwtSettings(
         secret = "test-secret",
@@ -19,27 +20,42 @@ object TestJwtSettings {
     )
 }
 
+/** One fixed moment, shared by the token helper and the JwtConfig in tests. */
 object TestClock {
     val fixed = FixedClock(Instant.parse("2026-09-26T12:00:00Z"))
 }
-/** A helper class to create test tokens for testing purposes. It uses the default JWT settings and a fixed clock to ensure consistent token generation.
+
+/**
+ * Helper class to create test tokens. It uses the default JWT settings and a fixed clock,
+ * so token generation is consistent.
  */
 class TestTokens {
+
+    /** Creates a valid test token for the given user and role. */
     fun createTestToken(
         userId: Long,
         role: Role,
         settings: JwtSettings = TestJwtSettings.default,
-        clock: Clock = TestClock.fixed,
+        clock: Clock = TestClock.fixed
+    ): String = createTestTokenWithRoleName(userId, role.name, settings, clock)
+
+    /**
+     * Creates a token with any text as role, for testing roles that are not in Role.
+     * Everything else is identical to a valid token.
+     */
+    fun createTestTokenWithRoleName(
+        userId: Long,
+        roleName: String,
+        settings: JwtSettings = TestJwtSettings.default,
+        clock: Clock = TestClock.fixed
     ): String {
         val now = clock.now()
 
-        /** Create a JWT token with the provided userId, role, and settings. The token will have an issuedAt and expiresAt claim based on the current time from the clock.
-         */
         return JWT.create()
             .withIssuer(settings.issuer)
             .withAudience(settings.audience)
             .withClaim("userId", userId)
-            .withClaim("role", role.name)
+            .withClaim("role", roleName)
             .withIssuedAt(Date(now.toEpochMilliseconds()))
             .withExpiresAt(Date((now + settings.validity).toEpochMilliseconds()))
             // Sign the token with the HMAC256 algorithm using the secret from the settings.

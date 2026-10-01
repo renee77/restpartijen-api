@@ -25,8 +25,8 @@ dependencies:
   ############ Security dependencies ############
   - io.ktor:ktor-server-auth
   - io.ktor:ktor-server-auth-jwt
-  # BCrypt library. Chosen because it is a well-known and widely used library for password hashing in Java/Kotlin applications.
-  - at.favre.lib:bcrypt:0.10.2
+  # Library. Chosen because it is a well-known and widely used library for password hashing in Java/Kotlin applications.
+
 
 test-dependencies:
   - io.ktor:ktor-server-test-host
