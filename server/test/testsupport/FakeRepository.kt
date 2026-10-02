@@ -35,5 +35,5 @@ class FakeRepository<T>(
         return true
     }
 
-    override suspend fun delete(id: Long): Boolean = items.removeIf { idOf(it) == id }
+    override suspend fun delete(id: Long): Boolean = items.removeAll { idOf(it) == id }
 }

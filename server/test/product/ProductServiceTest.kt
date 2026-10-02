@@ -2,14 +2,14 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.product.service.ProductService
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-
 class ProductServiceTest {
     @Test
-    fun `getProduct returns the product when the id exists`() {
+    fun `getProduct returns the product when the id exists`() = runTest {
         // Arrange
         val repository = FakeProductRepository(
             listOf(Product(id = 1, name = "Volkoren brood", category = "FRESH")),
@@ -22,7 +22,7 @@ class ProductServiceTest {
     }
 
     @Test
-    fun `getProduct returns null when the id does not exist`() {
+    fun `getProduct returns null when the id does not exist`() = runTest {
         // Arrange
         val service = ProductService(FakeProductRepository(emptyList()))
         // Act
@@ -31,5 +31,3 @@ class ProductServiceTest {
         assertNull(product)
     }
 }
-
-
