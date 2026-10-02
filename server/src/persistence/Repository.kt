@@ -1,7 +1,5 @@
 package com.restpartijen.api.persistence
 
-import io.ktor.http.content.LastModifiedVersion
-
 /**
  * Generic persistence contract for entities with a Long id.
  *

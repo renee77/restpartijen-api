@@ -13,7 +13,7 @@ class FixedClockTest {
         val now1 = clock.now()
         val now2 = clock.now()
         // Assert
-        assertEquals(now1, Instant.parse("2026-09-26T12:00:00Z"))
-        assertEquals(now2, Instant.parse("2026-09-26T12:00:00Z"))
+        assertEquals(Instant.parse("2026-09-26T12:00:00Z"), now1)
+        assertEquals(Instant.parse("2026-09-26T12:00:00Z"), now2)
     }
 }

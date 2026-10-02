@@ -6,7 +6,6 @@ import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import com.restpartijen.api.module
-import kotlinx.serialization.Serializable
 import kotlin.test.assertEquals
 import kotlinx.serialization.json.Json
 import com.restpartijen.api.product.dto.ProductResponse
