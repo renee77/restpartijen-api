@@ -7,6 +7,9 @@ import com.restpartijen.api.persistence.DatabaseFactory
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.routes.configureProductRouting
 import com.restpartijen.api.product.service.ProductService
+import com.restpartijen.api.config.databaseSettings
+import com.restpartijen.api.config.jwtProperties
+import io.ktor.server.application.log
 
 /**
  * Entry point of the application.
@@ -24,7 +27,13 @@ fun main(args: Array<String>) {
  */
 fun Application.module() {
     configureSerialization()
-    DatabaseFactory.init()
+
+    // TODO GI-3: kan overschreden worden indien nodig
+    val jwtProperties = environment.config.jwtProperties()
+    log.info("JWT config: $jwtProperties")
+
+    DatabaseFactory.init(environment.config.databaseSettings())
+
     val exposedProductRepository = ExposedProductRepository()
     val productService = ProductService(exposedProductRepository)
     configureProductRouting(productService)

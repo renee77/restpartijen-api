@@ -1,3 +1,4 @@
 modules:
-  #- android
+# android module will be implemented in the next phase (blok 2)
+#  - android
   - server
