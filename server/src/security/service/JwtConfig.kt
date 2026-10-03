@@ -14,6 +14,7 @@ class JwtConfig(
     private val settings: JwtSettings,
     private val clock: Clock,
 ) {
+    // The algorithm used to sign the JWT tokens. It uses HMAC with SHA-256 and the secret from the settings.
     private val algorithm = Algorithm.HMAC256(settings.secret)
 
     // Used by the JWT provider in configureSecurity() to check incoming tokens.
