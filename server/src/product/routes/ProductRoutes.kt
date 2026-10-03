@@ -4,6 +4,7 @@ import com.restpartijen.api.product.dto.toResponse
 import com.restpartijen.api.product.service.ProductService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
+import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
@@ -14,7 +15,8 @@ import io.ktor.server.routing.routing
  * Walking skeleton version: only GET /api/v1/products/{id}.
  * The route knows the service, never the repository (§8.3).
  */
-fun Application.configureProductRouting(service: ProductService) {
+fun Application.configureProductRouting() {
+    val service: ProductService by dependencies
     routing {
         get("/api/v1/products/{id}") {
             // Path parameters are always text; toLongOrNull avoids a 500 on input like "abc".

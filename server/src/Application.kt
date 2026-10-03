@@ -7,6 +7,12 @@ import com.restpartijen.api.persistence.DatabaseFactory
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.routes.configureProductRouting
 import com.restpartijen.api.product.service.ProductService
+import com.restpartijen.api.config.databaseSettings
+import com.restpartijen.api.config.jwtProperties
+import com.restpartijen.api.persistence.DatabaseFactory.init
+import com.restpartijen.api.plugins.configureDependencies
+import com.restpartijen.api.product.repository.ProductsTable
+import io.ktor.server.application.log
 
 /**
  * Entry point of the application.
@@ -20,19 +26,20 @@ fun main(args: Array<String>) {
 /**
  * The single place where the application is assembled (GI-2, decision 2.2).
  * Referenced by name in application.yaml: com.restpartijen.api.ApplicationKt.module
- * Plugins and feature routing are added here in the next steps.
  */
 fun Application.module() {
-    configureSerialization()
-
-    // TODO GI-3: kan overschreden worden indien nodig
+    // 1. CONFIGURATION
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
-    DatabaseFactory.init(environment.config.databaseSettings())
+    init(environment.config.databaseSettings())
 
-    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable)
+    // 2. PLUGINS
+    configureSerialization()
+    configureDependencies()
+
+    init(environment.config.databaseSettings(), ProductsTable)
     val exposedProductRepository = ExposedProductRepository()
     val productService = ProductService(exposedProductRepository)
-    configureProductRouting(productService)
+    configureProductRouting()
 }
