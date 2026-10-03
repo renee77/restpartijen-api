@@ -2,7 +2,6 @@ package com.restpartijen.api.config
 
 import io.ktor.server.config.ApplicationConfig
 
-//Besluiten of dit in een bestand of over meerdere??
 enum class DbMode { MEMORY, FILE; }
 
 data class DatabaseSettings(val mode: DbMode, val filePath: String)

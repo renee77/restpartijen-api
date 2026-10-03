@@ -9,9 +9,10 @@ import com.restpartijen.api.product.routes.configureProductRouting
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.config.databaseSettings
 import com.restpartijen.api.config.jwtProperties
+import com.restpartijen.api.persistence.DatabaseFactory.init
 import com.restpartijen.api.plugins.configureDependencies
+import com.restpartijen.api.product.repository.ProductsTable
 import io.ktor.server.application.log
-import io.ktor.server.plugins.di.dependencies
 
 /**
  * Entry point of the application.
@@ -31,21 +32,14 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
-    DatabaseFactory.init(environment.config.databaseSettings())
+    init(environment.config.databaseSettings())
 
     // 2. PLUGINS
     configureSerialization()
     configureDependencies()
 
-    // 3. SECURITY
-
-    // 4. ROUTES
-//    val exposedProductRepository = ExposedProductRepository()
-//   val productService = ProductService(exposedProductRepository)
-//    configureProductRouting(productService)
-
-//    val productService: ProductService by dependencies
-//    configureProductRouting(productService)
-
+    init(environment.config.databaseSettings(), ProductsTable)
+    val exposedProductRepository = ExposedProductRepository()
+    val productService = ProductService(exposedProductRepository)
     configureProductRouting()
 }

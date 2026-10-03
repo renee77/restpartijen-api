@@ -13,7 +13,7 @@ import kotlin.time.Instant
  */
 interface ProductReader {
 
-    /** The product with this id, or null if it does not exist. */
+    /** The product with this id, or null if it does not exist or is REMOVED. */
     suspend fun findById(id: Long): ProductView?
 
     /** Products with status LISTED whose best-before moment is after [now]. */
