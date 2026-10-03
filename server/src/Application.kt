@@ -12,6 +12,7 @@ import com.restpartijen.api.config.jwtProperties
 import com.restpartijen.api.persistence.DatabaseFactory.init
 import com.restpartijen.api.plugins.configureDependencies
 import com.restpartijen.api.product.repository.ProductsTable
+import com.restpartijen.api.shared.ReservationMaintenance
 import io.ktor.server.application.log
 
 /**
