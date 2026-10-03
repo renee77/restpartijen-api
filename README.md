@@ -25,3 +25,25 @@ Tests live in `server/test`, not in `server/src`.
 - `main` always works. Nobody commits directly to `main`.
 - Every change goes through a pull request with at least one review.
 - Changes in `shared` need a review from both other team members.
+
+## Configuration
+
+- The application reads two environment variables: JWT_SECRET which is required to run, and DB_MODE which is optional. 
+- | Variable | Required | Values | Default |
+  |---|---|---|---|
+  | `JWT_SECRET` | /* */ | /* at least 32 bytes */ | /* none: the app stops */ |
+  | `DB_MODE` | /* */ | /* */ | /* */ |
+
+## Powershell
+
+- $bytes = New-Object byte[] 32
+  [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+  $env:JWT_SECRET = [Convert]::ToBase64String($bytes)
+- ./kotlin.bat run
+- Remove-Item Env:JWT_SECRET
+
+## Bash
+
+- export JWT_SECRET=$(openssl rand -base64 32)
+- ./kotlin run
+- unset JWT_SECRET

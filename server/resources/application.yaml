@@ -4,3 +4,13 @@ ktor:
   application:
     modules:
       - com.restpartijen.api.ApplicationKt.module
+
+database:
+  mode: "$DB_MODE:memory"   # memory (default) or file
+  file: ./data/restpartijen # only used when mode is file
+
+jwt:
+  secret: "$?JWT_SECRET"    # never a real value here; see README $? adds option for no value (GROUP DECISION)
+  issuer: restpartijen-api
+  audience: restpartijen-app
+  validityHours: 24
