@@ -1,6 +1,6 @@
 package com.restpartijen.api.shared
 /**
- * An amount in whole euro cents (decision A).
+ * An amount in whole euro cents (ADR-08, B-13).
  * A value class: a plain Long at runtime, but its own type in the code,
  * so a price can never be mixed up with an id or a quantity.
  */
