@@ -103,7 +103,7 @@ Routes worden beschermt door de route te omwikkelen met `authenticate`. Hiermee 
 Als je een rolcheck doet, wordt de authenticatie daarbij direct meegenomen. Er hoeft bij de routes dus niet én een rolcheck, én een authenticatie te worden meegenomen. 
 Je kun een rolcheck doen door de route te omwikkelen met de `requireRole` functie. 
 
--- Kijk voor een voorbeeld naar `ValidationConfig.kt` in `test/security`
+-- Kijk voor een voorbeeld naar `TestApplicationSetup.kt` in `test/security`
 
 **Hoe vraag je de huidige gebruiker op?**
 Dit wordt kun je opvragen via de functie **call.CurrentUser()** in `CurrentUserExtensions`, een extension functie op de ApplicationCall.
@@ -153,13 +153,13 @@ de plugin in `Rolecheck.kt` (gooit `ForbiddenException`)
 `requireRole(...)` in `Rolecheck.kt`
 
 **Exceptie omzetten in statuscode**
-`StatusPages` (Stefan, GI-4). In je tests staat een tijdelijke versie in `SecurityTest.kt`
+`StatusPages` (Stefan, GI-4). In je tests staat een tijdelijke versie in `ValidationTests.kt`
 
 **Huidige gebruiker in de route**
 `currentUser()` in `CurrentUserExtensions.kt`, met `CurrentUser` in `security/model/`
 
 **Getest**
-`SecurityTest.kt` (401 en 200) en `RoleAuthTest.kt` (rollen)
+`ValidationTests.kt` (401 en 200) en `RoleAuthTest.kt` (rollen)
 
 ### **02 - Het verschil tussen authenticatie en autorisatie, en wat de plugin doet en wat jullie zelf doen**
 *Toelichting*
@@ -184,7 +184,7 @@ De autorisatie gebeurt in `RoleCheck.kt`
 *Waar in de code kun je het vinden?*
 401: de `challenge` in `Security.kt` (gooit een `UnauthorizedException`).
 403: de rolcheck in `Rolecheck.kt` (gooit een `ForbiddenException`).
-Tests zijn te vinden in mijn `SecurityTest.kt` (401) en in `RoleAuthTest.kt` (401 en 403).
+Tests zijn te vinden in mijn `ValidationTests.kt` (401) en in `RoleAuthTest.kt` (401 en 403).
 
 ### **04 - Waar de rol vandaan komt en waarom iemand de claim niet zelf kan aanpassen**
 *Toelichting*
@@ -192,7 +192,7 @@ De rol komt direct uit de UsersTable. Bij het inloggen wordt er een token aangem
 Als deze wel wordt gewijzigd, wordt de handtekening gebroken en wordt hij door de verifier afgewezen, met een 401 melding. 
 
 *Waar in de code kun je het vinden?* 
-Dit wordt opgebouwd in `JwtConfig.kt`. De test hiervan vind je in `SecurityTest.kt`, onder `token with wrong secret gets 401`
+Dit wordt opgebouwd in `JwtConfig.kt`. De test hiervan vind je in `ValidationTests.kt`, onder `token with wrong secret gets 401`
 
 ### **05 - Wat zit er in het token en wat niet?**
 *Toelichting*
@@ -201,7 +201,7 @@ Buiten dit om staan de standaard gegevens er in, de iss(issuer), aud(audience), 
 Wat er niet wordt meegenomen in een token zijn alle andere gegevens die aan een account gelinkt zijn, zoals bijvoorbeeld een e-mailadres en wachtwoord. Een token is door iedereen te lezen: het is ondertekend, maar niet versleuteld. Daarom wordt er alleen meegegeven wat de server bij elk verzoek nodig heeft.
 
 *Waar in de code kun je het vinden?* 
-Je kunt dit vinden in de `Security.kt` file, waar zichtbaar is dat de userID en rol worden binnengehaald om te valideren. Je kunt ook zien dat dit wordt getest in `SecurityTest.kt`
+Je kunt dit vinden in de `Security.kt` file, waar zichtbaar is dat de userID en rol worden binnengehaald om te valideren. Je kunt ook zien dat dit wordt getest in `ValidationTests.kt`
 
 ### **06 - Waarom 24 uurs-token en geen refresh tokens?**
 *Toelichting*
@@ -225,7 +225,7 @@ Vergeet je alleen de rolcheck, dan komt elke ingelogde gebruiker erin, ongeacht 
 Niets forceert dit; de drie tests per beschermd endpoint laten het zien, want zonder token moet het 401 zijn en met een verkeerde rol 403.
 
 *Waar in de code kun je het vinden?* 
-In de huidige validationConfig.kt in de testomgeving. De tests die worden uitgevoerd in `SecurityTest.kt` en `RoleAuthTests.kt` laten ook deze werkingen zijn.
+In de huidige validationConfig.kt in de testomgeving. De tests die worden uitgevoerd in `ValidationTests.kt` en `RoleAuthTests.kt` laten ook deze werkingen zijn.
 
 ### **08 - Hoe je de huidige gebruiker opvraagt voor de eigenaarscontrole**
 *Toelichting*

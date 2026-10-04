@@ -29,7 +29,7 @@ class RoleAuthTests {
     }
 
 
-    // Happy path -> Admin get access to the admin only route.
+    // Happy path -> Someone with a valid role for the route get access (in this case, a collector).
     @Test
     fun `token with valid role for route gets access`() = testApplication {
         // Arrange: Set up the test application with security and a role-protected route
@@ -46,7 +46,7 @@ class RoleAuthTests {
             bearerAuth(token)
         }
 
-        // Assert. Verify that the decoded token contains the expected userId and role.
+        // Assert. Verify that the role is valid and the access is granted.
         assertEquals(HttpStatusCode.OK, response.status)
     }
 

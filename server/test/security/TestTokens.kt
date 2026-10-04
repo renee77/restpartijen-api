@@ -2,21 +2,24 @@ package com.restpartijen.api.security
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.restpartijen.api.security.service.JwtClaims
 import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import java.util.Date
 import kotlin.time.Clock
 import kotlin.time.Instant
+import kotlin.time.Duration.Companion.hours
 
 /**
  * Default JWT settings for tests, so tokens can be created without providing settings every time.
  */
 object TestJwtSettings {
     val default = JwtSettings(
-        secret = "test-secret",
+        secret = "test-secret-that-is-long-enough-to-work-in-production",
         issuer = "test-issuer",
-        audience = "test-audience"
+        audience = "test-audience",
+        validity = 24.hours
     )
 }
 
@@ -54,8 +57,8 @@ class TestTokens {
         return JWT.create()
             .withIssuer(settings.issuer)
             .withAudience(settings.audience)
-            .withClaim("userId", userId)
-            .withClaim("role", roleName)
+            .withClaim(JwtClaims.USER_ID, userId)
+            .withClaim(JwtClaims.ROLE, roleName)
             .withIssuedAt(Date(now.toEpochMilliseconds()))
             .withExpiresAt(Date((now + settings.validity).toEpochMilliseconds()))
             // Sign the token with the HMAC256 algorithm using the secret from the settings.
