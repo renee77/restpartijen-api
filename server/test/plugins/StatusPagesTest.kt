@@ -90,7 +90,7 @@ class StatusPagesTest {
     }
 
     @Test
-    fun `IllegalStateException gives 403`() = testApplication {
+    fun `IllegalStateException gives 409`() = testApplication {
         // Arrange
         setUp()
         // Act
