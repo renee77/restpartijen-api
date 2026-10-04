@@ -3,10 +3,12 @@ type: FTD
 title: "Restpartijenplatform — Functioneel Technisch Ontwerp Web API"
 description: "Ontwerp van de Ktor Web API voor een platform waarop bedrijven uit de levensmiddelenbranche restpartijen aanbieden met een afprijzing die in staffels meebeweegt met de resterende houdbaarheid."
 tags: [ftd, scenario-project, ktor, kotlin, proftaak, lu1]
-timestamp: 2026-09-29T00:00:00
+timestamp: 2026-10-03T00:00:00
 ---
 
 # Restpartijenplatform — Functioneel Technisch Ontwerp Web API
+
+> **Wijziging in v2.3.** Twee issues zijn verwerkt: `Repository<T>` heeft `create` en `update` in plaats van `save`, en de afspraken over security (wachtwoordhashing, foutafhandeling, JWT-instellingen). Alles staat in de besluittabel "Besluiten in v2.3". Punten die nog opgepakt moeten worden, staan in de tekst als **Opmerking v2.3**.
 
 > **Wijziging in v2.2.** De besluiten van de docent (bedragen in hele centen, Ktor 3.6.0) en de besluiten uit de startsessie zijn verwerkt. De contracten in §12.1 zijn gelijkgetrokken met de code in `shared`. Alles staat in de besluittabel "Besluiten van de startsessie en daarna (v2.2)". Punten die Lonneke en Stefan nog moeten bevestigen of oppakken, staan in de tekst als **Opmerking v2.2**. Zoek op die term om ze allemaal te vinden.
 
@@ -14,11 +16,11 @@ timestamp: 2026-09-29T00:00:00
 
 | Veld | Waarde |
 |------|--------|
-| Document ID | FTD-restpartijen-webapi-v2.2 |
+| Document ID | FTD-restpartijen-webapi-v2.3 |
 | Scenario | project |
 | Auteurs | Eva Bouwman, Lonneke van Oers, Stefan Pellikaan |
-| Datum | 2026-09-29 |
-| Status | Casus en sensoronderwerp goedgekeurd door de vakdocent (september 2026); besluiten van 19 september, de besluiten van de docent van 20 september en de besluiten uit de startsessie verwerkt. B-24, B-26, B-31 en B-32 wachten op bevestiging door Lonneke en Stefan |
+| Datum | 2026-10-03 |
+| Status | Casus en sensoronderwerp goedgekeurd door de vakdocent (september 2026); besluiten van 19 september, de besluiten van de docent van 20 september, de besluiten uit de startsessie en de besluiten uit de issues van begin oktober verwerkt. B-26 en B-31 zijn goedgekeurd. B-24 en B-32 wachten op bevestiging door Lonneke en Stefan |
 | Classificatie | Intern (schoolproject) |
 | Module | AI-powered software development, periode 1, LU1 |
 
@@ -31,6 +33,7 @@ timestamp: 2026-09-29T00:00:00
 | 2.0 | 2026-09-19 | Profgroep | Besluiten van de profgroep van 19 september verwerkt: de prijs van het moment van reserveren geldt, `/auth/register` blijft en is van Lonneke, US-10 komt erin als Should, een reservering is maximaal 24 uur geldig, `Repository<T>` is van Eva, statuscode `502` is geschrapt en de grens voor vers is 14 dagen. De afgehandelde bespreekpunten zijn uit §21. Bijlage B legt uit wat H2 is en hoe wij het gebruiken. Zie de besluiten onder het wijzigingsoverzicht. |
 | 2.1 | 2026-09-19 | Profgroep | Het antwoord van `/auth/login` is vastgelegd: naast het token bevat het de rol en, bij een aanbieder, het `supplierId`. Eigenaar is Lonneke. Het beslispunt in §21 is daarmee vervallen en vervangen: Lonneke heeft geen endpoint die de app aanroept en kiest tussen account aanmaken en het prijsverloop. |
 | 2.2 | 2026-09-29 | Eva Bouwman, namens de profgroep | Besluiten van de docent verwerkt: bedragen als hele centen in een `Long` (nieuw ADR-08) en Ktor 3.6.0. Besluiten uit de startsessie verwerkt: `PriceProvider` geeft `null` bij een verlopen partij, de eindstatus `REMOVED`, de aanbieder als `SupplierSummary` op `ProductView`, `suspend` in de contracten die de database raken, en de uitkomst van B-6 en B-10. De contracten in §12.1 volgen nu de code. Nieuw: de afrondingsregel, bedragen in euro's in de API, `findByStatus` voor het beheeroverzicht, en de afspraak over Nederlands werkcommentaar. Twee voorstellen: een verwijderde partij in de seeddata, en `404` bij het reserveren van een verwijderde partij. |
+| 2.3 | 2026-10-03 | Eva Bouwman, namens de profgroep | Twee issues verwerkt. `Repository<T>`: `save` is vervangen door `create` en `update`, met een generieke fake voor testen (B-33). Security: wachtwoorden met Argon2id via Spring Security Crypto in plaats van BCrypt (B-34), security gooit excepties die `StatusPages` omzet (B-35), en de JWT-instellingen in `application.yaml` met de klassen `JwtProperties` en `JwtSettings` (B-36). Goedgekeurd: `findByStatus` voor het beheeroverzicht (B-26) en een verwijderde partij in de seeddata (B-31). Nederlands werkcommentaar mag op `main` en is weg bij de oplevering (B-37). |
 
 > **Dit is het ontwikkeldocument voor deel 1 van de proftaak.** Versie 1.0 was tevens het voorstel waarmee de casus en het sensoronderwerp voor deel 2 ter goedkeuring zijn voorgelegd. De vakdocent heeft beide goedgekeurd; zijn terugkoppeling staat in §20. Alle regelverwijzingen (r.) verwijzen naar `opdrachten/proftaak-casus-en-portfolio.md`, zodat elke eis na te lopen is. Waar de checklist en de rubric van elkaar verschillen, is de rubric aangehouden.
 
@@ -118,13 +121,25 @@ Deze tabel volgt op de besluiten van 19 september. De kolom *Door* zegt wie besl
 | B-23 | Categorie van een partij | `category` is een property, zoals in het contract `PricedProduct`; elke subklasse overschrijft haar | Volgt uit de contracten | §8.4, §8.5 (SD-3) | Vast |
 | B-24 | Afronding van de korting | Gehele deling, zoals Kotlin die vanzelf doet: een restant van een cent valt weg. Bij een positief bedrag is dat naar beneden | Eva, 29 september 2026 | §5.7, §9.4 | Bevestigen bij de review van v2.2 |
 | B-25 | Bedragen in de API | In euro's, bijvoorbeeld `3.49`. Intern in centen. De omrekening staat op één plek en rondt af naar de dichtstbijzijnde cent | Eva, 29 september 2026 | §5.4, §10.1 | Vast; overgedragen aan Lonneke en Stefan |
-| B-26 | Beheeroverzicht | `ProductReader.findAll()` wordt `findByStatus(statuses)`. Het beheeroverzicht toont standaard alles behalve `REMOVED`, en kan filteren op status | Eva als leverancier van `ProductReader`, 29 september 2026 | §5.9, §6, §10.1, §12.1 | Bevestigen in de pull request die het contract wijzigt |
-| B-27 | Nederlands commentaar | Een Nederlandse commentaarregel is een werknotitie voor de programmeur. Zij is weg vóór de merge naar `main` | Eva, 29 september 2026 | §3.2, §12.3 | Vast |
+| B-26 | Beheeroverzicht | `ProductReader.findAll()` wordt `findByStatus(statuses)`. Het beheeroverzicht toont standaard alles behalve `REMOVED`, en kan filteren op status | Eva als leverancier van `ProductReader`, 29 september 2026 | §5.9, §6, §10.1, §12.1 | Vast; goedgekeurd en in `shared` (v2.3) |
+| B-27 | Nederlands commentaar | Een Nederlandse commentaarregel is een werknotitie voor de programmeur. Zij is weg vóór de merge naar `main`. Gewijzigd in v2.3: weg bij de oplevering (B-37) | Eva, 29 september 2026 | §3.2, §12.3 | Vervangen door B-37 |
 | B-28 | Branches voor de gedeelde basis | Het patroon `shared/<naam>-<onderdeel>`, bijvoorbeeld `shared/lonneke-security` | Startsessie | §12.3 | Vast |
 | B-29 | Technische opzet | Packages als mappen direct onder `../server/src`, zonder `com/restpartijen/api`; start via `EngineMain` met `../server/resources`; de `Authentication`-plugin, `JwtConfig` en de `/auth`-endpoints staan in `security` | Startsessie | §8.3, §13 (GI-2, GI-3) | Vast |
 | B-30 | Namen in de sequence diagrams | De aanroepen in SD-2 en SD-4 heten zoals de functions in de contracten | Volgt uit de contracten | §8.5 | Vast |
-| B-31 | Seeddata en `REMOVED` | De seeddata bevat ook een partij met status `REMOVED` | Voorstel Eva, 29 september 2026 | §9.7 | Voorstel; bevestigen bij de review van v2.2 |
+| B-31 | Seeddata en `REMOVED` | De seeddata bevat ook een partij met status `REMOVED` | Voorstel Eva, 29 september 2026 | §9.7 | Vast; goedgekeurd (v2.3) |
 | B-32 | Reserveren van een verwijderde partij | `404 Not Found`, net als bij `GET /products/{id}`: voor de publieke API bestaat een verwijderde partij niet | Voorstel Eva, 29 september 2026 | §5.5, §8.5 (SD-2), §9.5 | Voorstel; bevestigen bij de review van v2.2 |
+
+## Besluiten in v2.3
+
+B-33 tot en met B-36 komen uit twee issues in de repository: één over `Repository<T>` en één over de security-opzet. B-37 wijzigt de afspraak over Nederlands commentaar uit v2.2. De code op `main` van 3 oktober 2026 is nagelopen; waar het document en de code verschilden, volgt het document de code.
+
+| # | Onderwerp | Besluit | Door | Verwerkt in | Status |
+|---|-----------|---------|------|-------------|--------|
+| B-33 | `Repository<T>` | `save(item): T` is vervangen door twee functions. `create(item): T` slaat een nieuw item op en geeft het terug met het id dat de database koos. `update(item): Boolean` vervangt het item met hetzelfde id en geeft `false` als dat id niet bestaat. `findById`, `findAll` en `delete` blijven gelijk. Voor testen is er een generieke `FakeRepository<T>` in `../server/test/testsupport` | Eva als eigenaar van GI-1, 1 en 2 oktober 2026 | §8.4, §8.5 (SD-1), §13 (GI-1 besluit 1.8, GI-6 besluit 6.4) | Vast; in de code |
+| B-34 | Wachtwoordhashing | Argon2id in plaats van BCrypt, via `Argon2PasswordEncoder` uit Spring Security Crypto. Dit is een Java-library en daarmee een uitzondering op B-15: voor password hashing bestaat geen kotlinx-library, en alleen de server hasht. Lonneke onderbouwt de library in het issue met actief onderhoud en recente stabiele versies | Lonneke, in het issue en in de code, oktober 2026 | §3.2, §13 (GI-3 besluit 3.4), §16.1 | In de code; de parameters voldoen nog niet aan het minimum van OWASP (Opmerking v2.3 bij GI-3) |
+| B-35 | Foutmeldingen uit security | Security gooit een exceptie uit de hiërarchie van §10.2; `StatusPages` maakt er het foutantwoord van. De challenge gooit `UnauthorizedException` (401), de rolcheck `ForbiddenException` (403). Nooit gooien in `validate`. De volgorde van de installs maakt niet uit | Profgroep, in het issue (optie 1) | §10.2, §13 (GI-3 besluit 3.10) | Vast |
+| B-36 | JWT-instellingen | `application.yaml` heeft onder `jwt` de sleutels `secret`, `issuer`, `audience` en `validityHours`. Alleen het secret komt uit de omgevingsvariabele `JWT_SECRET`. `config` leest ze in als `JwtProperties` (Stefan); `security` werkt met de eigen klasse `JwtSettings` (Lonneke). De naam van de provider is een constante in `security`, niet in `application.yaml` | Stefan en Lonneke, in het issue | §13 (GI-2 besluit 2.3, GI-3 besluiten 3.9 en 3.11), §16.4 | Vast; de koppeling van `JwtProperties` naar `JwtSettings` in `Application.module()` volgt nog |
+| B-37 | Nederlands commentaar (wijzigt B-27) | Een Nederlandse commentaarregel blijft een werknotitie, maar mag op `main` staan. Zo is zichtbaar welk werk nog in uitvoering is. Bij de oplevering is zij weg. De controle per pull request vervalt; er komt één controle vóór de oplevering | Eva, 3 oktober 2026 | §3.2, §12.3 | Vast |
 
 ---
 
@@ -249,8 +264,8 @@ Dit is een schoolproject binnen de proftaak van de module AI-powered software de
 
 - Technologie ligt vast: Kotlin met Ktor (r.60). De applicatie draait lokaal (r.72).
 - De module schrijft voor dat we werken met de actuele versies van Kotlin, Ktor en Exposed, en met de Kotlin Toolchain als buildtool in plaats van Gradle. Dat is een gegeven en geen keuze van de profgroep. De tabel onder deze lijst geeft de stand op de peildatum 18 september 2026; de regel voor Ktor is bijgewerkt op 29 september 2026.
-- De docent adviseert kotlinx-libraries boven Java-libraries, met het oog op multiplatform in periode 3 (P. de Mast, persoonlijke communicatie, september 2026). Daarom gebruiken we kotlinx.serialization en kotlinx-datetime, loopt tijd via een injecteerbare `kotlin.time.Clock`, en zijn bedragen hele centen in een `Long` (ADR-08).
-- Broncode, KDoc en commentaar zijn Engelstalig (r.191). Eén uitzondering: een Nederlandse commentaarregel mag als werknotitie voor de programmeur, bijvoorbeeld "nog nakijken of …". Zo'n regel is een open werkpunt. Hij is weg vóór de merge naar `main`, en de reviewer controleert dat (§12.3). Dit document is Nederlands.
+- De docent adviseert kotlinx-libraries boven Java-libraries, met het oog op multiplatform in periode 3 (P. de Mast, persoonlijke communicatie, september 2026). Daarom gebruiken we kotlinx.serialization en kotlinx-datetime, loopt tijd via een injecteerbare `kotlin.time.Clock`, en zijn bedragen hele centen in een `Long` (ADR-08). Eén uitzondering: voor het hashen van wachtwoorden bestaat geen kotlinx-library. Alleen de server hasht, en die draait op de JVM. Daarvoor gebruiken we dus een Java-library (B-34).
+- Broncode, KDoc en commentaar zijn Engelstalig (r.191). Eén uitzondering: een Nederlandse commentaarregel mag als werknotitie voor de programmeur, bijvoorbeeld "nog nakijken of …". Zo'n regel is een open werkpunt. Hij mag op `main` staan, zodat duidelijk is welk werk nog in uitvoering is. Bij de oplevering is hij weg; dat wordt één keer gecontroleerd vóór de oplevering (§12.3, B-37). Dit document is Nederlands.
 - Doorlooptijd circa zeven weken; inleveren 25 oktober 2026, assessment de week daarna.
 - Drie studenten die naast deze module andere verplichtingen hebben.
 
@@ -487,7 +502,7 @@ Elk criterium is één toetsbare uitspraak. Statuscodes zijn onderdeel van het c
 - Een partij met status `COLLECTED`, `EXPIRED` of `REMOVED` kan niet worden verwijderd; het antwoord is `409 Conflict`.
 - Een gebruiker zonder rol `ADMIN` krijgt `403 Forbidden`.
 
-**Beheeroverzicht (`GET /admin/products`).** Tot v2.2 had het beheeroverzicht geen eigen criteria. Het hoort bij de beheerder en staat daarom hier. De criteria volgen besluit B-26 en worden bevestigd samen met dat besluit.
+**Beheeroverzicht (`GET /admin/products`).** Tot v2.2 had het beheeroverzicht geen eigen criteria. Het hoort bij de beheerder en staat daarom hier. De criteria volgen besluit B-26, dat is goedgekeurd.
 
 - Een gebruiker met rol `ADMIN` krijgt alle partijen, ongeacht de aanbieder; het antwoord is `200 OK`.
 - Zonder filter bevat het overzicht partijen in elke status behalve `REMOVED`.
@@ -783,7 +798,8 @@ classDiagram
         <<interface>>
         +findById(Long) T?
         +findAll() List~T~
-        +save(T) T
+        +create(T) T
+        +update(T) Boolean
         +delete(Long) Boolean
     }
 
@@ -825,7 +841,7 @@ classDiagram
 
 Het diagram toont de kernklassen van de drie features, niet alle klassen. Services, repositories en DTO's die geen OO-concept laten zien, staan alleen in de verdelingsmatrix (§11).
 
-**Waar de abstractie zit** (r.165): `SurplusProduct` is een abstracte, `sealed` class. Wat voor elke soort gelijk is, staat in de basisklasse: de gedeelde velden, `shelfLifeRemaining()`, `isExpired()` en de controle bij het plaatsen, `validateForListing()`. Wat per soort verschilt, vullen de drie subklassen in: de property `category` en de function `maxShelfLife()`, de langste houdbaarheid die voor die soort nog geloofwaardig is (§9.10). Een `*` in het diagram betekent abstract. Tot v2.1 was `category()` een function; het contract `PricedProduct` maakt er een property van, en `SurplusProduct` volgt het contract (B-23). Het polymorfisme blijft gelijk: elke subklasse overschrijft de property met de eigen soort. Dat is ook het antwoord op de vraag waarom dit een abstracte class is en geen interface: er is gedeelde toestand en gedeelde implementatie. Omdat de class `sealed` is, controleert de compiler dat de factory elke soort afhandelt. `DiscountPolicy` is een interface met drie implementaties. Sinds v1.1 levert elke implementatie alleen de eigen staffels via `tiers()`; `discountPercentage()` en `maxDiscount()` staan als default implementatie in de interface zelf, zodat de opzoeklogica op één plek staat. Sinds v2.2 is een korting een heel percentage (`Int`), geen factor; daarom heet de function `discountPercentage()` en niet meer `discountFactor()` (ADR-08). `Repository<T>` is een generieke interface. `DiscountPolicyResolver` is een object declaration (singleton). Daarmee zijn overerving, interfaces, abstracte classes, polymorfisme, generics en het singleton-patroon alle zes aanwijsbaar in het diagram. `PricedProduct`, `ProductView` en `PriceProvider` zijn contracten uit §12.1: de features zien elkaar alleen door deze interfaces. `Money` en `SupplierSummary` staan in `shared`, omdat ze in een contract voorkomen. `PriceProvider` geeft `null` terug als een partij verlopen is (B-18): geen prijs is een gewone toestand en geen fout, en de compiler dwingt elke aanroeper dat geval af te handelen.
+**Waar de abstractie zit** (r.165): `SurplusProduct` is een abstracte, `sealed` class. Wat voor elke soort gelijk is, staat in de basisklasse: de gedeelde velden, `shelfLifeRemaining()`, `isExpired()` en de controle bij het plaatsen, `validateForListing()`. Wat per soort verschilt, vullen de drie subklassen in: de property `category` en de function `maxShelfLife()`, de langste houdbaarheid die voor die soort nog geloofwaardig is (§9.10). Een `*` in het diagram betekent abstract. Tot v2.1 was `category()` een function; het contract `PricedProduct` maakt er een property van, en `SurplusProduct` volgt het contract (B-23). Het polymorfisme blijft gelijk: elke subklasse overschrijft de property met de eigen soort. Dat is ook het antwoord op de vraag waarom dit een abstracte class is en geen interface: er is gedeelde toestand en gedeelde implementatie. Omdat de class `sealed` is, controleert de compiler dat de factory elke soort afhandelt. `DiscountPolicy` is een interface met drie implementaties. Sinds v1.1 levert elke implementatie alleen de eigen staffels via `tiers()`; `discountPercentage()` en `maxDiscount()` staan als default implementatie in de interface zelf, zodat de opzoeklogica op één plek staat. Sinds v2.2 is een korting een heel percentage (`Int`), geen factor; daarom heet de function `discountPercentage()` en niet meer `discountFactor()` (ADR-08). `Repository<T>` is een generieke interface. Tot v2.2 had hij één `save()`; sinds v2.3 zijn dat `create()` en `update()`, zodat "niet gevonden" bij het bijwerken een eigen antwoord heeft (B-33). `DiscountPolicyResolver` is een object declaration (singleton). Daarmee zijn overerving, interfaces, abstracte classes, polymorfisme, generics en het singleton-patroon alle zes aanwijsbaar in het diagram. `PricedProduct`, `ProductView` en `PriceProvider` zijn contracten uit §12.1: de features zien elkaar alleen door deze interfaces. `Money` en `SupplierSummary` staan in `shared`, omdat ze in een contract voorkomen. `PriceProvider` geeft `null` terug als een partij verlopen is (B-18): geen prijs is een gewone toestand en geen fout, en de compiler dwingt elke aanroeper dat geval af te handelen.
 
 `OpeningHours` en `PickupWindowCalculator` horen bij US-10 (§9.9). De calculator kent geen repository en geen HTTP: hij krijgt openingstijden en twee tijdstippen en geeft een afhaalvenster terug, of `null` als de aanbieder vóór `bestBeforeAt` niet meer open is.
 
@@ -896,7 +912,7 @@ sequenceDiagram
             R-->>S: 422 Unprocessable Entity
         else geldig
             P-->>PS: in orde
-            PS->>PR: save(product)
+            PS->>PR: create(product)
             PR->>DB: INSERT
             DB-->>PR: id
             PR-->>PS: opgeslagen partij
@@ -1320,12 +1336,12 @@ De seeddata wordt bij het opstarten geladen als de database leeg is (r.84, r.198
 - Per aanbieder minimaal vijf partijen. De supermarkt en de groothandel bieden alle drie de productsoorten aan; de bakker biedt vers en houdbaar aan.
 - Houdbaarheidsdatums gespreid van enkele uren tot enkele weken, zodat elke staffel van elke productsoort in de demo zichtbaar is.
 - De houdbaarheidsdatums worden bij het opstarten berekend ten opzichte van de klok ("nu plus zes uur") en staan niet als vaste datum in de seeddata. Een vaste datum is op de dag van het assessment verlopen.
-- Minstens één partij in elke status: `LISTED`, `RESERVED`, `COLLECTED`, `EXPIRED` en `REMOVED` (voorstel B-31).
+- Minstens één partij in elke status: `LISTED`, `RESERVED`, `COLLECTED`, `EXPIRED` en `REMOVED` (B-31).
 - Zes gebruikersaccounts: drie aanbieders, twee afhalers en één beheerder.
 
 De spreiding van houdbaarheidsdatums is geen detail. Zonder een partij in elke staffel is de afprijslogica tijdens de demo niet te tonen. `SeedData` schrijft daarbij rechtstreeks in alle tabellen; dat is een bewuste uitzondering op de contractregel (§12.1).
 
-> **Opmerking v2.2 — voor Lonneke en Stefan: een verwijderde partij in de seeddata (B-31).** Demo- en testdata dekken gewoonlijk elke toestand die je wilt tonen of testen: minstens één voorbeeld per enumwaarde. Voor de vier andere statussen doen we dat al; `REMOVED` is er in v2.2 bij gekomen. Zonder zo'n partij is het filter `status=REMOVED` in het beheeroverzicht (§5.9) niet te tonen, of moet de beheerder tijdens de demo eerst iets verwijderen. Dat kost tijd en kan misgaan. Bevestig het voorstel bij de review van v2.2; de takenlijst voor de seeddata (T21) gaat daarna mee.
+**Waarom een verwijderde partij in de seeddata (B-31).** Demo- en testdata dekken gewoonlijk elke toestand die je wilt tonen of testen: minstens één voorbeeld per enumwaarde. Voor de vier andere statussen doen we dat al; `REMOVED` is er in v2.2 bij gekomen. Zonder zo'n partij is het filter `status=REMOVED` in het beheeroverzicht (§5.9) niet te tonen, of moet de beheerder tijdens de demo eerst iets verwijderen. Dat kost tijd en kan misgaan. Het voorstel is goedgekeurd.
 
 ### 9.8 Allergenen
 
@@ -1436,6 +1452,8 @@ De domeinexcepties vormen één hiërarchie in `shared` (GI-5), zodat `StatusPag
 
 `DomainException` is een `abstract` class en geen `sealed` class (B-22). `StatusPages` krijgt per exceptie een eigen regel, het gebruikelijke patroon in Ktor (JetBrains s.r.o., z.j.-k). Daarin zit geen `when` over alle subklassen, en dus ook niets wat een `sealed` class volledig zou kunnen laten controleren. Een partij met status `REMOVED` levert in de publieke API een `NotFoundException` (§9.5).
 
+**Fouten uit security (B-35).** Ook `401` en `403` lopen via deze hiërarchie. De challenge van de JWT-provider gooit `UnauthorizedException`, de rolcheck gooit `ForbiddenException`, en `StatusPages` maakt er het gewone foutantwoord van. Security bepaalt dát er iets misgaat; het foutmodel bepaalt hoe de melding eruitziet. Een `401` hoeft daardoor maar op één plek te worden aangepast. Twee regels horen erbij. Gooi nooit een exceptie in `validate`: die wordt alleen gelogd en bereikt `StatusPages` niet. Geef daar `null` terug, dan volgt de challenge. En de volgorde van de installs maakt niet uit: `StatusPages` vangt fouten op rond de hele verwerking van een request, ook binnen de routing waar de authenticatie draait. De integratietest per beschermde endpoint (GI-6) laat zien of beide fouten in deze vorm terugkomen.
+
 Elk foutantwoord heeft dezelfde vorm: een `code`, een leesbare `message` en optioneel een `field`. Dat de foutvorm gedeeld is en niet per feature verschilt, is een bewuste keuze — de Android-app in periode 2 hoeft dan maar één foutmodel te kennen.
 
 ### 10.3 Integratie met Open Food Facts
@@ -1480,7 +1498,7 @@ Deze matrix bestaat zodat niemand met een gat het assessment in gaat. Per studen
 | **Feature** | Zoeken en filteren, reserveren, intrekken, ophalen bevestigen |
 | **Gedeelde onderdelen** | GI-2 Applicatie-opzet, GI-4 Foutafhandeling |
 | **Autorisatie** | Schrijft zelf de rolregels voor de endpoints van F2: zoeken is openbaar; reserveren, intrekken en ophalen bevestigen vragen `COLLECTOR`, plus de eigenaarscontrole op de eigen reservering. Het mechanisme komt uit GI-3 |
-| **Eigen klassen** | `Reservation`, `ReservationService`, `ReservationRepository`, `ProductSearchService`, `SearchCriteria`, `ReservationStateMachine`, `ReservationStatus`, `ReservationEvent`, `Page<T>`, `StatusPagesConfig`, `ApplicationModule` |
+| **Eigen klassen** | `Reservation`, `ReservationService`, `ReservationRepository`, `ProductSearchService`, `SearchCriteria`, `ReservationStateMachine`, `ReservationStatus`, `ReservationEvent`, `Page<T>`, `StatusPagesConfig`, `ApplicationModule`, `JwtProperties` |
 | **Kernmethoden** | `ReservationStateMachine.transition()`, `ProductSearchService.search()`, `ReservationService.reserve()`, `ReservationService.collect()` |
 | **OO-concepten** | Interface (levert het contract `ReservationMaintenance` en implementeert `Repository<T>` uit GI-1 voor de eigen entiteit), generics (`Page<T>`), enum met gedrag (`ReservationStatus`), polymorfisme via de repository-interface, delegation (`by lazy` op de zoekindex), exception handling |
 | **Kotlin features** | Higher order functions (filterpredicaten als `(ProductView) -> Boolean`), lambda expressions met trailing lambda idiom, `it` als impliciete parameter, named en default arguments in `SearchCriteria`, collections en sequences (`filter`, `sortedBy`, `groupBy`), scope functions (`let`, `run`) |
@@ -1493,7 +1511,7 @@ Deze matrix bestaat zodat niemand met een gat het assessment in gaat. Per studen
 | **Feature** | Afprijsstaffels, prijsberekening, automatische statusbewaking, beheerdersfunctionaliteit |
 | **Gedeeld onderdeel** | GI-3 Authenticatie en rollen, met de endpoints `/auth/login` en `/auth/register` |
 | **Autorisatie** | Bouwt het gedeelde mechanisme (GI-3) en schrijft zelf de rolregels voor de endpoints van F3: alle beheerdersendpoints vragen `ADMIN` |
-| **Eigen klassen** | `DiscountPolicy` (interface), `FreshDiscountPolicy`, `FrozenDiscountPolicy`, `AmbientDiscountPolicy`, `DiscountTier`, `DiscountPolicyResolver` (object), `PricingService`, `PriceBreakdown`, `Money`, `ExpiryScheduler`, `AdminProductService`, `JwtConfig`, `Role` |
+| **Eigen klassen** | `DiscountPolicy` (interface), `FreshDiscountPolicy`, `FrozenDiscountPolicy`, `AmbientDiscountPolicy`, `DiscountTier`, `DiscountPolicyResolver` (object), `PricingService`, `PriceBreakdown`, `Money`, `ExpiryScheduler`, `AdminProductService`, `JwtConfig`, `JwtSettings`, `PasswordHasher`, `Role` |
 | **Kernmethoden** | `DiscountPolicy.tiers()` (interface, drie implementaties), `DiscountPolicy.discountPercentage()` (default implementatie in de interface), `PricingService.currentPrice()`, `PricingService.priceBreakdown()`, `ExpiryScheduler.runMaintenance()`, `DiscountPolicyResolver.resolve()` |
 | **OO-concepten** | Interface met drie implementaties en een default implementatie, polymorfisme (`tiers` per soort), data class (`DiscountTier`), object declaration / singleton (`DiscountPolicyResolver`), generics (voorbeeld nog te kiezen, zie de opmerking hieronder), encapsulatie (`Money` als waardetype, voorstel: met privé constructor), exception handling |
 | **Kotlin features** | Scope functions (`also` bij logging in de scheduler), delegated property (`by lazy` op de policy-map), extension functions (`List<DiscountTier>.tierFor(Duration)`, voorstel ter vervanging van `Duration.toWholeDaysFloor()` dat met de staffels vervalt), coroutines (`launch` voor de periodieke statusbewaking), collections (`Map<ProductCategory, DiscountPolicy>`), `require`/`check` voor preconditions |
@@ -1600,7 +1618,7 @@ De contracten gebruiken alleen typen uit `shared`. `ProductReader` geeft daarom 
 
 `ReservationMaintenance` geeft geen `Reservation` terug, alleen aantallen en `Boolean`s. `Reservation` is een klasse van F2 en staat niet in `shared`, dus een contract kan hem niet gebruiken.
 
-> **Opmerking v2.2 — voor Lonneke en Stefan: `findAll()` wordt `findByStatus()` (B-26).** Het beheeroverzicht moet de partijen zonder verwijderde kunnen tonen, en ook alleen de verwijderde. Het contract had daarvoor `findAll()`, met in de code een open vraag of `REMOVED` erbij hoort. Eva vervangt die door één function die een set statussen krijgt: `findByStatus(statuses: Set<ProductStatus>)`. Vier redenen. Eén: de keuze wat de beheerder ziet, hoort bij het beheeroverzicht, en dat is F3. `ProductReader` is data-toegang van F1 en maakt die keuze niet. Twee: één function dekt beide behoeften; alleen de set verschilt. Drie: een function `findAll` die niet alles geeft, heeft een naam die niet klopt. Vier: bij een volgende wens komt er geen tweede vlag bij, zoals bij een `Boolean` `includeRemoved`, en de compiler controleert de waarden. Voor de API betekent het een optioneel filter `status` op `GET /admin/products` (§5.9, §10.1). Omdat dit een wijziging in `shared` is, gaat zij via een pull request met twee reviews (GI-5, besluit 5.3); bij die review bevestigen jullie het besluit. Wie `ProductReader` implementeert, moet mee: Eva's eigen implementatie en de fakes van Stefan en Lonneke. De compiler wijst ze vanzelf aan. Hoe eerder, hoe minder code er mee moet.
+**Waarom `findAll()` is vervangen door `findByStatus()` (B-26).** Het beheeroverzicht moet de partijen zonder verwijderde kunnen tonen, en ook alleen de verwijderde. Het contract had daarvoor `findAll()`, met in de code een open vraag of `REMOVED` erbij hoort. Eva heeft die vervangen door één function die een set statussen krijgt: `findByStatus(statuses: Set<ProductStatus>)`. Vier redenen. Eén: de keuze wat de beheerder ziet, hoort bij het beheeroverzicht, en dat is F3. `ProductReader` is data-toegang van F1 en maakt die keuze niet. Twee: één function dekt beide behoeften; alleen de set verschilt. Drie: een function `findAll` die niet alles geeft, heeft een naam die niet klopt. Vier: bij een volgende wens komt er geen tweede vlag bij, zoals bij een `Boolean` `includeRemoved`, en de compiler controleert de waarden. Voor de API betekent het een optioneel filter `status` op `GET /admin/products` (§5.9, §10.1). Het besluit is goedgekeurd en de function staat in `shared`. Wie `ProductReader` implementeert, moet mee: Eva's eigen implementatie en de fakes van Stefan en Lonneke. De compiler wijst ze vanzelf aan.
 
 **Eén bewuste uitzondering.** `SeedData` (GI-1) schrijft bij het opstarten rechtstreeks in alle tabellen, ook in die van F2. Seeddata is geen gedrag van de applicatie maar de begintoestand van de database. Via contracten seeden zou voor elke tabel een schrijfcontract vragen dat daarna niemand meer gebruikt. De uitzondering geldt alleen voor `SeedData`, en alleen bij een lege database.
 
@@ -1629,7 +1647,7 @@ Deze onderdelen staan in `shared` (GI-5) en hebben bewust geen eigenaar. Wijzigi
 - Werk aan de gedeelde basis, de onderdelen GI-1 tot en met GI-6, krijgt een eigen branch volgens het patroon `shared/<naam>-<onderdeel>`, bijvoorbeeld `shared/lonneke-security` (B-28).
 - Mergen gebeurt uitsluitend via een pull request met minimaal één review door een groepsgenoot.
 - Wijzigingen in `shared` (GI-5) vragen een review van beide anderen.
-- Bij elke pull request naar `main` controleert de reviewer dat er geen Nederlands werkcommentaar meer in de code staat (§3.2, B-27).
+- Nederlands werkcommentaar mag op `main` staan (§3.2, B-37). Vóór de oplevering is er één controle: alle drie lopen de commentaarregels (`//`, `/*` en KDoc) in `../server/src` en `../server/test` na, en halen elke Nederlandse werknotitie weg of zetten de inhoud om naar Engels commentaar. Dat gaat via een pull request met twee reviews.
 - Iedere student trekt dagelijks `main` binnen in de eigen branch, zodat afwijkingen klein blijven.
 
 De reviewplicht is er niet alleen voor de codekwaliteit. Zij dwingt af dat iedereen elkaars code heeft gezien, wat rechtstreeks bijdraagt aan het voorwaardelijke criterium eigenaarschap (r.367). Daarnaast levert de PR-historie het bewijsmateriaal voor het filmpje, waarin getoond moet worden hoe Git is ingezet om samen te werken (r.183).
@@ -1655,7 +1673,7 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 | 1.5 | Exposed-modules | `exposed-core`, `exposed-jdbc` en `exposed-kotlin-datetime`, alle 1.5.0 | In 1.x zitten `Database`, `SchemaUtils` en `transaction` niet meer in `exposed-core` maar in `exposed-jdbc` (JetBrains s.r.o., 2026b). Wie dat mist, ziet alleen onopgeloste imports. |
 | 1.6 | Transacties vanuit coroutines | `suspendTransaction`, omhuld door `withContext(Dispatchers.IO)` | Route handlers en de Open Food Facts-client zijn `suspend`, terwijl JDBC blokkeert. `newSuspendedTransaction` uit oudere voorbeelden is in 1.x deprecated (JetBrains s.r.o., 2026b). |
 | 1.7 | Tijd in de database | `timestamp()` uit `exposed-kotlin-datetime` | Die kolom levert in 1.x een `kotlin.time.Instant` (JetBrains s.r.o., 2026b). Dat is het type dat de injecteerbare `Clock` teruggeeft (GI-6, besluit 6.5), dus er is geen omrekening tussen tijdtypen nodig. |
-| 1.8 | Generieke repository | `Repository<T>` staat in de persistentielaag en is van Eva; elke feature implementeert hem voor de eigen entiteit | Eén vorm voor alle repositories houdt de features gelijk. De profgroep heeft op 19 september 2026 besloten dat Eva de interface schrijft, omdat GI-1 van haar is. |
+| 1.8 | Generieke repository | `Repository<T>` staat in de persistentielaag en is van Eva; elke feature implementeert hem voor de eigen entiteit. De functions zijn `findById`, `findAll`, `create`, `update` en `delete`, alle `suspend`. `create` geeft het item terug met het id dat de database koos; `update` en `delete` geven `false` als er niets te wijzigen was. Een verwijderd item telt als niet gevonden | Eén vorm voor alle repositories houdt de features gelijk. De profgroep heeft op 19 september 2026 besloten dat Eva de interface schrijft, omdat GI-1 van haar is. Tot v2.2 stond hier één `save`. Daar was geen plek voor "item niet gevonden", en de Exposed DSL heeft toch al een aparte `insert` en `update`. Sinds v2.3 zijn het daarom twee functions (B-33). |
 
 **Acceptatiecriteria.**
 - Elke student kan een eigen tabel toevoegen zonder een bestand van een ander te wijzigen.
@@ -1670,7 +1688,7 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 |---|---------|-------|---------------------------|
 | 2.1 | Dependency injection | Ktor's eigen DI-plugin | Zie ADR-04. |
 | 2.2 | Moduleopbouw | Eén `Application.module()` die per feature een `configureXRouting()` aanroept | Voorkomt dat drie studenten in hetzelfde routingbestand schrijven. |
-| 2.3 | Configuratie | `application.yaml` met omgevingsvariabelen voor het JWT-secret | Secrets horen niet in de repository (§16.4). |
+| 2.3 | Configuratie | `application.yaml` met omgevingsvariabelen voor het JWT-secret. Onder `jwt` staan `secret` (uit `JWT_SECRET`), `issuer` (`restpartijen-api`), `audience` (`restpartijen-app`) en `validityHours` (`24`). `config` leest ze in als `JwtProperties`; `toString()` toont het secret als `***` | Secrets horen niet in de repository (§16.4). Met een gemaskeerde `toString()` belandt het secret niet per ongeluk in een log (§16.7). Namen afgesproken in het issue over security (B-36). |
 | 2.4 | Engine | Netty | Standaardkeuze in de Ktor-projectgenerator; geen reden om af te wijken. |
 | 2.5 | Buildtool | Kotlin Toolchain 0.12.0, één module `jvm/app` met `settings.ktor` | Voorgeschreven door de module (§3.2). We houden de standaardindeling van de toolchain aan: `../server/src` voor productiecode, `../server/test` voor testen en `../server/resources` voor `application.yaml` (JetBrains s.r.o., z.j.-j). De wrapperscripts `kotlin` en `kotlin.bat` staan in de repository, zodat iedereen zonder installatie kan bouwen, ook de assessor. De packages staan als mappen direct onder `../server/src`, zonder `com/restpartijen/api` (§8.3). |
 | 2.6 | Versies van dependencies | `libs.versions.toml` in de projectroot; Ktor-artefacten via de BOM van `settings.ktor` | Eén plek voor alle versies voorkomt dat twee studenten dezelfde library in een andere versie toevoegen (JetBrains s.r.o., z.j.-e). |
@@ -1690,12 +1708,14 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 | 3.1 | Mechanisme | JWT via de `Authentication`-plugin, geïnstalleerd met `install(Authentication)` | Stateless, werkt zonder sessieopslag en sluit aan op de Android-app in periode 2 (JetBrains s.r.o., z.j.-g). Ktor 3.6.0 heeft een nieuwe, typed authentication-API, maar die is experimenteel (JetBrains s.r.o., z.j.-n). Wij gebruiken haar niet (B-14). |
 | 3.2 | Rollen in het token | Eén claim `role` met één waarde | Een gebruiker heeft in dit domein precies één rol. Een lijst zou suggereren dat combinaties mogelijk zijn. |
 | 3.3 | Claimnaam en -vorm | `role`, hoofdletters, exact de namen uit de `Role`-enum | Een verschil in schrijfwijze tussen uitgeven en controleren is een fout die pas bij het samenvoegen zichtbaar wordt. |
-| 3.4 | Wachtwoordopslag | BCrypt | Wachtwoorden worden nooit omkeerbaar opgeslagen. |
+| 3.4 | Wachtwoordopslag | Argon2id, via `Argon2PasswordEncoder` uit Spring Security Crypto; `PasswordHasher` in `security` | Wachtwoorden worden gehasht en niet versleuteld: een hash is niet terug te rekenen naar het wachtwoord. OWASP noemt Argon2id als eerste keuze (OWASP Foundation, z.j.). Tot v2.2 stond hier BCrypt (B-34). De Spring-encoder heeft Bouncy Castle nodig voor het Argon2-algoritme (Spring, z.j.-b). |
 | 3.5 | Geldigheidsduur | 24 uur | Lang genoeg voor een demo, kort genoeg om verdedigbaar te zijn. |
 | 3.6 | Verdeling van de autorisatie | Het mechanisme is gedeeld en van Lonneke: de JWT-configuratie, het uitlezen van de principal en de kern van de rolcheck. Welke rol welk endpoint mag aanroepen, schrijft iedere student zelf in de routing van de eigen feature | Advies van de docent (§20, optie B). Zo kennen alle drie de uitwerking van de autorisatie, en kan iedere student eigen autorisatielogica aanwijzen (r.367). |
 | 3.7 | Registreren | `/auth/register` maakt uitsluitend `COLLECTOR`-accounts aan; de rol komt nooit uit het verzoek. Accounts voor aanbieders en de beheerder komen uit de seeddata | Een open registratie waarbij de aanroeper zelf een rol kiest, is een directe route naar `ADMIN`. De profgroep heeft op 19 september 2026 besloten dat de endpoint blijft: de app in periode 2 gebruikt hem, en Lonneke heeft er een POST met validatie mee. |
 | 3.8 | Antwoord van `/auth/login` | Het antwoord bevat het token, de rol en, bij een aanbieder, het `supplierId` | De app bepaalt met de rol welke schermen zij toont en heeft het `supplierId` nodig voor `GET /suppliers/{id}/products` (§18.4). Staan die gegevens niet in het antwoord, dan moet de app ze uit het token lezen, en dan is zij gebonden aan de vorm van ons token. De profgroep heeft dit op 19 september 2026 besloten. |
-| 3.9 | Plek in de code | De package `security` bevat de installatie van de `Authentication`-plugin, `JwtConfig` en de endpoints `/auth/register` en `/auth/login`. `Application.module()` roept één function uit `security` aan, na de plugins en vóór de routing. `config` (Stefan) leest alleen het secret in | `JwtConfig` bouwt en valideert de tokens en hoort daarom bij het gedeelde mechanisme van Lonneke (§11.3). Zo staat alles van GI-3 in één package. Afgesproken in de startsessie (B-29); de indeling binnen `security` volgt nog (§21). |
+| 3.9 | Plek in de code | De package `security` bevat de installatie van de `Authentication`-plugin, `JwtConfig` en de endpoints `/auth/register` en `/auth/login`. `Application.module()` roept één function uit `security` aan, na de plugins en vóór de routing. `config` (Stefan) leest de JWT-instellingen in (besluit 2.3) | `JwtConfig` bouwt en valideert de tokens en hoort daarom bij het gedeelde mechanisme van Lonneke (§11.3). Zo staat alles van GI-3 in één package. Afgesproken in de startsessie (B-29); de indeling binnen `security` volgt nog (§21). Tot v2.2 stond hier dat `config` alleen het secret inleest; in het issue over security is dat alle vier de instellingen geworden (B-36). |
+| 3.10 | Foutmeldingen | De challenge gooit `UnauthorizedException`, de rolcheck gooit `ForbiddenException`; `StatusPages` (GI-4) maakt het antwoord. `validate` geeft `null` en gooit nooit | Eén vorm voor alle foutmeldingen, op één plek (§10.2). Gekozen als optie 1 in het issue over security, tegenover security die zelf een antwoord stuurt. Dat laatste zou de vorm van een `401` op twee plekken vastleggen (B-35). |
+| 3.11 | JWT-instellingen in `security` | `JwtConfig` werkt met `JwtSettings` uit `security`, niet rechtstreeks met `JwtProperties` uit `config`. De provider heet `jwt-auth`, als constante `PROVIDER_NAME` in `security` | Twee klassen met elk een eigen taak: `JwtProperties` leest in, `JwtSettings` is wat het tokenmechanisme gebruikt. In tests vult Lonneke `JwtSettings` met vaste waarden zonder `application.yaml`. Afgesproken tussen Stefan en Lonneke in het issue (B-36). |
 
 **Acceptatiecriteria.**
 - Een aanroep zonder token op een beschermde endpoint levert `401`.
@@ -1706,6 +1726,9 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 - Het antwoord op inloggen bevat de rol en, bij een aanbieder, het `supplierId`.
 - Het antwoord op registreren en inloggen bevat nooit het wachtwoord of de hash.
 - Iedere student heeft de rolregels van de eigen endpoints zelf geschreven; het gedeelde mechanisme bevat geen regels per endpoint.
+- Een `401` en een `403` hebben de foutvorm uit §10.2.
+
+> **Opmerking v2.3 — voor Lonneke: de parameters van Argon2id.** `PasswordHasher` gebruikt `Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8()`. Die standaard rekent met 16 MiB geheugen, 2 iteraties en parallelisme 1 (Spring, z.j.-b). OWASP noemt als minimum 19 MiB bij 2 iteraties, of 12 MiB bij 3 iteraties (OWASP Foundation, z.j.). De standaard van Spring zit daar dus onder. De encoder heeft ook een constructor waarin je de waarden zelf opgeeft. Dat is een keuze voor jou; zet de waarden en de bron erbij in de KDoc. Over de library zelf: in het issue onderbouwt Lonneke Spring Security Crypto met actief onderhoud en recente stabiele versies, met de documentatie van Spring als bron (Spring, z.j.-a). In het issue ging het nog om bcrypt. Waarom het Argon2id werd, staat er niet bij. De overstap volgt wel uit de eerste keuze van OWASP. Zet die reden bij de library in `../server/module.yaml`. Daar staat nu "well-known and widely used", en dat zegt iets anders dan het issue.
 
 ### GI-4 Foutafhandeling — uitvoering: Stefan
 
@@ -1748,7 +1771,7 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 | 6.1 | Testframework | `kotlin.test` op het JUnit Platform | De Kotlin Toolchain configureert `kotlin.test` standaard, dus er is geen eigen testconfiguratie nodig (JetBrains s.r.o., z.j.-l). `kotlin.test` leest idiomatischer in Kotlin dan JUnit-assertions. |
 | 6.2 | Integratietesten | `testApplication` uit `ktor-server-test-host` | De officiële aanpak van Ktor: start de applicatie in het geheugen zonder poort, en kan dependencies vervangen (JetBrains s.r.o., z.j.-m). |
 | 6.3 | Mocken | MockK | Kotlin-first: kan final classes, object declarations en `suspend` functions mocken, waar Mockito op vastloopt (MockK, z.j.). Relevant omdat `DiscountPolicyResolver` een object is en de Open Food Facts-client `suspend` is. |
-| 6.4 | Dubbels voor repositories | Fakes, geen mocks | Een fake repository met een `MutableList` is leesbaarder en breekt niet bij elke refactor. Mocks worden alleen gebruikt waar gedrag geverifieerd moet worden, zoals de time-out van de externe client. |
+| 6.4 | Dubbels voor repositories | Fakes, geen mocks. Voor `Repository<T>` is er één generieke `FakeRepository<T>` in `../server/test/testsupport`; `FakeRepositoryTest` laat zien hoe je hem gebruikt | Een fake repository met een `MutableList` is leesbaarder en breekt niet bij elke refactor. Met één generieke fake schrijft niet iedereen een eigen versie (B-33). Mocks worden alleen gebruikt waar gedrag geverifieerd moet worden, zoals de time-out van de externe client. |
 | 6.5 | Tijd in testen | Injecteerbare `kotlin.time.Clock`, nooit rechtstreeks `Clock.System` | Zonder vaste klok zijn de afprijsstaffels, het afgeleide afhaalvenster en de statusbewaking niet reproduceerbaar te testen. `Clock` en `Instant` zitten sinds Kotlin 2.3 in de standard library, en de documentatie raadt zelf aan een `Clock` door te geven in plaats van `Clock.System` aan te roepen (JetBrains s.r.o., z.j.-b). Dit is een harde regel, geen voorkeur. |
 | 6.6 | Testdatabase | H2 in-memory, per test leeggemaakt | Elke test start van een bekende toestand; geen volgorde-afhankelijkheid tussen testen. |
 | 6.7 | Plaats van de testen | De map `../server/test` van de module; MockK en `ktor-server-test-host` onder `test-dependencies` in `../server/module.yaml` | Dit wijkt af van `../server/src` uit vrijwel elk voorbeeld. Vastleggen voorkomt dat testen op een plek belanden waar de toolchain ze niet vindt (JetBrains s.r.o., z.j.-l). |
@@ -1812,7 +1835,8 @@ Allergenen horen bij het product en niet bij de gebruiker; er worden dus geen ge
 
 - Methode: JWT, uitgegeven door `/auth/login`, gevalideerd door de `Authentication`-plugin.
 - Geldigheidsduur: 24 uur. Geen refresh tokens — buiten scope voor dit project.
-- Wachtwoorden worden met BCrypt gehasht en nooit omkeerbaar opgeslagen.
+- Wachtwoorden worden met Argon2id gehasht en nooit omkeerbaar opgeslagen (GI-3, besluit 3.4).
+- Alleen de server hasht. De app stuurt het wachtwoord naar de API en hasht zelf niets.
 
 ### 16.2 Autorisatiemodel
 
@@ -1830,7 +1854,7 @@ Wie wat mag, staat in §1.3. Hier staat hoe dat wordt afgedwongen.
 
 ### 16.4 Secrets
 
-Het JWT-secret komt uit een omgevingsvariabele en staat niet in de repository. De `application.yaml` bevat een placeholder, geen waarde. Er is een `.env.example` met de benodigde variabelen zonder inhoud.
+Het JWT-secret komt uit de omgevingsvariabele `JWT_SECRET` en staat niet in de repository. De `application.yaml` bevat een placeholder, geen waarde. Er is een `.env.example` met de benodigde variabelen zonder inhoud. In de code van 3 oktober 2026 start de applicatie niet zonder `JWT_SECRET`, en een secret moet minstens 32 bytes zijn. Of er een terugval komt voor ontwikkelen, is nog open (§21).
 
 ### 16.5 Invoervalidatie
 
@@ -2021,10 +2045,13 @@ Na versie 2.1 kwamen er drie adviezen bij. Het eerste gaf de docent eerder in se
 - **De afprijsstaffels in §9.4 zijn een keuze van deze profgroep**, geen gegeven uit de casusbeschrijving. Bij het assessment zijn er vragen over te verwachten, dus iedere student moet kunnen uitleggen waarom de grenzen liggen waar ze liggen.
 - **Beslispunt voor Lonneke: welke endpoint zij in de app verzorgt.** Alle endpoints van F3 zijn beheerdersendpoints, en die roept de app in periode 2 niet aan. Daardoor heeft Lonneke geen endpoint die vanuit de app wordt gebruikt. Zij kiest tussen account aanmaken, `/auth/register`, die de app bij het registreren aanroept (§18.4), en een endpoint voor het prijsverloop van een partij, voor de grafiek die de docent noemde (§20). Het prijsverloop vraagt een chart library in de app en de staffels van een partij in het antwoord van de API (§18.3). Lonneke komt op deze keuze terug.
 - **Gevolg van die keuze voor `/auth/register`.** Valt de keuze op het prijsverloop, dan is nog niet bepaald of `/auth/register` bij Lonneke blijft of naar een ander gaat. Tot dat besluit houdt dit document de endpoint bij haar (§10.1, §11.3, §13 besluit 3.7).
-- **Bevestigen bij de review van v2.2.** De afrondingsregel (B-24, §9.4), `findByStatus` voor het beheeroverzicht (B-26, §12.1), een verwijderde partij in de seeddata (B-31, §9.7) en `404` bij het reserveren van een verwijderde partij (B-32, §9.5). B-26 wordt bevestigd in de pull request die het contract wijzigt.
+- **Bevestigen.** De afrondingsregel (B-24, §9.4) en `404` bij het reserveren van een verwijderde partij (B-32, §9.5). B-26 en B-31 zijn in v2.3 goedgekeurd.
 - **`DatabaseFactory` importeert `ProductsTable`.** De persistentielaag kent daardoor een tabel van F1, en dat is een afhankelijkheid de verkeerde kant op (§8.3). Nodig is een manier waarop elke feature de eigen tabellen aanmeldt. Eva lost dit op in basis T9; het hoort bij het acceptatiecriterium van GI-1 dat niemand een bestand van een ander hoeft te wijzigen.
 - **Indeling van de `/auth`-endpoints binnen `security`** (GI-3, besluit 3.9). Nog af te spreken met Lonneke.
-- **Starten zonder handmatige stappen tegenover het secret uit een omgevingsvariabele.** GI-2 eist dat de applicatie na `./kotlin run` start zonder handmatige stappen; §16.4 eist dat het JWT-secret uit een omgevingsvariabele komt. Komt er een ontwikkelwaarde als terugval, of telt het zetten van de variabele niet als handmatige stap?
+- **Starten zonder handmatige stappen tegenover het secret uit een omgevingsvariabele.** GI-2 eist dat de applicatie na `./kotlin run` start zonder handmatige stappen; §16.4 eist dat het JWT-secret uit een omgevingsvariabele komt. Komt er een ontwikkelwaarde als terugval, of telt het zetten van de variabele niet als handmatige stap? Stand op 3 oktober 2026: de code stopt zonder `JWT_SECRET`. Een terugval met een willekeurig secret staat als uitgecommentarieerd alternatief in `JwtProperties.kt`. De vraag ligt bij de docent. Tot het antwoord er is, haalt de applicatie het acceptatiecriterium van GI-2 niet.
+- **De parameters van Argon2id** liggen onder het minimum van OWASP (Opmerking v2.3 bij GI-3). Lonneke beslist.
+- **Van `JwtProperties` naar `JwtSettings`.** Beide klassen bestaan, maar `Application.module()` zet de ene nog niet om in de andere en roept `configureSecurity()` nog niet aan. Af te spreken tussen Stefan en Lonneke: wie schrijft die stap.
+- **`StatusPages` staat nog niet in de productiecode.** `ktor-server-status-pages` staat alleen onder `test-dependencies`. Tot GI-4 het installeert, komen de excepties uit B-35 niet als nette `401` en `403` terug.
 - **Testrapportage en loadtool.** NFR-03 en §8.7 verwijzen naar de testrapportage, maar zeggen niet waar die staat. §8.7 noemt de drempel voor performance, maar niet waarmee gemeten wordt.
 - **Unittesten van `suspend`-contracten.** Een test die een `suspend`-function aanroept, doet dat binnen `runTest` of `runBlocking`. Nog na te gaan is of `runTest` via de huidige test-dependencies beschikbaar is.
 
@@ -2087,6 +2114,12 @@ Nederlandse Voedsel- en Warenautoriteit. (z.j.). *Allergenen*. Geraadpleegd op 1
 Open Food Facts. (z.j.-a). *Introduction to Open Food Facts API documentation*. Product Opener. Geraadpleegd op 12 september 2026, van https://openfoodfacts.github.io/openfoodfacts-server/api/
 
 Open Food Facts. (z.j.-b). *List of allergens – World*. Geraadpleegd op 18 september 2026, van https://world.openfoodfacts.org/allergens
+
+OWASP Foundation. (z.j.). *Password storage cheat sheet*. OWASP Cheat Sheet Series. Geraadpleegd op 3 oktober 2026, van https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+
+Spring. (z.j.-a). *Spring Security crypto module*. Spring Security Reference. Geraadpleegd op 3 oktober 2026, van https://docs.spring.io/spring-security/reference/features/integrations/cryptography.html
+
+Spring. (z.j.-b). *Argon2PasswordEncoder.java* [Broncode]. GitHub. Geraadpleegd op 3 oktober 2026, van https://github.com/spring-projects/spring-security/blob/main/crypto/src/main/java/org/springframework/security/crypto/argon2/Argon2PasswordEncoder.java
 
 Verordening (EU) nr. 1169/2011 van het Europees Parlement en de Raad van 25 oktober 2011 betreffende de verstrekking van voedselinformatie aan consumenten. (2011). *Publicatieblad van de Europese Unie, L 304*, 18–63. https://eur-lex.europa.eu/eli/reg/2011/1169/oj/nld
 
