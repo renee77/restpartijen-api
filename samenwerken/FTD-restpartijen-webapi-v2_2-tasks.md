@@ -299,7 +299,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 6 — GI-4 Foutafha
 
 ## Fase 7 — K-1 en K-6 Contracten van F1 geleverd
 
-Basis: [[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|K-1 en K-6]], [[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]], [[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]], [[FTD-restpartijen-webapi-v2_2#9.2 Entiteiten|§9.2]], [[FTD-restpartijen-webapi-v2_2#9.3 Vertaling van het objectmodel naar het relationele model|§9.3]], [[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]], [[FTD-restpartijen-webapi-v2_2#8.6 Architectuurbeslissingen|ADR-08]], [[FTD-restpartijen-webapi-v2_2#Bijlage A — Werken met contracten|bijlage A]]
+Basis: [[FTD-restpartijen-webapi-v2_2#12.1 De koppelvlakken|K-1 en K-6]], [[FTD-restpartijen-webapi-v2_2#8.4 Klassendiagram|§8.4]], [[FTD-restpartijen-webapi-v2_2#9.1 ERD|§9.1]], [[FTD-restpartijen-webapi-v2_2#9.2 Entiteiten|§9.2]], [[FTD-restpartijen-webapi-v2_2#9.3 Vertaling van het objectmodel naar het relationele model|§9.3]], [[FTD-restpartijen-webapi-v2_2#11.1 Eva Bouwman — F1 Aanbod en productdata|§11.1]], [[FTD-restpartijen-webapi-v2_2#8.6 Architectuurbeslissingen|ADR-07]], [[FTD-restpartijen-webapi-v2_2#Bijlage A — Werken met contracten|bijlage A]]
 Raakt: `../server/src`, `../server/src`, `../server/test`
 Start na: fase 3 en fase 5 (`UsersTable`, voor de foreign key van `suppliers`)
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 7 — K-1 en K-6 Contracten van F1 geleverd|Eva]], [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 7 — K-1 en K-6 Contracten van F1 geleverd|Lonneke]]
@@ -515,7 +515,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-stefan#Fase 15 — US-11 Ophale
 
 ## Fase 16 — US-07 Actuele prijs zien
 
-Basis: [[FTD-restpartijen-webapi-v2_2#5.7 US-07 — Actuele prijs zien|§5.7]], [[FTD-restpartijen-webapi-v2_2#9.4 Afprijsstaffels per productsoort|§9.4]], [[FTD-restpartijen-webapi-v2_2#SD-3 — Productdetail met actuele prijs, polymorfe afprijzing (US-07)|SD-3]], [[FTD-restpartijen-webapi-v2_2#ADR-02 — Afprijzing als aparte policy-hiërarchie|ADR-02]], [[FTD-restpartijen-webapi-v2_2#ADR-06 — Staffels in plaats van doorlopende afprijscurves|ADR-06]], [[FTD-restpartijen-webapi-v2_2#8.6 Architectuurbeslissingen|ADR-08]], [[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]], [[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|§14]]
+Basis: [[FTD-restpartijen-webapi-v2_2#5.7 US-07 — Actuele prijs zien|§5.7]], [[FTD-restpartijen-webapi-v2_2#9.4 Afprijsstaffels per productsoort|§9.4]], [[FTD-restpartijen-webapi-v2_2#SD-3 — Productdetail met actuele prijs, polymorfe afprijzing (US-07)|SD-3]], [[FTD-restpartijen-webapi-v2_2#ADR-02 — Afprijzing als aparte policy-hiërarchie|ADR-02]], [[FTD-restpartijen-webapi-v2_2#ADR-06 — Staffels in plaats van doorlopende afprijscurves|ADR-06]], [[FTD-restpartijen-webapi-v2_2#8.6 Architectuurbeslissingen|ADR-07]], [[FTD-restpartijen-webapi-v2_2#11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking|§11.3]], [[FTD-restpartijen-webapi-v2_2#14. Niet-functionele eisen (NFR)|§14]]
 Raakt: `../server/src`, `../server/src`, `../server/src`, `../server/src`, `../server/src` (één regel), `../server/test`, `../server/test`
 Start na: fase 1; het detail met prijs (Eva) start na de `PricingService` van Lonneke
 Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-lonneke#Fase 16 — US-07 Actuele prijs zien|Lonneke]], [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 16 — US-07 Actuele prijs zien|Eva]]
@@ -722,7 +722,7 @@ Toegewezen: [[FTD-restpartijen-webapi-v2_2-tasks-eva#Fase 21 — Inleveren|Eva]]
 | [[FTD-restpartijen-webapi-v2_2#ADR-04 — Ktor's eigen dependency-injectionplugin\|ADR-04]] | 4 | Stefan |
 | [[FTD-restpartijen-webapi-v2_2#ADR-05 — Ktor-plugins en verantwoordelijkheden\|ADR-05]] | 4, 5, 6 | Stefan, Lonneke |
 | [[FTD-restpartijen-webapi-v2_2#ADR-06 — Staffels in plaats van doorlopende afprijscurves\|ADR-06]] | 13 (vastgelegde prijs), 16 (staffels) | Stefan, Lonneke |
-| [[FTD-restpartijen-webapi-v2_2#8.6 Architectuurbeslissingen\|ADR-08]] | 1 (omrekening), 7 (kolommen), 16 (afronding) | Lonneke, Eva |
+| [[FTD-restpartijen-webapi-v2_2#8.6 Architectuurbeslissingen\|ADR-07]] | 1 (omrekening), 7 (kolommen), 16 (afronding) | Lonneke, Eva |
 | [[FTD-restpartijen-webapi-v2_2#8.7 Kwaliteitsscenario's\|§8.7]] performance | 20 | Stefan |
 | [[FTD-restpartijen-webapi-v2_2#8.7 Kwaliteitsscenario's\|§8.7]] beschikbaarheid | 9 | Eva |
 | [[FTD-restpartijen-webapi-v2_2#8.7 Kwaliteitsscenario's\|§8.7]] security | 8 | Eva |

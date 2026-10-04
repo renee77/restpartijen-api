@@ -22,8 +22,6 @@ Elk ADR legt één besluit vast: de context, het besluit, de status, de gevolgen
 
 De eigenaren komen uit de takenlijst van het team (`samenwerken/FTD-restpartijen-webapi-v2_2-tasks.md`).
 
-ADR-07 heette tot en met FTD v2.3 ADR-08. Oudere documenten gebruiken nog dat nummer.
-
 ## Een nieuw ADR toevoegen
 
 - Neem het volgende vrije nummer. Een nummer wordt niet opnieuw gebruikt.
