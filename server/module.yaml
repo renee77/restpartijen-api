@@ -25,7 +25,6 @@ dependencies:
   - com.h2database:h2:2.4.240
   - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0
   - io.ktor:ktor-server-status-pages
-  -
   ############ Security dependencies ############
   - io.ktor:ktor-server-auth
   - io.ktor:ktor-server-auth-jwt
