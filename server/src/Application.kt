@@ -5,7 +5,6 @@ import com.restpartijen.api.config.jwtProperties
 import com.restpartijen.api.persistence.DatabaseFactory
 import com.restpartijen.api.plugins.configureDependencies
 import com.restpartijen.api.plugins.configureSerialization
-import com.restpartijen.api.product.repository.ProductsTable
 import com.restpartijen.api.product.routes.configureProductRouting
 import io.ktor.server.application.Application
 import io.ktor.server.application.log
@@ -34,7 +33,7 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
-    init(environment.config.databaseSettings(), ProductsTable)
+    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable)
 
     // 2. PLUGINS
     configureSerialization()
