@@ -10,8 +10,7 @@ class ExpiryScheduler (
     private val productStatusUpdater: ProductStatusUpdater,
     private val clock: Clock
 ){
-    suspend fun runMaintenance() {
-        suspend fun runMaintenance(): MaintenanceReport {
+    suspend fun runMaintenance(): MaintenanceReport {
             // One moment for both steps, so the result never depends on when each step happens to run.
             val now = clock.now()
 
@@ -24,5 +23,4 @@ class ExpiryScheduler (
 
             return MaintenanceReport(lapsedReservations = lapsed, expiredProducts = expired)
         }
-    }
 }
