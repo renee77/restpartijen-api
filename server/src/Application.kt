@@ -33,14 +33,15 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
-    init(environment.config.databaseSettings())
+    init(environment.config.databaseSettings(), ProductsTable)
 
     // 2. PLUGINS
     configureSerialization()
     configureDependencies()
 
-    init(environment.config.databaseSettings(), ProductsTable)
-    val exposedProductRepository = ExposedProductRepository()
-    val productService = ProductService(exposedProductRepository)
+    // 3. SECURITY
+
+
+    // 4. ROUTES
     configureProductRouting()
 }
