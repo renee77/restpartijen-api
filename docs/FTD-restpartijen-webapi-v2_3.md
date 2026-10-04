@@ -108,9 +108,9 @@ Deze tabel volgt op de besluiten van 19 september. De kolom *Door* zegt wie besl
 
 | # | Onderwerp | Besluit | Door | Verwerkt in | Status |
 |---|-----------|---------|------|-------------|--------|
-| B-13 | Bedragen | Hele eurocenten in een `Long`, in het waardetype `Money`; kortingen als hele percentages (`Int`) | Docent, 20 september 2026 | ADR-08, §8.4, §8.5 (SD-3), §9.1, §9.3, §9.4, §12.2 | Vast |
+| B-13 | Bedragen | Hele eurocenten in een `Long`, in het waardetype `Money`; kortingen als hele percentages (`Int`) | Docent, 20 september 2026 | ADR-07, §8.4, §8.5 (SD-3), §9.1, §9.3, §9.4, §12.2 | Vast |
 | B-14 | Ktor-versie | 3.6.0 in plaats van 3.5.2; wij houden `install(Authentication)` aan en gebruiken de nieuwe, experimentele typed authentication niet | Docent, 20 september 2026 | §3.2, §8.2, §13 (GI-3), §17 (R-07), Bronnen | Vast |
-| B-15 | Libraries | kotlinx-libraries gaan voor Java-libraries, met het oog op multiplatform in periode 3 | Docent, september 2026 | §3.2, §20, ADR-08 | Vast |
+| B-15 | Libraries | kotlinx-libraries gaan voor Java-libraries, met het oog op multiplatform in periode 3 | Docent, september 2026 | §3.2, §20, ADR-07 | Vast |
 | B-16 | Testdekking (B-6) | De coverage-runner van IntelliJ werkt op dit project. De drempel van NFR-03 blijft | Startsessie | §14 | Vast |
 | B-17 | H2 (B-10) | Bevestigd: in-memory tijdens de demo en in alle testen, met een schakelaar naar bestand | Startsessie | §13 (GI-1, besluit 1.2) | Vast |
 | B-18 | Geen prijs (beslispunt 2) | `currentPrice` en `priceBreakdown` geven `null` bij een verlopen partij | Startsessie | §8.4, §8.5 (SD-2, SD-3), §12.1 | Vast |
@@ -264,7 +264,7 @@ Dit is een schoolproject binnen de proftaak van de module AI-powered software de
 
 - Technologie ligt vast: Kotlin met Ktor (r.60). De applicatie draait lokaal (r.72).
 - De module schrijft voor dat we werken met de actuele versies van Kotlin, Ktor en Exposed, en met de Kotlin Toolchain als buildtool in plaats van Gradle. Dat is een gegeven en geen keuze van de profgroep. De tabel onder deze lijst geeft de stand op de peildatum 18 september 2026; de regel voor Ktor is bijgewerkt op 29 september 2026.
-- De docent adviseert kotlinx-libraries boven Java-libraries, met het oog op multiplatform in periode 3 (P. de Mast, persoonlijke communicatie, september 2026). Daarom gebruiken we kotlinx.serialization en kotlinx-datetime, loopt tijd via een injecteerbare `kotlin.time.Clock`, en zijn bedragen hele centen in een `Long` (ADR-08). Eén uitzondering: voor het hashen van wachtwoorden bestaat geen kotlinx-library. Alleen de server hasht, en die draait op de JVM. Daarvoor gebruiken we dus een Java-library (B-34).
+- De docent adviseert kotlinx-libraries boven Java-libraries, met het oog op multiplatform in periode 3 (P. de Mast, persoonlijke communicatie, september 2026). Daarom gebruiken we kotlinx.serialization en kotlinx-datetime, loopt tijd via een injecteerbare `kotlin.time.Clock`, en zijn bedragen hele centen in een `Long` (ADR-07). Eén uitzondering: voor het hashen van wachtwoorden bestaat geen kotlinx-library. Alleen de server hasht, en die draait op de JVM. Daarvoor gebruiken we dus een Java-library (B-34).
 - Broncode, KDoc en commentaar zijn Engelstalig (r.191). Eén uitzondering: een Nederlandse commentaarregel mag als werknotitie voor de programmeur, bijvoorbeeld "nog nakijken of …". Zo'n regel is een open werkpunt. Hij mag op `main` staan, zodat duidelijk is welk werk nog in uitvoering is. Bij de oplevering is hij weg; dat wordt één keer gecontroleerd vóór de oplevering (§12.3, B-37). Dit document is Nederlands.
 - Doorlooptijd circa zeven weken; inleveren 25 oktober 2026, assessment de week daarna.
 - Drie studenten die naast deze module andere verplichtingen hebben.
@@ -276,7 +276,7 @@ Dit is een schoolproject binnen de proftaak van de module AI-powered software de
 | Exposed | 1.5.0 | 26 augustus 2026 | JetBrains (2026) |
 | Kotlin Toolchain | 0.12.0, stabiliteitsniveau Alpha | 4 september 2026 | Bion (2026b) |
 | JDK | 25, door de toolchain zelf opgehaald | — | Bion (2026b) |
-| H2 | 2.x; Exposed 1.x ondersteunt H2 1.x niet meer | — | JetBrains s.r.o. (2026b) |
+| H2 | 2.x; Exposed 1.x ondersteunt H2 1.x niet meer | — | JetBrains s.r.o. (2026) |
 
 De versies worden bij de start vastgezet en tijdens het project niet meer verhoogd, tenzij een fout daartoe dwingt of de docent het voorschrijft. Dat laatste is bij Ktor gebeurd: de docent heeft besloten dat we met 3.6.0 werken (P. de Mast, persoonlijke communicatie, 20 september 2026). Twee dingen om op te letten: `receiveNullable()` is in 3.6.0 deprecated, dus we gebruiken `receive<T?>()`, en de nieuwe typed authentication is experimenteel, dus die gebruiken we niet (JetBrains s.r.o., z.j.-n). De Kotlin Toolchain 0.12.0 levert standaard Kotlin 2.4.10; in `../server/module.yaml` wordt de versie daarom expliciet op 2.4.20 gezet (JetBrains s.r.o., z.j.-j).
 
@@ -569,6 +569,8 @@ Een story is af als:
 
 ## 8. Architectuur
 
+De architectuurbeslissingen (ADR-01 tot en met ADR-07) staan niet in dit document, maar in de codebase: `docs/adr/`, één bestand per ADR. Een verwijzing als "ADR-07" in dit document gaat naar dat bestand. Let op: ADR-07 (bedragen in centen) heette tot en met v2.3 ADR-08. Het ADR-07 dat in W-13 is geschrapt, is een ander, nooit uitgebracht concept.
+
 ### 8.1 Context (C4 niveau 1)
 
 ```mermaid
@@ -841,7 +843,7 @@ classDiagram
 
 Het diagram toont de kernklassen van de drie features, niet alle klassen. Services, repositories en DTO's die geen OO-concept laten zien, staan alleen in de verdelingsmatrix (§11).
 
-**Waar de abstractie zit** (r.165): `SurplusProduct` is een abstracte, `sealed` class. Wat voor elke soort gelijk is, staat in de basisklasse: de gedeelde velden, `shelfLifeRemaining()`, `isExpired()` en de controle bij het plaatsen, `validateForListing()`. Wat per soort verschilt, vullen de drie subklassen in: de property `category` en de function `maxShelfLife()`, de langste houdbaarheid die voor die soort nog geloofwaardig is (§9.10). Een `*` in het diagram betekent abstract. Tot v2.1 was `category()` een function; het contract `PricedProduct` maakt er een property van, en `SurplusProduct` volgt het contract (B-23). Het polymorfisme blijft gelijk: elke subklasse overschrijft de property met de eigen soort. Dat is ook het antwoord op de vraag waarom dit een abstracte class is en geen interface: er is gedeelde toestand en gedeelde implementatie. Omdat de class `sealed` is, controleert de compiler dat de factory elke soort afhandelt. `DiscountPolicy` is een interface met drie implementaties. Sinds v1.1 levert elke implementatie alleen de eigen staffels via `tiers()`; `discountPercentage()` en `maxDiscount()` staan als default implementatie in de interface zelf, zodat de opzoeklogica op één plek staat. Sinds v2.2 is een korting een heel percentage (`Int`), geen factor; daarom heet de function `discountPercentage()` en niet meer `discountFactor()` (ADR-08). `Repository<T>` is een generieke interface. Tot v2.2 had hij één `save()`; sinds v2.3 zijn dat `create()` en `update()`, zodat "niet gevonden" bij het bijwerken een eigen antwoord heeft (B-33). `DiscountPolicyResolver` is een object declaration (singleton). Daarmee zijn overerving, interfaces, abstracte classes, polymorfisme, generics en het singleton-patroon alle zes aanwijsbaar in het diagram. `PricedProduct`, `ProductView` en `PriceProvider` zijn contracten uit §12.1: de features zien elkaar alleen door deze interfaces. `Money` en `SupplierSummary` staan in `shared`, omdat ze in een contract voorkomen. `PriceProvider` geeft `null` terug als een partij verlopen is (B-18): geen prijs is een gewone toestand en geen fout, en de compiler dwingt elke aanroeper dat geval af te handelen.
+**Waar de abstractie zit** (r.165): `SurplusProduct` is een abstracte, `sealed` class. Wat voor elke soort gelijk is, staat in de basisklasse: de gedeelde velden, `shelfLifeRemaining()`, `isExpired()` en de controle bij het plaatsen, `validateForListing()`. Wat per soort verschilt, vullen de drie subklassen in: de property `category` en de function `maxShelfLife()`, de langste houdbaarheid die voor die soort nog geloofwaardig is (§9.10). Een `*` in het diagram betekent abstract. Tot v2.1 was `category()` een function; het contract `PricedProduct` maakt er een property van, en `SurplusProduct` volgt het contract (B-23). Het polymorfisme blijft gelijk: elke subklasse overschrijft de property met de eigen soort. Dat is ook het antwoord op de vraag waarom dit een abstracte class is en geen interface: er is gedeelde toestand en gedeelde implementatie. Omdat de class `sealed` is, controleert de compiler dat de factory elke soort afhandelt. `DiscountPolicy` is een interface met drie implementaties. Sinds v1.1 levert elke implementatie alleen de eigen staffels via `tiers()`; `discountPercentage()` en `maxDiscount()` staan als default implementatie in de interface zelf, zodat de opzoeklogica op één plek staat. Sinds v2.2 is een korting een heel percentage (`Int`), geen factor; daarom heet de function `discountPercentage()` en niet meer `discountFactor()` (ADR-07). `Repository<T>` is een generieke interface. Tot v2.2 had hij één `save()`; sinds v2.3 zijn dat `create()` en `update()`, zodat "niet gevonden" bij het bijwerken een eigen antwoord heeft (B-33). `DiscountPolicyResolver` is een object declaration (singleton). Daarmee zijn overerving, interfaces, abstracte classes, polymorfisme, generics en het singleton-patroon alle zes aanwijsbaar in het diagram. `PricedProduct`, `ProductView` en `PriceProvider` zijn contracten uit §12.1: de features zien elkaar alleen door deze interfaces. `Money` en `SupplierSummary` staan in `shared`, omdat ze in een contract voorkomen. `PriceProvider` geeft `null` terug als een partij verlopen is (B-18): geen prijs is een gewone toestand en geen fout, en de compiler dwingt elke aanroeper dat geval af te handelen.
 
 `OpeningHours` en `PickupWindowCalculator` horen bij US-10 (§9.9). De calculator kent geen repository en geen HTTP: hij krijgt openingstijden en twee tijdstippen en geeft een afhaalvenster terug, of `null` als de aanbieder vóór `bestBeforeAt` niet meer open is.
 
@@ -1073,76 +1075,7 @@ sequenceDiagram
 
 SD-4 toont de statusbewaking. De beheerder start haar hier handmatig, zodat zij tijdens de demo te tonen is. F3 beslist wat er moet gebeuren; F2 en F1 voeren het uit op hun eigen gegevens, via contracten (bijlage A). De volgorde van de twee stappen is een besluit. Eerst vervallen de reserveringen die over tijd zijn: het afhaalvenster is voorbij, of de reservering is ouder dan 24 uur. Dat is één aanroep, `lapseOverdue`. F2 bepaalt zelf welke reserveringen over tijd zijn en voert het vervallen uit via de statusmachine; de partij komt dan weer vrij (§9.5). Tot v2.1 tekende dit diagram twee aanroepen, een om de reserveringen op te vragen en een om ze te laten vervallen. Dat kan niet via een contract: een `Reservation` is een klasse van F2 en staat niet in `shared`. Het contract geeft daarom alleen een aantal terug. Daarna verlopen de partijen waarvan de datum is verstreken. Andersom zou een verlopen partij door de tweede stap weer op `LISTED` komen. Het antwoord is een rapport met de aantallen per overgang. Een tweede aanroep direct erna verandert niets meer.
 
-### 8.6 Architectuurbeslissingen
-
-#### ADR-01 — Ktor met featuregerichte packages in plaats van laaggerichte
-
-- **Context.** Drie studenten werken in één repository aan één applicatie. Elke student moet bij het assessment eigen code kunnen aanwijzen (r.367), en merge-conflicten moeten beperkt blijven.
-- **Besluit.** De packagestructuur volgt de features (`product`, `reservation`, `pricing`), niet de lagen (`controllers`, `services`, `repositories`). Binnen elke featurepackage zit wel de laagindeling.
-- **Status.** Aangenomen.
-- **Gevolgen.** Positief: elke student werkt vrijwel uitsluitend in de eigen package; eigenaarschap is zichtbaar in de mapstructuur. Negatief: de laagindeling is drie keer herhaald, wat bij een grotere applicatie tot duplicatie zou leiden.
-- **Alternatieven.** Laaggerichte packages werden afgewezen omdat alle drie de studenten dan in dezelfde mappen zouden schrijven, met merge-conflicten en onduidelijk eigenaarschap als gevolg.
-
-#### ADR-02 — Afprijzing als aparte policy-hiërarchie
-
-- **Context.** De afprijzing verschilt per productsoort. In de eerste opzet van de casus was dat een method in de productklassen zelf. Dat zou betekenen dat de eigenaar van de producthiërarchie en de eigenaar van de afprijzing in dezelfde bestanden schrijven.
-- **Besluit.** `SurplusProduct` houdt `shelfLifeRemaining()` — dat is een eigenschap van het product. De afprijzing verhuist naar een aparte interface `DiscountPolicy` met drie implementaties, met een eigen eigenaar.
-- **Status.** Aangenomen.
-- **Gevolgen.** Positief: twee polymorfe hiërarchieën in plaats van één, elk met een eigenaar die hem zelfstandig kan verdedigen; geen gedeelde bestanden; de afprijsregels zijn los te testen zonder een product op te bouwen. Negatief: er is een koppelvlak nodig dat een productsoort aan een policy koppelt (`DiscountPolicyResolver`), en het model is iets indirecter dan één klasse met een method.
-- **Alternatieven.** Alles in de productklassen werd afgewezen op eigenaarschap en merge-risico. De hele producthiërarchie bij één student werd afgewezen omdat de andere student dan geen eigen klassenhiërarchie zou hebben om OO-abstractie mee aan te tonen.
-
-#### ADR-03 — Exposed-versie (vervallen in v1.1)
-
-- **Status.** Vervallen. In v1.0 koos de profgroep voor Exposed 0.x. De module schrijft de actuele versies voor (§3.2), dus hier valt niets meer te kiezen.
-- **Wat ervan overblijft.** Exposed 1.0 is in januari 2026 uitgebracht met een stabiele API (JetBrains s.r.o., 2026a). De overstap raakt de code op drie plekken: de imports, de indeling in modules en de transacties vanuit coroutines (JetBrains s.r.o., 2026b). Die drie staan als besluiten 1.5 tot en met 1.7 in GI-1 (§13).
-
-#### ADR-04 — Ktor's eigen dependency-injectionplugin
-
-- **Context.** De services moeten in tests door fakes vervangen kunnen worden zonder dat de productiecode verandert.
-- **Besluit.** De ingebouwde DI-plugin van Ktor (`io.ktor.server.plugins.di`) wordt gebruikt in plaats van Koin of handmatige constructor injection.
-- **Status.** Aangenomen.
-- **Gevolgen.** Positief: geen extra library, en `testApplication` kan een dependency rechtstreeks overschrijven met een fake (JetBrains s.r.o., z.j.-m). Negatief: de plugin is relatief nieuw, waardoor er minder voorbeelden buiten de officiële documentatie zijn.
-- **Alternatieven.** Koin werd overwogen en is herbruikbaar in de Android-app van periode 2, maar kost een extra library om te leren en te verdedigen. Handmatige constructor injection blijft overzichtelijk bij dit aantal dependencies, maar maakt testvervanging omslachtiger.
-
-#### ADR-05 — Ktor-plugins en verantwoordelijkheden
-
-- **Context.** De rubric vraagt voor niveau "goed" inzicht in de opbouw van Ktor-modules, routing, plugins en verantwoordelijkheden (r.373).
-- **Besluit.** De volgende plugins worden geïnstalleerd, elk met één duidelijke verantwoordelijkheid:
-
-| Plugin | Verantwoordelijkheid | Eigenaar |
-|--------|----------------------|----------|
-| `Routing` | Endpoints koppelen aan handlers; per feature een eigen routingbestand | Per feature |
-| `ContentNegotiation` (kotlinx.serialization) | JSON in- en uitpakken | GI-2, Stefan |
-| `Authentication` (JWT) | Token valideren, principal beschikbaar maken | GI-3, Lonneke |
-| `StatusPages` | Domeinexcepties omzetten naar HTTP-statuscodes | GI-4, Stefan |
-| `RequestValidation` | Structurele validatie van request bodies | GI-4, Stefan |
-| `CORS` | Toegang vanaf de Android-app in periode 2 | GI-2, Stefan |
-| `CallLogging` | Requests loggen voor demonstratie en foutzoeken | GI-2, Stefan |
-| DI (`io.ktor.server.plugins.di`) | Services en repositories registreren en vervangbaar maken | GI-2, Stefan |
-
-- **Status.** Aangenomen.
-- **Gevolgen.** De `Application`-module blijft dun: hij installeert plugins en roept per feature een routingfunctie aan. De domeinlogica zit in de servicelaag, niet in de route handlers. Dat is ook de reden dat de servicelaag los te unittesten is.
-- **Alternatieven.** Validatie in de route handlers zelf werd afgewezen omdat de logica dan niet los van HTTP te testen is.
-
-#### ADR-06 — Staffels in plaats van doorlopende afprijscurves
-
-- **Context.** In v1.0 zakte de prijs doorlopend: elke minuut een fractie lager, volgens een formule per productsoort. Bij het nalopen bleken daar twee problemen aan te zitten. Een prijs is op geen enkel moment uit te leggen zonder de formule erbij te pakken. En het is onduidelijk welk moment telt: wie dagen vooruit reserveert voor een afhaalmoment vlak voor de datum, zou de hoogste korting kunnen opeisen.
-- **Besluit.** De korting verloopt in staffels met vaste grenzen per productsoort (§9.4). De prijs die geldt op het moment van reserveren wordt vastgelegd in de reservering.
-- **Status.** Aangenomen. De profgroep heeft op 19 september 2026 bevestigd dat de prijs van het moment van reserveren geldt.
-- **Gevolgen.** Positief: een prijs is in één zin uit te leggen ("vanaf 24 uur voor de datum 40% korting"). Elke grens is een scherpe testwaarde. Vooruit reserveren levert geen extra korting op, en wie op de volgende staffel wacht, loopt het risico dat een ander eerder reserveert. Negatief: de drie policies hebben nu dezelfde vorm en verschillen alleen in grenzen en percentages. Het polymorfisme blijft aantoonbaar, want `PricingService` roept `discountPercentage()` aan zonder te weten welke policy hij in handen heeft. Het verschil per klasse is wel kleiner dan bij drie formules. Dat raakt R-05.
-- **Alternatieven.** De doorlopende curves uit v1.0 werden afgewezen om de twee problemen hierboven. Eén generieke staffelklasse met drie configuraties is minder code, maar haalt de interface met drie implementaties weg die de casus juist moet tonen (r.78-79, r.165); ook afgewezen.
-
-#### ADR-08 — Bedragen als hele centen in een `Long`
-
-Het nummer ADR-07 is niet opnieuw gebruikt, omdat een eerder ADR-07 in v1.1 is geschrapt.
-
-- **Context.** Tot v2.1 rekende het prijsmodel met `BigDecimal`. Dat type zat in `Money` en `PriceBreakdown`, en die staan in `shared`. Juist die types komen in aanmerking om in periode 3 te delen met een multiplatform-app. De docent adviseert daarom kotlinx-libraries boven Java-libraries (§3.2). Voor decimale getallen vond de profgroep geen kotlinx-variant. `BigDecimal` bestaat alleen op de JVM, en de multiplatform-libraries die er wel zijn, staan nog op versie 0.x. Die bevinding is aan de docent voorgelegd, met drie richtingen: `BigDecimal` op de server houden, hele centen in een `Long`, of een externe library.
-- **Besluit.** Een bedrag is een aantal hele eurocenten in een `Long`, verpakt in het waardetype `Money`. Een korting is een heel percentage (`Int`). De docent heeft dit besloten (P. de Mast, persoonlijke communicatie, 20 september 2026). Twee regels volgen eruit. De korting wordt afgerond door de gehele deling, dus naar beneden (§9.4). En de API stuurt en ontvangt euro's; de omrekening naar centen rondt af naar de dichtstbijzijnde cent (§10.1).
-- **Status.** Aangenomen.
-- **Gevolgen.** Positief: `Long` en `Int` bestaan op elk platform, dus `Money` en `PriceBreakdown` zijn zonder aanpassing te delen. Rekenen met hele getallen is exact; er ontstaan geen afrondingsfouten zoals bij `Double`. De precisie is ruim voldoende: een `Long` reikt tot ruim 92 biljard euro. De staffels in §9.4 zijn al hele percentages, dus er gaat niets verloren. Negatief: afronden gebeurt niet meer vanzelf goed, maar moet een expliciete regel zijn. En op de grens van de API moet een bedrag worden omgerekend van euro's naar centen en terug.
-- **Alternatieven.** `BigDecimal` op de server houden, en alleen het bedrag platformneutraal over de lijn sturen. Afgewezen, omdat `Money` dan niet te delen is. Een externe multiplatform-library voor decimalen. Afgewezen, omdat een library op versie 0.x een extra risico is om te leren en te verdedigen, voor een precisie die we niet nodig hebben.
-
-### 8.7 Kwaliteitsscenario's
+### 8.6 Kwaliteitsscenario's
 
 - **Performance.** Twintig gelijktijdige aanroepen op `GET /api/v1/products` over de volledige seeddata leveren een p95-responstijd onder 300 ms. De drempel is bewust bescheiden: de applicatie draait lokaal op één laptop (r.72), en een strenger getal zou geen betekenis hebben.
 - **Beschikbaarheid.** Als Open Food Facts niet binnen drie seconden antwoordt, blijft het plaatsen van een partij mogelijk met handmatig ingevoerde gegevens.
@@ -1214,7 +1147,7 @@ erDiagram
     }
 ```
 
-Het ERD heeft zes tabellen. Een account (`USERS`) kan bij een aanbieder horen; alleen dan is er een rij in `SUPPLIERS`. Een aanbieder heeft partijen en openingstijden. De drie productsoorten staan samen in één tabel met de kolom `category` (§9.3). Allergenen staan in een eigen tabel, omdat een partij er nul tot veertien kan hebben. Een reservering verwijst naar één afhaler en één partij, geldt voor die hele partij, en bewaart de prijs van het moment van reserveren. Bedragen staan als hele centen in een `long`-kolom; de naam eindigt daarom op `_cents` (ADR-08).
+Het ERD heeft zes tabellen. Een account (`USERS`) kan bij een aanbieder horen; alleen dan is er een rij in `SUPPLIERS`. Een aanbieder heeft partijen en openingstijden. De drie productsoorten staan samen in één tabel met de kolom `category` (§9.3). Allergenen staan in een eigen tabel, omdat een partij er nul tot veertien kan hebben. Een reservering verwijst naar één afhaler en één partij, geldt voor die hele partij, en bewaart de prijs van het moment van reserveren. Bedragen staan als hele centen in een `long`-kolom; de naam eindigt daarom op `_cents` (ADR-07).
 
 ### 9.2 Entiteiten
 
@@ -1236,11 +1169,11 @@ Deze keuze is bewust en is bij het assessment te verantwoorden (r.304):
 - **Waarom niet één tabel per subklasse.** Dat zou drie tabellen met identieke kolommen opleveren en elke zoekopdracht over alle soorten in een UNION veranderen. De subklassen verschillen in gedrag, niet in gegevens.
 - **Prijs van deze keuze.** Zou een productsoort in de toekomst een eigen veld krijgen — bijvoorbeeld een vriestemperatuur — dan staat die kolom leeg bij de andere twee soorten.
 
-Een `Money`-waarde wordt opgeslagen als een geheel aantal centen in een `BIGINT`-kolom, de SQL-tegenhanger van een Kotlin-`Long`. Tot v2.1 was dat `DECIMAL`. Het doel is hetzelfde gebleven: geen `DOUBLE`, zodat er geen afrondingsfouten in prijsberekeningen ontstaan. Maar een `Long` bestaat op elk platform, en `BigDecimal` alleen op de JVM (ADR-08). Omdat `Money` een `value class` is, is het tijdens het draaien gewoon een `Long`; de omzetting tussen kolom en waardetype is één regel in de repository.
+Een `Money`-waarde wordt opgeslagen als een geheel aantal centen in een `BIGINT`-kolom, de SQL-tegenhanger van een Kotlin-`Long`. Tot v2.1 was dat `DECIMAL`. Het doel is hetzelfde gebleven: geen `DOUBLE`, zodat er geen afrondingsfouten in prijsberekeningen ontstaan. Maar een `Long` bestaat op elk platform, en `BigDecimal` alleen op de JVM (ADR-07). Omdat `Money` een `value class` is, is het tijdens het draaien gewoon een `Long`; de omzetting tussen kolom en waardetype is één regel in de repository.
 
 ### 9.4 Afprijsstaffels per productsoort
 
-Dit is de domeinlogica die verder gaat dan CRUD (r.374). De korting hangt af van de resterende houdbaarheid: de tijd tussen nu en `bestBeforeAt`. Zodra die onder een grens zakt, geldt de volgende staffel. De prijs is `originalPrice × (100 − korting) / 100`, in hele centen; de korting is een heel percentage (ADR-08).
+Dit is de domeinlogica die verder gaat dan CRUD (r.374). De korting hangt af van de resterende houdbaarheid: de tijd tussen nu en `bestBeforeAt`. Zodra die onder een grens zakt, geldt de volgende staffel. De prijs is `originalPrice × (100 − korting) / 100`, in hele centen; de korting is een heel percentage (ADR-07).
 
 | Soort | Resterende houdbaarheid | Korting |
 |-------|-------------------------|---------|
@@ -1431,7 +1364,7 @@ Alle vier de CRUD-soorten zijn hiermee gedekt (r.202): POST op `/products`, GET 
 
 In v1.1 is `/products/{id}/pricing` vervallen. De prijs hoort bij de partij en staat daarom in het antwoord van de partij zelf, als drie velden: `originalPrice`, `discountPercentage` en `currentPrice`. Dat scheelt de app in periode 2 een aanroep per getoonde partij. De afprijslogica blijft van F3; F1 en F2 vragen de prijs op via `PriceProvider` (§12.1).
 
-**Bedragen in de API (B-25).** Intern rekenen we in hele centen (`Money`, ADR-08). De API stuurt en ontvangt bedragen in euro's, bijvoorbeeld `3.49`. Dat geldt voor de request body van `POST /products` en `PUT /products/{id}`, voor het filter `maxPrice` en voor elk antwoord met een prijs. Euro's zijn voor een mens leesbaar in de demo, en de app hoeft niet om te rekenen voor het tonen. De omrekening tussen euro's en centen staat op één plek, in de DTO-laag of in `Money` zelf.
+**Bedragen in de API (B-25).** Intern rekenen we in hele centen (`Money`, ADR-07). De API stuurt en ontvangt bedragen in euro's, bijvoorbeeld `3.49`. Dat geldt voor de request body van `POST /products` en `PUT /products/{id}`, voor het filter `maxPrice` en voor elk antwoord met een prijs. Euro's zijn voor een mens leesbaar in de demo, en de app hoeft niet om te rekenen voor het tonen. De omrekening tussen euro's en centen staat op één plek, in de DTO-laag of in `Money` zelf.
 
 > **Opmerking v2.2 — voor Lonneke en Stefan.** Een JSON-getal als `3.49` wordt in Kotlin een `Double`, en een `Double` kan 3,49 niet exact opslaan. Vermenigvuldig je met 100, dan krijg je iets als 348,99999. Kap je dat af, dan wordt de prijs 348 cent in plaats van 349. Bij het omrekenen van euro's naar centen ronden we daarom af naar de dichtstbijzijnde cent, nooit afkappen. Dat is een andere regel dan de afronding van de korting, die altijd naar beneden gaat (§9.4). Wie een bedrag uit een request of een queryparameter leest, gebruikt de ene gedeelde omrekening en schrijft geen eigen.
 
@@ -1517,7 +1450,7 @@ Deze matrix bestaat zodat niemand met een gat het assessment in gaat. Per studen
 | **Kotlin features** | Scope functions (`also` bij logging in de scheduler), delegated property (`by lazy` op de policy-map), extension functions (`List<DiscountTier>.tierFor(Duration)`, voorstel ter vervanging van `Duration.toWholeDaysFloor()` dat met de staffels vervalt), coroutines (`launch` voor de periodieke statusbewaking), collections (`Map<ProductCategory, DiscountPolicy>`), `require`/`check` voor preconditions |
 | **Eigen testen** | TC-07 kortingspercentage per soort op elke staffelgrens (vers 48u, 24u, 12u; vries 7d, 24u; houdbaar 14d, 7d), telkens precies op de grens en één seconde erboven; percentage is nooit hoger dan de hoogste staffel; prijs is nooit negatief; prijs is nooit hoger dan de oorspronkelijke; verstreken partij levert geen prijs; twee aanroepen met dezelfde klok leveren dezelfde prijs; TC-08 verlopen partij krijgt EXPIRED; niet-opgehaalde reservering keert terug naar LISTED; statusbewaking is idempotent; opgehaalde partij wordt niet gewijzigd; gereserveerde én verlopen partij eindigt op EXPIRED en niet op LISTED; registreren maakt altijd een COLLECTOR-account, ook als het verzoek een andere rol meestuurt; registreren met een bestaand e-mailadres levert 409 |
 
-> **Opmerking v2.2 — voor Lonneke.** Door ADR-08 en B-18 veranderen vier dingen in F3. Het zijn voorstellen; de keuze is aan jou.
+> **Opmerking v2.2 — voor Lonneke.** Door ADR-07 en B-18 veranderen vier dingen in F3. Het zijn voorstellen; de keuze is aan jou.
 >
 > 1. **`Money` met een privé constructor.** Nu heeft `Money` een publieke constructor met een `require`. Met een privé constructor kan niemand meer rechtstreeks `Money(…)` schrijven, en gaat iedereen via een factory: één voor centen en één voor euro's. De omrekening uit §10.1 zit dan op precies één plek, en niemand kan haar overslaan. Dat is ook een sterker voorbeeld van encapsulatie dan alleen de `require`. Het bestand is `restpartijen-api/src/shared/Money.kt`. Een wijziging in `shared` gaat via een pull request met twee reviews (GI-5, besluit 5.3).
 > 2. **`PriceBreakdown` bewaakt zichzelf nog niet.** Twee regels passen erbij: het percentage ligt tussen 0 en 100, en de actuele prijs is niet hoger dan de oorspronkelijke. Dat is dezelfde aanpak als bij `PickupWindow`, dat controleert dat het begin vóór het einde ligt. Het bestand is `restpartijen-api/src/shared/PriceBreakdown.kt`.
@@ -1629,7 +1562,7 @@ De contracten gebruiken alleen typen uit `shared`. `ProductReader` geeft daarom 
 | Onderdeel | Waarom gedeeld |
 |-----------|----------------|
 | `Role`, `ProductStatus`, `ProductCategory` | Alle drie de features lezen en schrijven deze waarden; drie eigen definities zouden direct uiteenlopen |
-| `Money` | Prijzen komen in alle drie de features voor; één waardetype in hele centen voorkomt afrondingsverschillen (ADR-08) |
+| `Money` | Prijzen komen in alle drie de features voor; één waardetype in hele centen voorkomt afrondingsverschillen (ADR-07) |
 | `PickupWindow`, `PriceBreakdown`, `SupplierSummary` | Types die in een contract voorkomen: `ProductView` toont het afhaalvenster en de aanbieder, en `PriceProvider` geeft de prijsopbouw terug. Een contract in `shared` kan alleen typen uit `shared` gebruiken |
 | `Allergen` | De EU-lijst van veertien allergenen (§9.8). De request body gebruikt dit type, dus een waarde buiten de lijst komt niet door de deserialisatie. De app in periode 2 toont dezelfde waarden |
 | De contracten `ProductReader`, `ProductStatusUpdater`, `ProductView`, `PricedProduct`, `PriceProvider` en `ReservationMaintenance` | De afspraken tussen de features (§12.1); alleen interfaces, geen implementaties |
@@ -1670,9 +1603,9 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 | 1.2 | Database | H2. Tijdens de demo en in alle testen in-memory; een schakelaar naar bestand om te laten zien dat gegevens een herstart overleven | H2 is in beide standen een volwaardige relationele database; alleen de plek waar de gegevens staan verschilt. In-memory is leeg bij elke start en dwingt seeding af. Dat maakt de demo reproduceerbaar: de seeddata rekent met datums ten opzichte van het moment van vullen, dus een ouder bestand bevat alleen nog verlopen partijen. Voorstel van Eva als eigenaar van GI-1; bevestigd in de startsessie (B-17). De uitleg staat in bijlage B. |
 | 1.3 | Repository-grens | Eén repository per entiteit | Eén per feature zou F2 rechtstreeks toegang geven tot de tabellen van F1 en het koppelvlak K-1 omzeilen. |
 | 1.4 | Transactiegrens | Per service-aanroep | Een reservering wijzigt twee tabellen en moet in één transactie slagen of falen. |
-| 1.5 | Exposed-modules | `exposed-core`, `exposed-jdbc` en `exposed-kotlin-datetime`, alle 1.5.0 | In 1.x zitten `Database`, `SchemaUtils` en `transaction` niet meer in `exposed-core` maar in `exposed-jdbc` (JetBrains s.r.o., 2026b). Wie dat mist, ziet alleen onopgeloste imports. |
-| 1.6 | Transacties vanuit coroutines | `suspendTransaction`, omhuld door `withContext(Dispatchers.IO)` | Route handlers en de Open Food Facts-client zijn `suspend`, terwijl JDBC blokkeert. `newSuspendedTransaction` uit oudere voorbeelden is in 1.x deprecated (JetBrains s.r.o., 2026b). |
-| 1.7 | Tijd in de database | `timestamp()` uit `exposed-kotlin-datetime` | Die kolom levert in 1.x een `kotlin.time.Instant` (JetBrains s.r.o., 2026b). Dat is het type dat de injecteerbare `Clock` teruggeeft (GI-6, besluit 6.5), dus er is geen omrekening tussen tijdtypen nodig. |
+| 1.5 | Exposed-modules | `exposed-core`, `exposed-jdbc` en `exposed-kotlin-datetime`, alle 1.5.0 | In 1.x zitten `Database`, `SchemaUtils` en `transaction` niet meer in `exposed-core` maar in `exposed-jdbc` (JetBrains s.r.o., 2026). Wie dat mist, ziet alleen onopgeloste imports. |
+| 1.6 | Transacties vanuit coroutines | `suspendTransaction`, omhuld door `withContext(Dispatchers.IO)` | Route handlers en de Open Food Facts-client zijn `suspend`, terwijl JDBC blokkeert. `newSuspendedTransaction` uit oudere voorbeelden is in 1.x deprecated (JetBrains s.r.o., 2026). |
+| 1.7 | Tijd in de database | `timestamp()` uit `exposed-kotlin-datetime` | Die kolom levert in 1.x een `kotlin.time.Instant` (JetBrains s.r.o., 2026). Dat is het type dat de injecteerbare `Clock` teruggeeft (GI-6, besluit 6.5), dus er is geen omrekening tussen tijdtypen nodig. |
 | 1.8 | Generieke repository | `Repository<T>` staat in de persistentielaag en is van Eva; elke feature implementeert hem voor de eigen entiteit. De functions zijn `findById`, `findAll`, `create`, `update` en `delete`, alle `suspend`. `create` geeft het item terug met het id dat de database koos; `update` en `delete` geven `false` als er niets te wijzigen was. Een verwijderd item telt als niet gevonden | Eén vorm voor alle repositories houdt de features gelijk. De profgroep heeft op 19 september 2026 besloten dat Eva de interface schrijft, omdat GI-1 van haar is. Tot v2.2 stond hier één `save`. Daar was geen plek voor "item niet gevonden", en de Exposed DSL heeft toch al een aparte `insert` en `update`. Sinds v2.3 zijn het daarom twee functions (B-33). |
 
 **Acceptatiecriteria.**
@@ -1788,7 +1721,7 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 **Acceptatiecriteria.**
 - Iedere student heeft minimaal drie zinvolle, diverse unittesten, verdeeld over happy flow en edge cases (r.200-201).
 - Alle vier de CRUD-requestsoorten zijn met een integratietest gedekt (r.202).
-- Elke beschermde endpoint heeft een test zonder token, met de verkeerde rol en met de juiste rol (§8.7).
+- Elke beschermde endpoint heeft een test zonder token, met de verkeerde rol en met de juiste rol (§8.6).
 - De volledige testsuite draait zonder netwerkverbinding: de Open Food Facts-client is in testen altijd vervangen.
 - De testsuite is volgordeonafhankelijk: twee keer draaien in willekeurige volgorde levert hetzelfde resultaat.
 
@@ -1796,7 +1729,7 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 
 ## 14. Niet-functionele eisen (NFR)
 
-Performance, beschikbaarheid en autorisatie staan als kwaliteitsscenario in §8.7, direct bij de architectuur. Hier staan alleen de eisen aan de code zelf.
+Performance, beschikbaarheid en autorisatie staan als kwaliteitsscenario in §8.6, direct bij de architectuur. Hier staan alleen de eisen aan de code zelf.
 
 | ID | Onderwerp | Eigenschap | Meeteenheid | Drempel | Verificatie |
 |----|-----------|------------|-------------|---------|-------------|
@@ -2035,7 +1968,7 @@ Na versie 2.1 kwamen er drie adviezen bij. Het eerste gaf de docent eerder in se
 | Terugkoppeling | Wat wij ermee doen | Waar |
 |----------------|--------------------|------|
 | Gebruik kotlinx-libraries in plaats van Java-libraries, met het oog op multiplatform in periode 3 | Overgenomen: kotlinx.serialization, kotlinx-datetime, `kotlin.time.Clock` | §3.2, B-15 |
-| Sla bedragen op als hele centen in een `Long`; dat is voor financiële berekeningen vrijwel altijd ruim voldoende precisie | Overgenomen. `Money` rekent in centen, kortingen zijn hele percentages | ADR-08, B-13 |
+| Sla bedragen op als hele centen in een `Long`; dat is voor financiële berekeningen vrijwel altijd ruim voldoende precisie | Overgenomen. `Money` rekent in centen, kortingen zijn hele percentages | ADR-07, B-13 |
 | Werk met Ktor 3.6.0, dat op 17 september 2026 uitkwam | Overgenomen. De overstap is de eerste stap van blok 4 van de startsessie | §3.2, B-14 |
 
 ---
@@ -2052,7 +1985,7 @@ Na versie 2.1 kwamen er drie adviezen bij. Het eerste gaf de docent eerder in se
 - **De parameters van Argon2id** liggen onder het minimum van OWASP (Opmerking v2.3 bij GI-3). Lonneke beslist.
 - **Van `JwtProperties` naar `JwtSettings`.** Beide klassen bestaan, maar `Application.module()` zet de ene nog niet om in de andere en roept `configureSecurity()` nog niet aan. Af te spreken tussen Stefan en Lonneke: wie schrijft die stap.
 - **`StatusPages` staat nog niet in de productiecode.** `ktor-server-status-pages` staat alleen onder `test-dependencies`. Tot GI-4 het installeert, komen de excepties uit B-35 niet als nette `401` en `403` terug.
-- **Testrapportage en loadtool.** NFR-03 en §8.7 verwijzen naar de testrapportage, maar zeggen niet waar die staat. §8.7 noemt de drempel voor performance, maar niet waarmee gemeten wordt.
+- **Testrapportage en loadtool.** NFR-03 en §8.6 verwijzen naar de testrapportage, maar zeggen niet waar die staat. §8.6 noemt de drempel voor performance, maar niet waarmee gemeten wordt.
 - **Unittesten van `suspend`-contracten.** Een test die een `suspend`-function aanroept, doet dat binnen `runTest` of `runBlocking`. Nog na te gaan is of `runTest` via de huidige test-dependencies beschikbaar is.
 
 ---
@@ -2101,9 +2034,7 @@ JetBrains s.r.o. (z.j.-n). *What's new in Ktor 3.6.0*. Ktor. Geraadpleegd op 29 
 
 JetBrains s.r.o. (z.j.-o). *Working with databases*. Exposed documentation. Geraadpleegd op 19 september 2026, van https://jetbrains.com/help/exposed/working-with-database.html
 
-JetBrains s.r.o. (2026a, januari). *Exposed 1.0 is now available*. The JetBrains Blog. https://blog.jetbrains.com/kotlin/2026/01/exposed-1-0-is-now-available/
-
-JetBrains s.r.o. (2026b, 26 augustus). *Migrating from 0.61.0 to 1.0.0*. Exposed Documentation. https://www.jetbrains.com/help/exposed/migration-guide-1-0-0.html
+JetBrains s.r.o. (2026, 26 augustus). *Migrating from 0.61.0 to 1.0.0*. Exposed Documentation. https://www.jetbrains.com/help/exposed/migration-guide-1-0-0.html
 
 MapLibre. (z.j.). *MapLibre Compose*. Geraadpleegd op 18 september 2026, van https://maplibre.org/maplibre-compose/
 
