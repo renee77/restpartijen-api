@@ -5,7 +5,7 @@ package com.restpartijen.api.shared
  * Provided by: F3 (Lonneke), implemented by PricingService with an injected Clock.
  * Used by: F1 (Eva) for the product detail, F2 (Stefan) for search and reservation.
  *
- * Both return null when the product has expired (decision point 2).
+ * Both return null when the product has expired (B-18).
  */
 interface PriceProvider {
     fun currentPrice(product: PricedProduct): Money?
