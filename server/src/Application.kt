@@ -1,19 +1,14 @@
 package com.restpartijen.api
 
-import com.restpartijen.api.plugins.configureSerialization
-import io.ktor.server.application.Application
-import io.ktor.server.netty.EngineMain
-import com.restpartijen.api.persistence.DatabaseFactory
-import com.restpartijen.api.product.repository.ExposedProductRepository
-import com.restpartijen.api.product.routes.configureProductRouting
-import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.config.databaseSettings
 import com.restpartijen.api.config.jwtProperties
 import com.restpartijen.api.persistence.DatabaseFactory.init
 import com.restpartijen.api.plugins.configureDependencies
+import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.product.repository.ProductsTable
-import com.restpartijen.api.shared.ReservationMaintenance
-import io.ktor.server.application.log
+import com.restpartijen.api.product.routes.configureProductRouting
+import io.ktor.server.application.*
+import io.ktor.server.netty.*
 
 /**
  * Entry point of the application.
