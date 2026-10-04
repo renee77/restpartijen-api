@@ -3,8 +3,12 @@ package com.restpartijen.api.product
 import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ProductsTable
+import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import kotlinx.coroutines.test.runTest
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -109,7 +113,7 @@ class ExposedProductRepositoryTest {
     }
 
     @Test
-    fun `delete removes only the product with the given id and returns true`() = runTest {
+    fun `delete hides only the product with the given id and returns true`() = runTest {
         // Arrange
         createEmptyTestDatabase(ProductsTable)
         val repository = ExposedProductRepository()
@@ -138,5 +142,54 @@ class ExposedProductRepositoryTest {
         // Assert
         assertFalse(deleteSucceeded)
         assertEquals(listOf(bread), repository.findAll())
+    }
+
+    @Test
+    fun `delete keeps the row and sets its status to REMOVED`() = runTest {
+        // Arrange
+        createEmptyTestDatabase(ProductsTable)
+        val repository = ExposedProductRepository()
+        val bread = repository.create(Product(id = 0, name = "Volkoren brood", category = "FRESH"))
+
+        // Act
+        repository.delete(bread.id)
+
+        // Assert: read the table directly, past the repository that hides REMOVED rows
+        val status = transaction {
+            ProductsTable.selectAll()
+                .where { ProductsTable.id eq bread.id }
+                .single()[ProductsTable.status]
+        }
+        assertEquals(ProductStatus.REMOVED, status)
+    }
+
+    @Test
+    fun `delete returns false the second time for the same id`() = runTest {
+        // Arrange
+        createEmptyTestDatabase(ProductsTable)
+        val repository = ExposedProductRepository()
+        val bread = repository.create(Product(id = 0, name = "Volkoren brood", category = "FRESH"))
+        repository.delete(bread.id)
+
+        // Act
+        val secondDelete = repository.delete(bread.id)
+
+        // Assert
+        assertFalse(secondDelete)
+    }
+
+    @Test
+    fun `update returns false for a deleted product`() = runTest {
+        // Arrange
+        createEmptyTestDatabase(ProductsTable)
+        val repository = ExposedProductRepository()
+        val bread = repository.create(Product(id = 0, name = "Volkoren brood", category = "FRESH"))
+        repository.delete(bread.id)
+
+        // Act
+        val updateSucceeded = repository.update(bread.copy(name = "Wit brood"))
+
+        // Assert
+        assertFalse(updateSucceeded)
     }
 }

@@ -34,7 +34,7 @@ fun Application.configureProductRouting() {
                 return@get
             }
 
-            // ContentNegotiation (step 3c) turns the @Serializable DTO into JSON.
+            // ContentNegotiation (configureSerialization) turns the @Serializable DTO into JSON.
             call.respond(product.toResponse())
         }
     }
