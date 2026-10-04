@@ -10,6 +10,11 @@ import com.restpartijen.api.product.routes.configureProductRouting
 import io.ktor.server.application.Application
 import io.ktor.server.application.log
 import io.ktor.server.netty.EngineMain
+import com.restpartijen.api.plugins.configureStatusPages
+import com.restpartijen.api.product.repository.ProductsTable
+import com.restpartijen.api.product.routes.configureProductRouting
+import io.ktor.server.application.*
+import io.ktor.server.netty.*
 
 /**
  * Entry point of the application.
@@ -29,13 +34,18 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
+    init(environment.config.databaseSettings(), ProductsTable)
+
     // 2. PLUGINS
     configureSerialization()
     configureDependencies()
+    configureStatusPages()
 
-    // 3. DATABASE: one connection; each feature passes its own tables (GI-1)
-    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable)
+    // 3. SECURITY
+    // TODO: map jwtProperties to JwtSettings and configureSecurity()
 
     // 4. ROUTES
     configureProductRouting()
+    // TODO: F2 routes
+    // TODO: F3 routes
 }
