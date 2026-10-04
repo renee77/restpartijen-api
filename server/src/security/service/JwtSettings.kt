@@ -11,4 +11,8 @@ data class JwtSettings(
     val issuer: String,
     val audience: String,
     val validity: Duration = 24.hours
-)
+) {
+// Never show the secret, so it cannot end up in a log by accident (§16.7).
+override fun toString(): String =
+    "JwtSettings(secret=***, issuer=$issuer, audience=$audience, validity=$validity)"
+}
