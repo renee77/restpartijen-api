@@ -1,11 +1,12 @@
 package com.restpartijen.api.product.repository
 
+import com.restpartijen.api.shared.ProductStatus
 import org.jetbrains.exposed.v1.core.Table
 
 /**
  * Table definition for surplus products (ERD §9.1, table SURPLUS_PRODUCTS).
  *
- * Walking skeleton version: only three columns to prove the chain
+ * Walking skeleton version: only the columns needed to prove the chain
  * route -> service -> repository -> table works. The remaining columns
  * from the ERD are added in F1 T2.
  */
@@ -16,10 +17,14 @@ object ProductsTable : Table("surplus_products") {
     // Product name as shown to collectors.
     val name = varchar("name", length = 255)
 
-    // Stored as text for now. Becomes the ProductCategory enum once
-    // the shared types exist (block 4). Single table inheritance uses
+    // Stored as text in the walking skeleton. Becomes the ProductCategory enum
+    // when F1 rewrites the product. Single table inheritance uses
     // this column as the discriminator (§9.3).
     val category = varchar("category", length = 20)
+
+    // Lifecycle status (§9.5). Deleting sets REMOVED instead of removing the row (B-19),
+    // so a reservation can keep pointing at the product.
+    val status = enumerationByName<ProductStatus>("status", length = 20).default(ProductStatus.LISTED)
 
     // Tells Exposed (and the generated SQL) which column is the primary key.
     override val primaryKey = PrimaryKey(id)

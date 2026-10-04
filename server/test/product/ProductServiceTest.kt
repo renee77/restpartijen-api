@@ -11,8 +11,8 @@ class ProductServiceTest {
     @Test
     fun `getProduct returns the product when the id exists`() = runTest {
         // Arrange
-        val repository = FakeProductRepository(
-            listOf(Product(id = 1, name = "Volkoren brood", category = "FRESH")),
+        val repository = fakeProductRepository(
+            Product(id = 1, name = "Volkoren brood", category = "FRESH"),
         )
         val service = ProductService(repository)
         // Act
@@ -24,7 +24,7 @@ class ProductServiceTest {
     @Test
     fun `getProduct returns null when the id does not exist`() = runTest {
         // Arrange
-        val service = ProductService(FakeProductRepository(emptyList()))
+        val service = ProductService(fakeProductRepository())
         // Act
         val product = service.getProduct(999)
         // Assert
