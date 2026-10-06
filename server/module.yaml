@@ -28,6 +28,7 @@ dependencies:
   - io.ktor:ktor-server-request-validation
   - io.ktor:ktor-server-cors
   - io.ktor:ktor-server-call-logging
+  - ch.qos.logback:logback-classic:1.5.18
   ############ Security dependencies ############
   - io.ktor:ktor-server-auth
   - io.ktor:ktor-server-auth-jwt
