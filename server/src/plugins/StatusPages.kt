@@ -38,7 +38,7 @@ fun Application.configureStatusPages() {
                 cause.missingField(),
             )
         }
-        // 400: a validator returned ValidationResult.Invalid instead of throwing (safety net, option B)
+        // 400: a validator returned ValidationResult.Invalid instead of throwing
         exception<RequestValidationException> { call, cause ->
             call.respondError(
                 HttpStatusCode.BadRequest,
