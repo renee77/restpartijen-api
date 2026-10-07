@@ -1,6 +1,6 @@
 package com.restpartijen.api
 
-import com.restpartijen.api.product.FakeProductRepository
+import com.restpartijen.api.product.fakeProductRepository
 import com.restpartijen.api.product.dto.ProductResponse
 import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.product.repository.ProductRepository
@@ -28,7 +28,7 @@ class DependencyInjectionTest {
         application {
             // Registered before module(): in tests, Ktor ignores the conflicting
             // registration in configureDependencies(), so the fake wins.
-            dependencies.provide<ProductRepository> { FakeProductRepository(listOf(fakeProduct)) }
+            dependencies.provide<ProductRepository> { fakeProductRepository(fakeProduct) }
             module()
         }
 

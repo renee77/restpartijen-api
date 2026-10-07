@@ -24,7 +24,11 @@ dependencies:
   - org.jetbrains.exposed:exposed-kotlin-datetime:1.5.0
   - com.h2database:h2:2.4.240
   - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0
-
+  - io.ktor:ktor-server-status-pages
+  - io.ktor:ktor-server-request-validation
+  - io.ktor:ktor-server-cors
+  - io.ktor:ktor-server-call-logging
+  - ch.qos.logback:logback-classic:1.5.18
   ############ Security dependencies ############
   - io.ktor:ktor-server-auth
   - io.ktor:ktor-server-auth-jwt
@@ -38,4 +42,4 @@ test-dependencies:
   - io.ktor:ktor-server-test-host
   - io.mockk:mockk:1.14.11
   - org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0
-  - io.ktor:ktor-server-status-pages:3.6.0
+
