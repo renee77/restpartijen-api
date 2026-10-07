@@ -1,11 +1,13 @@
 package com.restpartijen.api.security
 
+import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.shared.Role
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
@@ -25,7 +27,8 @@ class RoleAuthTests {
         }
 
         // Assert: the response status should be 401 Unauthorized, indicating that the token's role is not valid
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("Authentication required", error.message)
     }
 
 
@@ -68,7 +71,8 @@ class RoleAuthTests {
         }
 
         // Assert. Verify that the decoded token contains the expected userId and role.
-        assertEquals(HttpStatusCode.Forbidden, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText()).message
+        assertEquals("Insufficient role", error)
     }
 
 

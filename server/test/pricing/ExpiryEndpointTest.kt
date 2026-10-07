@@ -2,7 +2,6 @@ package com.restpartijen.api.pricing
 
 import com.restpartijen.api.pricing.model.MaintenanceReport
 import com.restpartijen.api.security.TestTokens
-import com.restpartijen.api.shared.Role
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
 import io.ktor.client.statement.bodyAsText
@@ -12,6 +11,8 @@ import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
+import com.restpartijen.api.plugins.ErrorCode
+import com.restpartijen.api.plugins.ErrorResponse
 /**
  * The test class for the 4 tests in ExpiryEndpointTest.kt. The tests are in a separate file so that they can be run with a different test app than the other pricing tests, which use the real ExpiryScheduler service. This test app uses a fake ExpiryScheduler that we can control.
  */
@@ -65,6 +66,48 @@ class ExpiryEndpointTest {
         println("BODY: ${response.bodyAsText()}")
         val report = Json.decodeFromString<MaintenanceReport>(response.bodyAsText())
         assertEquals(MaintenanceReport(lapsedReservations = 2, expiredProducts = 0), report)
+    }
+
+    @Test
+    fun `admin gets 200 with the maintenance report`() = testApplication {
+        // Arrange: two overdue reservations behind the service, no expired products
+        application { setUpPricingTestApp(reservationMaintenance = FakeReservationMaintenance(lapsedCount = 2)) }
+
+        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = Clock.System)
+
+        // Act
+        val response = client.post("/api/v1/admin/maintenance/expire") {
+            bearerAuth(token)
+        }
+
+        // Assert: status and the report in the body
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            MaintenanceReport(lapsedReservations = 2, expiredProducts = 0),
+            Json.decodeFromString<MaintenanceReport>(response.bodyAsText()),
+        )
+    }
+
+    @Test
+    fun `updater changing fewer products than found gives 409`() = testApplication {
+        // Arrange: two expired products found, but the updater only manages to change one
+        application {
+            setUpPricingTestApp(
+                productReader = FakeProductReader(listOf(FakeProductView(1), FakeProductView(2))),
+                productStatusUpdater = FakeProductStatusUpdater(expiredCount = 1),
+            )
+        }
+        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = Clock.System)
+
+        // Act
+        val response = client.post("/api/v1/admin/maintenance/expire") {
+            bearerAuth(token)
+        }
+
+        // Assert: StatusPages turns the exception into 409 with the error model
+        assertEquals(HttpStatusCode.Conflict, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals(ErrorCode.CONFLICT, error.code)
     }
 
 }

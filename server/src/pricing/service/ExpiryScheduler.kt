@@ -21,6 +21,11 @@ class ExpiryScheduler (
             val expiredIds = productReader.findExpiredListings(now).map { it.id }
             val expired = productStatusUpdater.markExpired(expiredIds)
 
-            return MaintenanceReport(lapsedReservations = lapsed, expiredProducts = expired)
+        if (expired < expiredIds.size) {
+            throw IllegalStateTransitionException("Cannot reserve a reserved product")
+        }
+
+
+        return MaintenanceReport(lapsedReservations = lapsed, expiredProducts = expired)
         }
 }

@@ -4,7 +4,7 @@ import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.pricing.routes.configurePricingRouting
 import com.restpartijen.api.pricing.service.ExpiryScheduler
 import com.restpartijen.api.security.TestClock
-import com.restpartijen.api.security.configureStatusPages
+import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.security.jwtConfig
 import com.restpartijen.api.security.service.configureSecurity
 import com.restpartijen.api.shared.ProductReader
@@ -23,7 +23,7 @@ fun Application.setUpPricingTestApp(
     productReader: ProductReader = FakeProductReader(),
     productStatusUpdater: ProductStatusUpdater = FakeProductStatusUpdater(),
 ) {
-    // temporary: replace with Stefan's StatusPages (GI-4) when it is on main
+
     configureStatusPages()
     // turns the MaintenanceReport into JSON
     configureSerialization()

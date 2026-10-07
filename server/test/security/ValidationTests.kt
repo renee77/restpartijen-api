@@ -1,15 +1,18 @@
 package com.restpartijen.api.security
 
+import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
+import io.ktor.client.statement.bodyAsText
 
 class ValidationTests {
     // Happy path
@@ -34,8 +37,10 @@ class ValidationTests {
 
         val response = client.get("/test/protected")
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("Authentication required", error.message)
     }
+
 
     // Sad path: signed with another secret
     @Test
@@ -47,7 +52,8 @@ class ValidationTests {
             bearerAuth(TestTokens().createTestToken(userId = 1L, role = Role.COLLECTOR, settings = otherSettings))
         }
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("Authentication required", error.message)
     }
 
     // Sad path: expired token
@@ -60,6 +66,7 @@ class ValidationTests {
             bearerAuth(TestTokens().createTestToken(userId = 1L, role = Role.COLLECTOR, clock = twoDaysAgo))
         }
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("Authentication required", error.message)
     }
 }
