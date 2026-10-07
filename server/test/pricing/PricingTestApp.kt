@@ -30,6 +30,10 @@ fun Application.setUpPricingTestApp(
     // creates the JWT provider that requireRole needs
     configureSecurity(jwtConfig)
 
+    dependencies.provide<ProductReader> {
+        productReader
+    }
+
     // The route requires a DI binding for ExpiryScheduler, which is the service that runs the maintenance. We provide a fake implementation for testing.
     dependencies.provide<ExpiryScheduler> {
         ExpiryScheduler(reservationMaintenance, productReader, productStatusUpdater, TestClock.fixed)

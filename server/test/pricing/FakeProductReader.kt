@@ -5,7 +5,10 @@ import com.restpartijen.api.shared.ProductStatus
 import kotlin.time.Instant
 import com.restpartijen.api.shared.ProductView
 
-class FakeProductReader(private val expiredListings: List<ProductView> = emptyList()) : ProductReader {
+class FakeProductReader(
+    private val expiredListings: List<ProductView> = emptyList(),
+    private val products: List<ProductView> = emptyList(),
+    ) : ProductReader {
     override suspend fun findById(id: Long): ProductView? {
         TODO("Not needed for the expiry tests")
     }
@@ -13,7 +16,7 @@ class FakeProductReader(private val expiredListings: List<ProductView> = emptyLi
         TODO("Not needed for the expiry tests")
     }
     override suspend fun findByStatus(statuses: Set<ProductStatus>): List<ProductView> {
-        TODO("Not needed for the expiry tests")
+        return products
     }
 
     override suspend fun findExpiredListings(now: Instant): List<ProductView> {
