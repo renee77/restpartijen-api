@@ -3,12 +3,16 @@ type: Log
 title: "Log architectuurbeslissingen — Restpartijenplatform Web API"
 description: "Wijzigingen aan de ADR's, de nieuwste bovenaan. De versies voor oktober 2026 zijn afgeleid uit de revisiehistorie van het FTD."
 tags: [adr, restpartijen, log]
-timestamp: 2026-10-04T00:00:00
+timestamp: 2026-10-08T00:00:00
 ---
 
 # Log architectuurbeslissingen
 
 De nieuwste wijziging staat bovenaan. Het overzicht van alle ADR's staat in de [index](index.md).
+
+## 2026-10-08 — ADR-05 bijgewerkt
+
+- De tabel met plugins in ADR-05 bevat nu ook `RoleCheck`: de eigen, route-scoped plugin uit GI-3 (Lonneke) die na de authenticatie de rol controleert. De plugin staat sinds 1 oktober 2026 in de code (`security/service/Rolecheck.kt`).
 
 ## 2026-10-04 — Hernummering doorgevoerd
 
