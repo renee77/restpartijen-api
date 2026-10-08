@@ -11,12 +11,10 @@ data class JwtProperties(
     val issuer: String,
     val audience: String,
     val validity: Duration,
-//    val secretGenerated: Boolean
 ) {
     override fun toString(): String {
         return "JwtProperties(secret=***, issuer=$issuer, audience=$audience, validity=$validity)"
     }
-                //", secretGenerated=$secretGenerated)"
 }
 
 private const val MIN_SECRET_BYTES = 32
@@ -53,10 +51,8 @@ fun ApplicationConfig.jwtProperties(): JwtProperties {
         audience = audience,
         validity = validity
     )
-        //, secretGenerated = secretGenerated
-
 }
-//Keuze A voor nu: ask Paul for input
+//TIJDELIJKE FALLBACKFUNCTIE
 //private fun fallbackSecret(): String {
 //    val bytes = ByteArray(MIN_SECRET_BYTES).also { SecureRandom().nextBytes(it) }
 //    return Base64.encode(bytes)
