@@ -7,7 +7,6 @@ package com.restpartijen.api.shared
  * The class guards itself, like PickupWindow does.
  */
 data class PriceBreakdown(
-    // Money with whole cents in Long, discounts as WHOLE percentages
     val originalPrice: Money,
     val discountPercentage: Int,
     val currentPrice: Money

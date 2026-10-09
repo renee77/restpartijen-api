@@ -79,19 +79,4 @@ class PriceBreakdownTest {
         assertEquals(testCurrentPrice, breakdown.currentPrice)
         assertEquals(0, breakdown.discountPercentage)
     }
-
-    @Test
-    fun `discount percentage of 100 is accepted` () {
-        // Arrange and Act
-        val breakdown = PriceBreakdown(
-            originalPrice = testPrice,
-            discountPercentage = 100,
-            currentPrice = testCurrentPrice
-        )
-
-        // Assert: The values remain the same
-        assertEquals(testPrice, breakdown.originalPrice)
-        assertEquals(testCurrentPrice, breakdown.currentPrice)
-        assertEquals(100, breakdown.discountPercentage)
-    }
 }

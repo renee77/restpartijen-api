@@ -11,7 +11,7 @@ value class Money private constructor(val cents: Long) {
         require(cents >= 0) { "An amount cannot be negative" }
     }
 
-    /** Turning the given double into cents **/
+    /** Turning the given double into cents */
     fun toEuros(): Double = cents / 100.0
 
     /**
