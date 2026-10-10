@@ -13,6 +13,7 @@ import com.restpartijen.api.security.repository.ExposedUserRepository
 import com.restpartijen.api.security.repository.UserRepository
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.security.service.RegistrationService
+import com.restpartijen.api.security.service.LoginService
 import kotlin.time.Clock
 import com.restpartijen.api.security.service.JwtConfig
 
@@ -34,6 +35,7 @@ fun Application.configureDependencies() {
         provide<UserRepository>(::ExposedUserRepository)
         provide(::PasswordHasher)
         provide(::RegistrationService)
+        provide(::LoginService)
 
     }
 }
