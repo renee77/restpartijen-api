@@ -13,8 +13,12 @@ import com.restpartijen.api.product.repository.ProductsTable
 import com.restpartijen.api.product.routes.configureProductRouting
 import com.restpartijen.api.security.repository.UsersTable
 import com.restpartijen.api.security.routes.configureAuthRouting
+import com.restpartijen.api.security.service.JwtConfig
+import com.restpartijen.api.security.service.JwtSettings
+import com.restpartijen.api.security.service.configureSecurity
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
+import kotlin.time.Clock
 
 /**
  * Entry point of the application.
@@ -26,7 +30,7 @@ fun main(args: Array<String>) {
 }
 
 /**
- * The single place where the application is assembled (GI-2, decision 2.2).
+ * The single place where the application is assembled.
  * Referenced by name in application.yaml: com.restpartijen.api.ApplicationKt.module
  */
 fun Application.module() {
@@ -45,7 +49,19 @@ fun Application.module() {
     configureCors()
 
     // 3. SECURITY
-    // TODO: map jwtProperties to JwtSettings and configureSecurity()
+    val jwtSettings = JwtSettings(
+        secret = jwtProperties.secret,
+        issuer = jwtProperties.issuer,
+        audience = jwtProperties.audience,
+        validity = jwtProperties.validity
+    )
+
+    val jwtConfig = JwtConfig(
+        settings = jwtSettings,
+        clock = Clock.System
+    )
+
+    configureSecurity(jwtConfig)
 
     // 4. ROUTES
     configureProductRouting()

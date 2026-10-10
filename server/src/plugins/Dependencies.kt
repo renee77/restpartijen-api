@@ -14,6 +14,7 @@ import com.restpartijen.api.security.repository.UserRepository
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.security.service.RegistrationService
 import kotlin.time.Clock
+import com.restpartijen.api.security.service.JwtConfig
 
 
 /**
