@@ -11,6 +11,8 @@ import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.product.repository.ProductsTable
 import com.restpartijen.api.product.routes.configureProductRouting
+import com.restpartijen.api.security.repository.UsersTable
+import com.restpartijen.api.security.routes.configureAuthRouting
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
 
@@ -32,7 +34,7 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
-    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable)
+    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable, UsersTable)
 
     // 2. PLUGINS
     configureSerialization()
@@ -49,4 +51,5 @@ fun Application.module() {
     configureProductRouting()
     // TODO: F2 routes
     // TODO: F3 routes
+    configureAuthRouting()
 }

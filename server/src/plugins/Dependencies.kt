@@ -8,6 +8,13 @@ import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.service.ProductService
 
+// Imports F3
+import com.restpartijen.api.security.repository.ExposedUserRepository
+import com.restpartijen.api.security.repository.UserRepository
+import com.restpartijen.api.security.service.PasswordHasher
+import com.restpartijen.api.security.service.RegistrationService
+import kotlin.time.Clock
+
 
 /**
  * The one place that says which implementation belongs to which contract (§12.1).
@@ -21,6 +28,11 @@ fun Application.configureDependencies() {
 
         // F2 (Stefan), F3 (Lonneke): register their contracts here once they exist
 
+        // F3: User registration
+        provide<Clock> { Clock.System }
+        provide<UserRepository>(::ExposedUserRepository)
+        provide(::PasswordHasher)
+        provide(::RegistrationService)
 
     }
 }
