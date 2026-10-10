@@ -26,13 +26,12 @@ import kotlin.time.Instant
  */
 
 class ExposedUserRepositoryTest {
+    private val fixedNow = Instant.parse("2026-01-15T10:30:00Z")
     val newUser = User(
         id=0,
         email="testmail@mail.com", passwordHash="passwordHash", display_name="TestName",
         role=Role.COLLECTOR,
-        createdAt = FixedClock(
-            Instant.parse("2026-01-15T10:30:00Z")
-        ).now().toLocalDateTime(TimeZone.UTC),
+        createdAt = fixedNow,
         deleted = false
     )
 
@@ -133,9 +132,7 @@ class ExposedUserRepositoryTest {
             passwordHash = passwordHash,
             display_name = "Test User",
             role = Role.COLLECTOR,
-            createdAt = FixedClock(
-                Instant.parse("2026-01-15T10:30:00Z")
-            ).now().toLocalDateTime(TimeZone.UTC),
+            createdAt = fixedNow,
             deleted = false
         )
 
