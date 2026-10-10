@@ -1,11 +1,13 @@
 package com.restpartijen.api.security
 
+import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.shared.Role
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
@@ -25,11 +27,12 @@ class RoleAuthTests {
         }
 
         // Assert: the response status should be 401 Unauthorized, indicating that the token's role is not valid
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("Authentication required", error.message)
     }
 
 
-    // Happy path -> Admin get access to the admin only route.
+    // Happy path -> Someone with a valid role for the route get access (in this case, a collector).
     @Test
     fun `token with valid role for route gets access`() = testApplication {
         // Arrange: Set up the test application with security and a role-protected route
@@ -46,7 +49,7 @@ class RoleAuthTests {
             bearerAuth(token)
         }
 
-        // Assert. Verify that the decoded token contains the expected userId and role.
+        // Assert. Verify that the role is valid and the access is granted.
         assertEquals(HttpStatusCode.OK, response.status)
     }
 
@@ -68,7 +71,8 @@ class RoleAuthTests {
         }
 
         // Assert. Verify that the decoded token contains the expected userId and role.
-        assertEquals(HttpStatusCode.Forbidden, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText()).message
+        assertEquals("Insufficient role", error)
     }
 
 

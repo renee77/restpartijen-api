@@ -17,8 +17,8 @@ fun ApplicationCall.currentUser(): CurrentUser {
     val principal = principal<JWTPrincipal>()
         ?: throw UnauthorizedException("Authentication required")
 
-    val userId = principal.payload.getClaim("userId").asLong()
-    val roleName = principal.payload.getClaim("role").asString()
+    val userId = principal.payload.getClaim(JwtClaims.USER_ID).asLong()
+    val roleName = principal.payload.getClaim(JwtClaims.ROLE).asString()
     val role = Role.entries.firstOrNull { it.name == roleName }
 
     // After validate() this cannot happen for a genuine token, but the compiler doesn't know that.
