@@ -79,7 +79,7 @@ class TestTokensTest {
             role = Role.COLLECTOR
         )
         // Act. We define the other secret.
-        val otherSecret = "other-secret"
+        val otherSecret = "this-is-another-test-secret-that-is-long-enough"
 
         // Assert.We expect it will throw a SignatureVerificationException, because the token was signed with a different secret.
         assertFailsWith<SignatureVerificationException> { verifyToken(token, otherSecret) }

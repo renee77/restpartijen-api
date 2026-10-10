@@ -2,12 +2,14 @@ package com.restpartijen.api.security
 
 import com.restpartijen.api.security.service.PasswordHasher
 import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
+import kotlin.test.assertFalse
 
 class PasswordHasherTest {
     // Happy path: Hash a password and it gets verified succesfully.
     @Test
-    fun `test hash and verify password` () {
+    fun `test the right password` () {
         // Arrange: get the password hasher and a sample password.
         val hash = PasswordHasher()
         val password = "secretPassword123!"
@@ -16,13 +18,13 @@ class PasswordHasherTest {
         val hashedPassword = hash.hashPassword(password)
 
         // Assert: Verify that the hashed password matches the original password.
-        assertEquals(true, hash.verifyPassword(password, hashedPassword))
-    }
+        assertTrue(hash.verifyPassword(password, hashedPassword))
+}
 
 
     // Sad path: Verify a password against a wrong hash.
     @Test
-    fun `test and verify password with wrong hash` () {
+    fun `test the password with wrong hash` () {
         // Arrange: get the password hasher and a sample password.
         val hash = PasswordHasher()
         val password = "secret456!"
@@ -31,7 +33,7 @@ class PasswordHasherTest {
         val hashedPassword = hash.hashPassword(password)
 
         // Assert: Verify that the hashed password does not match a different password.
-        assertEquals(false, hash.verifyPassword("wrongPassword", hashedPassword))
+        assertFalse(hash.verifyPassword("wrongPassword", hashedPassword))
     }
 
     // Check that a password is not hashed to the same value every time (salting).
@@ -46,6 +48,6 @@ class PasswordHasherTest {
         val hash2 = hash.hashPassword(password)
 
         // Assert: The two hashes should not be equal, because the hashing process includes salting.
-        assertEquals(false, hash1 == hash2)
+        assertNotEquals(hash1, hash2)
     }
 }
