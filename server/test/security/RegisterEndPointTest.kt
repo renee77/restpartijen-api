@@ -2,18 +2,12 @@ package com.restpartijen.api.security
 
 import com.restpartijen.api.plugins.ErrorCode
 import com.restpartijen.api.plugins.ErrorResponse
-import com.restpartijen.api.plugins.configureSerialization
-import com.restpartijen.api.plugins.configureStatusPages
+import com.restpartijen.api.testsupport.setUpAuthTestApp
 import com.restpartijen.api.security.dto.UserResponse
 import com.restpartijen.api.security.repository.ExposedUserRepository
 import com.restpartijen.api.security.repository.UsersTable
-import com.restpartijen.api.security.routes.configureAuthRouting
 import com.restpartijen.api.security.service.JwtConfig
-import com.restpartijen.api.security.service.LoginService
-import com.restpartijen.api.security.service.PasswordHasher
-import com.restpartijen.api.security.service.RegistrationService
 import com.restpartijen.api.shared.Role
-import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import io.ktor.client.HttpClient
 import io.ktor.client.request.post
@@ -23,7 +17,6 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
@@ -41,26 +34,10 @@ class RegisterEndpointTest {
     private suspend fun HttpResponse.errorBody(): ErrorResponse =
         Json.decodeFromString<ErrorResponse>(bodyAsText())
     // Set up the test app: same plugins as production, real service on an empty H2 database.
+    private val jwtConfig = JwtConfig(TestJwtSettings.default, TestClock.fixed)
+
     private fun ApplicationTestBuilder.setUpRegisterApp() {
-        application {
-            configureSerialization()
-            configureStatusPages()
-            // Provide the service the route needs. Adjust to how configureAuthRouting gets it.
-            dependencies {
-                provide<RegistrationService> {
-                    RegistrationService(ExposedUserRepository(), PasswordHasher(), FixedClock(fixedNow))
-                }
-                // New: configureAuthRouting() now also asks for LoginService
-                provide<LoginService> {
-                    LoginService(
-                        ExposedUserRepository(),
-                        PasswordHasher(),
-                        JwtConfig(TestJwtSettings.default, TestClock.fixed),
-                    )
-                }
-            }
-            configureAuthRouting()
-        }
+        application { setUpAuthTestApp(jwtConfig) }
     }
 
     private suspend fun HttpClient.register(json: String): HttpResponse =

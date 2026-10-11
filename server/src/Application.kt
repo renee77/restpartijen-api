@@ -28,7 +28,7 @@ fun main(args: Array<String>) {
 }
 
 /**
- * The single place where the application is assembled.
+ * The single place where the application is assembled (GI-2, decision 2.2).
  * Referenced by name in application.yaml: com.restpartijen.api.ApplicationKt.module
  */
 fun Application.module() {
@@ -40,24 +40,19 @@ fun Application.module() {
 
     // 2. PLUGINS
     configureSerialization()
-    configureDependencies()          // geen parameter meer
+    configureDependencies()
     configureStatusPages()
     configureRequestValidation()
     configureCallLogging()
     configureCors()
 
-// 3. SECURITY (GI-3, decision 3.9: one call into the security package)
+    // 3. SECURITY (GI-3, decision 3.9: one call into the security package)
     configureSecurityModule(jwtProperties)
-
-// 4. ROUTES
-    configureProductRouting()
-// TODO: F2 routes
-// TODO: F3 routes
-    configureAuthRouting()
 
     // 4. ROUTES
     configureProductRouting()
     // TODO: F2 routes
     // TODO: F3 routes
     configureAuthRouting()
+
 }
