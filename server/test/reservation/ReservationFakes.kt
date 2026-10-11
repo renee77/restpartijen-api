@@ -26,7 +26,7 @@ data class FakeProduct(
     override val status: ProductStatus = ProductStatus.LISTED,
     override val name: String = "Volkoren brood",
     override val supplier: SupplierSummary = SupplierSummary(1, "Bakkerij De Korenaar", 51.69, 5.30),
-    override val originalPrice: Money = Money(349),
+    override val originalPrice: Money = Money.fromCents(349),
     override val category: ProductCategory = ProductCategory.FRESH,
 ) : ProductView {
     override fun shelfLifeRemaining(clock: Clock): Duration = pickupWindow.until - clock.now()

@@ -54,7 +54,7 @@ class ReservationRoutesTest {
         dependencies {
             provide<ProductReader> { FakeProductReader(products) }
             provide<ProductStatusUpdater> { statusUpdater }
-            provide<PriceProvider> { FakePriceProvider(Money(299)) }
+            provide<PriceProvider> { FakePriceProvider(Money.fromCents(299)) }
             provide<ReservationRepository> { FakeReservationRepository() }
             provide<Clock> { FixedClock(now) }
             provide(::ReservationService)
