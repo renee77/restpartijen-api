@@ -5,7 +5,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 /**
- * Discount policy for ambient products: discounts start seven days before the
+ * Discount policy for ambient products: discounts start fourteen days before the
  * best-before date and rise in two steps to 40%.
  */
 class AmbientDiscountPolicy: DiscountPolicy {
