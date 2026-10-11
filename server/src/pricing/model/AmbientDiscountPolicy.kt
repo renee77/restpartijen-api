@@ -1,0 +1,24 @@
+package com.restpartijen.api.pricing.model
+
+import com.restpartijen.api.shared.ProductCategory
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Duration.Companion.hours
+
+/**
+ * Discount policy for ambient products: discounts start seven days before the
+ * best-before date and rise in two steps to 40%.
+ */
+class AmbientDiscountPolicy: DiscountPolicy {
+    private val discountTierList = listOf(
+        DiscountTier(14.days, 15),
+        DiscountTier(7.days, 40)
+    )
+
+    override fun appliesTo(): ProductCategory {
+        return ProductCategory.AMBIENT
+    }
+
+    override fun tiers(): List<DiscountTier> {
+        return discountTierList
+    }
+}
