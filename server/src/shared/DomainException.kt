@@ -10,7 +10,7 @@ abstract class DomainException(message: String) : RuntimeException(message)
 class ValidationException(message: String, val field: String? = null) : DomainException(message)
 
 /** 422 Unprocessable Entity — well-formed request that breaks a domain rule. */
-class DomainRuleException(message: String) : DomainException(message)
+class DomainRuleException(message: String, val field: String? = null) : DomainException(message)
 
 /** 404 Not Found — the requested resource does not exist. */
 class NotFoundException(message: String) : DomainException(message)

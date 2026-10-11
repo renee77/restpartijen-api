@@ -66,7 +66,7 @@ fun Application.configureStatusPages() {
         }
         // 422
         exception<DomainRuleException> { call, cause ->
-            call.respondError(HttpStatusCode.UnprocessableEntity, ErrorCode.DOMAIN_RULE_VIOLATION, cause.message)
+            call.respondError(HttpStatusCode.UnprocessableEntity, ErrorCode.DOMAIN_RULE_VIOLATION, cause.message, cause.field)
         }
         // 500: anything unexpected. Stacktrace in the log, never in the response (decision 4.4)
         exception<Throwable> { call, cause ->

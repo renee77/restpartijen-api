@@ -18,7 +18,7 @@ class FakeProductView(override val id: Long) : ProductView {
         from = Instant.parse("2026-01-01T10:00:00Z"),
         until = Instant.parse("2026-01-01T12:00:00Z"),
     )
-    override val originalPrice = Money(1000)
+    override val originalPrice = Money.fromCents(1000)
     override val category = ProductCategory.FRESH
     override fun shelfLifeRemaining(clock: Clock): Duration = Duration.ZERO
 }
