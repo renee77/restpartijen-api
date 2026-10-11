@@ -9,3 +9,142 @@ Accept: application/json
 ### F1 - Set invalid product: expect 400
 GET http://localhost:8080/api/v1/products/abc
 Accept: application/json
+
+
+
+# Feature 3 - Registeren
+### F3 - Register: expect 201 Created
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "di-test@mail.com",
+  "password": "MyTestPassword123",
+  "displayName": "DITest"
+}
+
+### F3 - Register with a role in the body: expect 400 (unknown field is refused)
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "new-test@mail.com",
+  "password": "MytestPassWOrd1!",
+  "displayName": "PieterTest",
+  "role": "COLLECTOR"
+}
+
+### F3 - Register with an existing email: expect 409 Conflict
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "new-test@mail.com",
+  "password": "MytestPassWOrd12!",
+  "displayName": "HenkTest"
+}
+
+### F3 - Register with the same email in other casing: expect 409 Conflict
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "nEW-TEst@maIL.com",
+  "password": "MytestPassWOrd12!",
+  "displayName": "HenkTest"
+}
+
+### F3 - Register with a too short password: expect 422, field password
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "collector@mail.com",
+  "password": "short",
+  "displayName": "LisaTest"
+}
+
+### F3 - Register with a too long password: expect 422, field password
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "nogeenmail@mail.com",
+  "password": "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+  "displayName": "EllaTest"
+}
+
+### F3 - Register with an invalid email: expect 422, field email
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "GeenMail.Adres",
+  "password": "TestWachtwoord123444",
+  "displayName": "EllaTest"
+}
+
+### F3 - Register with a blank display name: expect 422, field displayName
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "weereenmail@mail.com",
+  "password": "TesttWachtwoord1267",
+  "displayName": ""
+}
+
+### F3 - Register with a missing field: expect 400
+POST http://localhost:8080/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "password": "Testwachtwoorddd",
+  "displayName": "NepNaam"
+}
+
+### Feature 3 - Login
+### F3 - Login with valid credentials: expect 200 with token and role
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "di-test@mail.com",
+  "password": "MyTestPassword123"
+}
+
+### F3 - Login with the same email in other casing: expect 200
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "di-TEst@maIL.Com",
+  "password": "MyTestPassword123"
+}
+
+
+### F3 - Login with a wrong password: expect 401
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "di-test@mail.com",
+  "password": "MyTestPassword123!!"
+}
+
+### F3 - Login with an unknown email: expect 401 (same message as wrong password)
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "geengeregistreerd@mailadres.com",
+  "password": "MyTestPassword123"
+}
+
+### F3 - Login with a missing field: expect 400
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "ontbrekende@informatie.com"
+}

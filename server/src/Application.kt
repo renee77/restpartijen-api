@@ -11,6 +11,10 @@ import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.product.repository.ProductsTable
 import com.restpartijen.api.product.routes.configureProductRouting
+import com.restpartijen.api.security.repository.UsersTable
+import com.restpartijen.api.security.routes.configureAuthRouting
+import com.restpartijen.api.security.configureSecurityModule
+import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.reservation.repository.ReservationsTable
 import com.restpartijen.api.security.service.JwtConfig
 import com.restpartijen.api.security.service.JwtSettings
@@ -37,6 +41,7 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
+    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable, UsersTable)
     DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable, ReservationsTable)
 
     // 2. PLUGINS
@@ -47,19 +52,23 @@ fun Application.module() {
     configureCallLogging()
     configureCors()
 
-
-    // 3. SECURITY
-    val jwtSettings = JwtSettings(
-        secret = jwtProperties.secret,
-        issuer = jwtProperties.issuer,
-        audience = jwtProperties.audience,
-        validity = jwtProperties.validity
+    // 3. SECURITY (GI-3, decision 3.9: one call into the security package)
+    // 3. SECURITY (GI-3, decision 3.9: one call into the security package)
+// module() is the one place that knows both config and security, so the mapping lives here.
+    configureSecurityModule(
+        JwtSettings(
+            secret = jwtProperties.secret,
+            issuer = jwtProperties.issuer,
+            audience = jwtProperties.audience,
+            validity = jwtProperties.validity,
+        )
     )
-    configureSecurity(JwtConfig(jwtSettings, Clock.System))
 
     // 4. ROUTES
     configureProductRouting()
     // TODO: F2 routes
 //    configureReservationRouting()
     // TODO: F3 routes
+    configureAuthRouting()
+
 }
