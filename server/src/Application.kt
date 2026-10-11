@@ -16,12 +16,8 @@ import com.restpartijen.api.security.routes.configureAuthRouting
 import com.restpartijen.api.security.configureSecurityModule
 import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.reservation.repository.ReservationsTable
-import com.restpartijen.api.security.service.JwtConfig
-import com.restpartijen.api.security.service.JwtSettings
-import com.restpartijen.api.security.service.configureSecurity
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
-import kotlin.time.Clock
 
 /**
  * Entry point of the application.
@@ -41,8 +37,7 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
-    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable, UsersTable)
-    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable, ReservationsTable)
+    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable, UsersTable, ReservationsTable)
 
     // 2. PLUGINS
     configureSerialization()
@@ -52,9 +47,7 @@ fun Application.module() {
     configureCallLogging()
     configureCors()
 
-    // 3. SECURITY (GI-3, decision 3.9: one call into the security package)
-    // 3. SECURITY (GI-3, decision 3.9: one call into the security package)
-// module() is the one place that knows both config and security, so the mapping lives here.
+    // 3. SECURITY
     configureSecurityModule(
         JwtSettings(
             secret = jwtProperties.secret,
@@ -70,5 +63,4 @@ fun Application.module() {
 //    configureReservationRouting()
     // TODO: F3 routes
     configureAuthRouting()
-
 }
