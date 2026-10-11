@@ -11,8 +11,13 @@ import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.product.repository.ProductsTable
 import com.restpartijen.api.product.routes.configureProductRouting
+import com.restpartijen.api.reservation.repository.ReservationsTable
+import com.restpartijen.api.security.service.JwtConfig
+import com.restpartijen.api.security.service.JwtSettings
+import com.restpartijen.api.security.service.configureSecurity
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
+import kotlin.time.Clock
 
 /**
  * Entry point of the application.
@@ -32,7 +37,7 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
-    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable)
+    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable, ReservationsTable)
 
     // 2. PLUGINS
     configureSerialization()
@@ -42,11 +47,19 @@ fun Application.module() {
     configureCallLogging()
     configureCors()
 
+
     // 3. SECURITY
-    // TODO: map jwtProperties to JwtSettings and configureSecurity()
+    val jwtSettings = JwtSettings(
+        secret = jwtProperties.secret,
+        issuer = jwtProperties.issuer,
+        audience = jwtProperties.audience,
+        validity = jwtProperties.validity
+    )
+    configureSecurity(JwtConfig(jwtSettings, Clock.System))
 
     // 4. ROUTES
     configureProductRouting()
     // TODO: F2 routes
+//    configureReservationRouting()
     // TODO: F3 routes
 }
