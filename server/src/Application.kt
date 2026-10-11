@@ -13,9 +13,7 @@ import com.restpartijen.api.product.repository.ProductsTable
 import com.restpartijen.api.product.routes.configureProductRouting
 import com.restpartijen.api.security.repository.UsersTable
 import com.restpartijen.api.security.routes.configureAuthRouting
-import com.restpartijen.api.security.service.JwtConfig
-import com.restpartijen.api.security.service.JwtSettings
-import com.restpartijen.api.security.service.configureSecurity
+import com.restpartijen.api.security.configureSecurityModule
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
 import kotlin.time.Clock
@@ -42,26 +40,20 @@ fun Application.module() {
 
     // 2. PLUGINS
     configureSerialization()
-    configureDependencies()
+    configureDependencies()          // geen parameter meer
     configureStatusPages()
     configureRequestValidation()
     configureCallLogging()
     configureCors()
 
-    // 3. SECURITY
-    val jwtSettings = JwtSettings(
-        secret = jwtProperties.secret,
-        issuer = jwtProperties.issuer,
-        audience = jwtProperties.audience,
-        validity = jwtProperties.validity
-    )
+// 3. SECURITY (GI-3, decision 3.9: one call into the security package)
+    configureSecurityModule(jwtProperties)
 
-    val jwtConfig = JwtConfig(
-        settings = jwtSettings,
-        clock = Clock.System
-    )
-
-    configureSecurity(jwtConfig)
+// 4. ROUTES
+    configureProductRouting()
+// TODO: F2 routes
+// TODO: F3 routes
+    configureAuthRouting()
 
     // 4. ROUTES
     configureProductRouting()

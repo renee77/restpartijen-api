@@ -7,15 +7,7 @@ import io.ktor.server.plugins.di.provide
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.service.ProductService
-
-// Imports F3
-import com.restpartijen.api.security.repository.ExposedUserRepository
-import com.restpartijen.api.security.repository.UserRepository
-import com.restpartijen.api.security.service.PasswordHasher
-import com.restpartijen.api.security.service.RegistrationService
-import com.restpartijen.api.security.service.LoginService
 import kotlin.time.Clock
-import com.restpartijen.api.security.service.JwtConfig
 
 
 /**
@@ -24,6 +16,9 @@ import com.restpartijen.api.security.service.JwtConfig
  */
 fun Application.configureDependencies() {
     dependencies {
+        // Shared
+        provide<Clock> { Clock.System }
+
         // F1
         provide<ProductRepository>(::ExposedProductRepository)
         provide(::ProductService)
@@ -31,11 +26,6 @@ fun Application.configureDependencies() {
         // F2 (Stefan), F3 (Lonneke): register their contracts here once they exist
 
         // F3: User registration
-        provide<Clock> { Clock.System }
-        provide<UserRepository>(::ExposedUserRepository)
-        provide(::PasswordHasher)
-        provide(::RegistrationService)
-        provide(::LoginService)
 
     }
 }

@@ -8,6 +8,8 @@ import com.restpartijen.api.security.dto.UserResponse
 import com.restpartijen.api.security.repository.ExposedUserRepository
 import com.restpartijen.api.security.repository.UsersTable
 import com.restpartijen.api.security.routes.configureAuthRouting
+import com.restpartijen.api.security.service.JwtConfig
+import com.restpartijen.api.security.service.LoginService
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.security.service.RegistrationService
 import com.restpartijen.api.shared.Role
@@ -47,6 +49,14 @@ class RegisterEndpointTest {
             dependencies {
                 provide<RegistrationService> {
                     RegistrationService(ExposedUserRepository(), PasswordHasher(), FixedClock(fixedNow))
+                }
+                // New: configureAuthRouting() now also asks for LoginService
+                provide<LoginService> {
+                    LoginService(
+                        ExposedUserRepository(),
+                        PasswordHasher(),
+                        JwtConfig(TestJwtSettings.default, TestClock.fixed),
+                    )
                 }
             }
             configureAuthRouting()
