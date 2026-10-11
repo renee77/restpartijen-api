@@ -1,5 +1,6 @@
 package com.restpartijen.api.plugins
 
+import com.restpartijen.api.pricing.service.PricingService
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.plugins.di.provide
@@ -7,6 +8,7 @@ import io.ktor.server.plugins.di.provide
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.service.ProductService
+import com.restpartijen.api.shared.PriceProvider
 import kotlin.time.Clock
 
 
@@ -25,7 +27,8 @@ fun Application.configureDependencies() {
 
         // F2 (Stefan), F3 (Lonneke): register their contracts here once they exist
 
-        // F3: User registration
+        // F3: Pricing
+        provide<PriceProvider>(::PricingService)
 
     }
 }
