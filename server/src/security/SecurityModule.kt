@@ -1,6 +1,5 @@
 package com.restpartijen.api.security
 
-import com.restpartijen.api.config.JwtProperties
 import com.restpartijen.api.security.repository.ExposedUserRepository
 import com.restpartijen.api.security.repository.UserRepository
 import com.restpartijen.api.security.service.JwtConfig
@@ -16,18 +15,14 @@ import io.ktor.server.plugins.di.provide
 /**
  * Everything GI-3 needs, in one call from Application.module() (decision 3.9):
  * registers the security classes in the DI and installs the Authentication plugin.
+ *
+ * It takes JwtSettings (a security type), not the config package's JwtProperties,
+ * so the security package does not know the config package. module() does the mapping.
  * Call it after configureDependencies() and before the routes.
  */
-fun Application.configureSecurityModule(jwtProperties: JwtProperties) {
+fun Application.configureSecurityModule(jwtSettings: JwtSettings) {
     dependencies {
-        provide<JwtSettings> {
-            JwtSettings(
-                secret = jwtProperties.secret,
-                issuer = jwtProperties.issuer,
-                audience = jwtProperties.audience,
-                validity = jwtProperties.validity,
-            )
-        }
+        provide<JwtSettings> { jwtSettings }
         provide(::JwtConfig)
         provide<UserRepository>(::ExposedUserRepository)
         provide(::PasswordHasher)

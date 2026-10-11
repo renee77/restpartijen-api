@@ -14,9 +14,9 @@ import com.restpartijen.api.product.routes.configureProductRouting
 import com.restpartijen.api.security.repository.UsersTable
 import com.restpartijen.api.security.routes.configureAuthRouting
 import com.restpartijen.api.security.configureSecurityModule
+import com.restpartijen.api.security.service.JwtSettings
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
-import kotlin.time.Clock
 
 /**
  * Entry point of the application.
@@ -47,7 +47,16 @@ fun Application.module() {
     configureCors()
 
     // 3. SECURITY (GI-3, decision 3.9: one call into the security package)
-    configureSecurityModule(jwtProperties)
+    // 3. SECURITY (GI-3, decision 3.9: one call into the security package)
+// module() is the one place that knows both config and security, so the mapping lives here.
+    configureSecurityModule(
+        JwtSettings(
+            secret = jwtProperties.secret,
+            issuer = jwtProperties.issuer,
+            audience = jwtProperties.audience,
+            validity = jwtProperties.validity,
+        )
+    )
 
     // 4. ROUTES
     configureProductRouting()
