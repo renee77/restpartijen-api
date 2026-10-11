@@ -1,26 +1,17 @@
 package com.restpartijen.api.security
 
+import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.shared.Role
-import com.restpartijen.api.shared.UnauthorizedException
-import com.restpartijen.api.shared.ForbiddenException
 import com.restpartijen.api.testsupport.FixedClock
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.Application
-import io.ktor.server.application.install
-import io.ktor.server.auth.authenticate
-import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.get
-import io.ktor.server.routing.routing
 import io.ktor.server.testing.testApplication
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
-import com.restpartijen.api.security.service.*
 import io.ktor.client.statement.bodyAsText
 
 class ValidationTests {
@@ -46,8 +37,10 @@ class ValidationTests {
 
         val response = client.get("/test/protected")
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("Authentication required", error.message)
     }
+
 
     // Sad path: signed with another secret
     @Test
@@ -59,7 +52,8 @@ class ValidationTests {
             bearerAuth(TestTokens().createTestToken(userId = 1L, role = Role.COLLECTOR, settings = otherSettings))
         }
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("Authentication required", error.message)
     }
 
     // Sad path: expired token
@@ -72,6 +66,7 @@ class ValidationTests {
             bearerAuth(TestTokens().createTestToken(userId = 1L, role = Role.COLLECTOR, clock = twoDaysAgo))
         }
 
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("Authentication required", error.message)
     }
 }

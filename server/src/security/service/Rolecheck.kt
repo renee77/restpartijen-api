@@ -24,8 +24,7 @@ private val RoleCheck = createRouteScopedPlugin("RoleCheck", ::RoleCheckConfig) 
         val principal = call.principal<JWTPrincipal>() ?: return@on
 
         // The claim is text; look up the matching Role. Unknown or missing text gives null.
-        val roleName = principal.payload.getClaim("role").asString()
-        val role = Role.entries.firstOrNull { it.name == roleName }
+        val role = JwtClaims.role(principal.payload)
 
         if (role == null || role !in allowedRoles) {
             throw ForbiddenException("Insufficient role")
