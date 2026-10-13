@@ -44,4 +44,15 @@ class ProductRoutesTest {
         // Assert
         assertEquals(HttpStatusCode.NotFound, response.status)
     }
+
+    @Test
+    fun `GET product with a non-numeric id returns 400`() = testApplication {
+        // Arrange
+        environment { config = testConfig() }
+        application { module() }
+        // Act
+        val response = client.get("/api/v1/products/abc")
+        // Assert: the route throws ValidationException; StatusPages turns it into a 400
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
 }

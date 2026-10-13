@@ -22,7 +22,7 @@ class ProductServiceMockkTest {
         // Act
         val product = service.getProduct(1)
         // Assert
-        assertEquals("Volkoren Brood", product?.name)
+        assertEquals("Volkoren Brood", product.name)
 
         coVerify(exactly = 1) { mockRepository.findById(1) }
     }
