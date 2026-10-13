@@ -9,15 +9,15 @@ interface ProductStatusUpdater {
     /** Sets RESERVED only if the product is still LISTED. Returns false if someone else was first. */
     suspend fun markReserved(productId: Long): Boolean
 
-    /** Sets RESERVED back to LISTED (reservation cancelled or lapsed). */
-    suspend fun markListed(productId: Long)
+    /** Sets RESERVED back to LISTED (reservation cancelled or lapsed). Returns false if it was not RESERVED. */
+    suspend fun markListed(productId: Long): Boolean
 
-    /** Sets RESERVED to COLLECTED. */
-    suspend fun markCollected(productId: Long)
+    /** Sets RESERVED to COLLECTED. Returns false if it was not RESERVED. */
+    suspend fun markCollected(productId: Long): Boolean
 
     /** Sets the given LISTED products to EXPIRED. Returns how many changed. */
     suspend fun markExpired(productIds: List<Long>): Int
 
-    /** Sets a LISTED product to REMOVED (decision point 3). Returns false if it was not LISTED. */
+    /** Sets a LISTED product to REMOVED (B-19). Returns false if it was not LISTED. */
     suspend fun markRemoved(productId: Long): Boolean
 }

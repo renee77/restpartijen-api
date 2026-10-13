@@ -3,8 +3,6 @@ package com.restpartijen.api.shared
 import kotlin.time.Clock
 import kotlin.time.Duration
 
-
-// restpartijen-api/src/shared/PricedProduct.kt
 /**
  * What pricing needs to know about a product, and nothing more (K-2).
  * Provided by: F1 (Eva), implemented by SurplusProduct. Used by: F3 (Lonneke) via PriceProvider.
