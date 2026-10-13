@@ -2,7 +2,7 @@ package com.restpartijen.api.product.routes
 
 import com.restpartijen.api.product.dto.toResponse
 import com.restpartijen.api.product.service.ProductService
-import io.ktor.http.HttpStatusCode
+import com.restpartijen.api.shared.ValidationException
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.response.respond
@@ -20,19 +20,10 @@ fun Application.configureProductRouting() {
     routing {
         get("/api/v1/products/{id}") {
             // Path parameters are always text; toLongOrNull avoids a 500 on input like "abc".
-            val id = call.parameters["id"]?.toLongOrNull()
-            if (id == null) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@get
-            }
+            val id = call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Product id must be a number")
 
-            // Unknown id: 404. Once StatusPages exists (T15), the service throws
-            // NotFoundException and StatusPages builds this response instead.
+            // Unknown id: the service throws NotFoundException; StatusPages turns it into a 404.
             val product = service.getProduct(id)
-            if (product == null) {
-                call.respond(HttpStatusCode.NotFound)
-                return@get
-            }
 
             // ContentNegotiation (configureSerialization) turns the @Serializable DTO into JSON.
             call.respond(product.toResponse())

@@ -2,10 +2,11 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.product.service.ProductService
+import com.restpartijen.api.shared.NotFoundException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import kotlin.test.assertFailsWith
 
 class ProductServiceTest {
     @Test
@@ -18,16 +19,17 @@ class ProductServiceTest {
         // Act
         val product = service.getProduct(1)
         // Assert
-        assertEquals("Volkoren brood", product?.name)
+        assertEquals("Volkoren brood", product.name)
     }
 
     @Test
-    fun `getProduct returns null when the id does not exist`() = runTest {
+    fun `getProduct throws NotFoundException when the id does not exist`() = runTest {
         // Arrange
         val service = ProductService(fakeProductRepository())
-        // Act
-        val product = service.getProduct(999)
-        // Assert
-        assertNull(product)
+
+        // Act + Assert
+        assertFailsWith<NotFoundException> {
+            service.getProduct(999)
+        }
     }
 }
