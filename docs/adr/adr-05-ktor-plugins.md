@@ -3,7 +3,7 @@ type: ADR
 title: "ADR-05 — Ktor-plugins en verantwoordelijkheden"
 description: "Welke Ktor-plugins de applicatie installeert, met per plugin de verantwoordelijkheid en de eigenaar."
 tags: [adr, restpartijen, ktor, plugins]
-timestamp: 2026-10-04T00:00:00
+timestamp: 2026-10-08T00:00:00
 ---
 
 # ADR-05 — Ktor-plugins en verantwoordelijkheden
@@ -18,6 +18,7 @@ timestamp: 2026-10-04T00:00:00
 | `Routing` | Endpoints koppelen aan handlers; per feature een eigen routingbestand | Per feature |
 | `ContentNegotiation` (kotlinx.serialization) | JSON in- en uitpakken | GI-2, Stefan |
 | `Authentication` (JWT) | Token valideren, principal beschikbaar maken | GI-3, Lonneke |
+| `RoleCheck` (eigen, route-scoped) | Na de authenticatie de rol uit het JWT vergelijken met de toegestane rollen; een andere rol geeft `ForbiddenException` (403). Wordt per route gebruikt via `requireRole(...)` | GI-3, Lonneke |
 | `StatusPages` | Domeinexcepties omzetten naar HTTP-statuscodes | GI-4, Stefan |
 | `RequestValidation` | Structurele validatie van request bodies | GI-4, Stefan |
 | `CORS` | Toegang vanaf de Android-app in periode 2 | GI-2, Stefan |
@@ -25,5 +26,5 @@ timestamp: 2026-10-04T00:00:00
 | DI (`io.ktor.server.plugins.di`) | Services en repositories registreren en vervangbaar maken | GI-2, Stefan |
 
 - **Status.** Aangenomen.
-- **Gevolgen.** De `Application`-module blijft dun: hij installeert plugins en roept per feature een routingfunctie aan. De domeinlogica zit in de servicelaag, niet in de route handlers. Dat is ook de reden dat de servicelaag los te unittesten is.
+- **Gevolgen.** Positief: De `Application`-module blijft dun: hij installeert plugins en roept per feature een routingfunctie aan. De domeinlogica zit in de servicelaag, niet in de route handlers. Dat is ook de reden dat de servicelaag los te unittesten is. Negatief: Een nadeel is dat plugins die niet worden aangeroepen in module() geen compileerfout veroorzaken, maar pas in runtime een error zullen opleveren. 
 - **Alternatieven.** Validatie in de route handlers zelf werd afgewezen omdat de logica dan niet los van HTTP te testen is.

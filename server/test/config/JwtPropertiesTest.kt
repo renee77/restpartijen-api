@@ -81,14 +81,23 @@ class JwtPropertiesTest {
 
     //Made by Stefan
     @Test
-    fun `missing values fall back to defaults`() {
-        // Arrange
-        val config = MapApplicationConfig("jwt.secret" to validSecret)
-        // Act
-        val properties = config.jwtProperties()
-        // Assert
-        assertEquals("restpartijen-api", properties.issuer)
-        assertEquals("restpartijen-app", properties.audience)
-        assertEquals(24.hours, properties.validity)
+    fun `missing issuer, audience or validityHours stops with a message that names the key`() {
+        for (key in listOf("jwt.issuer", "jwt.audience", "jwt.validityHours")) {
+            // Arrange: a complete config with one key left out
+            val config = MapApplicationConfig(
+                *completeConfig().filterKeys { it != key }.toList().toTypedArray()
+            )
+            // Act
+            val exception = assertFailsWith<IllegalStateException> { config.jwtProperties() }
+            // Assert
+            assertTrue("$key is not set" in exception.message.orEmpty(), "message for $key")
+        }
     }
+
+    private fun completeConfig() = mapOf(
+        "jwt.secret" to validSecret,
+        "jwt.issuer" to "test-issuer",
+        "jwt.audience" to "test-audience",
+        "jwt.validityHours" to "2",
+    )
 }

@@ -7,5 +7,8 @@ import io.ktor.server.config.MapApplicationConfig
  * so every test that calls module() needs this.
  */
 fun testConfig(): MapApplicationConfig = MapApplicationConfig(
-    "jwt.secret" to "0123456789abcdef0123456789abcdef"
+    "jwt.secret" to "0123456789abcdef0123456789abcdef",
+    "jwt.issuer" to "test-issuer",
+    "jwt.audience" to "test-audience",
+    "jwt.validityHours" to "1",
 )

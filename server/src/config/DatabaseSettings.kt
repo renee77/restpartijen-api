@@ -2,10 +2,9 @@ package com.restpartijen.api.config
 
 import io.ktor.server.config.ApplicationConfig
 
-enum class DbMode { MEMORY, FILE; }
+enum class DbMode { MEMORY, FILE }
 
 data class DatabaseSettings(val mode: DbMode, val filePath: String)
-
 
 private const val DEFAULT_FILE_PATH = "./data/restpartijen"
 
@@ -14,8 +13,6 @@ private const val DEFAULT_FILE_PATH = "./data/restpartijen"
  * A missing or blank mode means MEMORY, so tests that do not load
  * application.yaml always run in memory. An unknown mode stops the application.
  */
-
-
 fun ApplicationConfig.databaseSettings(): DatabaseSettings {
     val rawMode = propertyOrNull("database.mode")?.getString()?.trim().orEmpty()
     val mode = if (rawMode.isEmpty()) {

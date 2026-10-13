@@ -11,19 +11,13 @@ data class JwtProperties(
     val issuer: String,
     val audience: String,
     val validity: Duration,
-//    val secretGenerated: Boolean
 ) {
     override fun toString(): String {
         return "JwtProperties(secret=***, issuer=$issuer, audience=$audience, validity=$validity)"
     }
-                //", secretGenerated=$secretGenerated)"
 }
 
 private const val MIN_SECRET_BYTES = 32
-//values are the same as in application.yaml, required here for testing
-private const val DEFAULT_ISSUER = "restpartijen-api"
-private const val DEFAULT_AUDIENCE = "restpartijen-app"
-private const val DEFAULT_VALIDITY_HOURS = 24L
 
 fun ApplicationConfig.jwtProperties(): JwtProperties {
     val jwtSecret = propertyOrNull("jwt.secret")?.getString()?.trim()?.ifBlank { null }
@@ -35,16 +29,12 @@ fun ApplicationConfig.jwtProperties(): JwtProperties {
         else -> jwtSecret
     }
 
-    val issuer = propertyOrNull("jwt.issuer")?.getString() ?: DEFAULT_ISSUER
-    val audience = propertyOrNull("jwt.audience")?.getString() ?: DEFAULT_AUDIENCE
+    val issuer = requiredJwtValue("issuer")
+    val audience = requiredJwtValue("audience")
 
-    val rawValidity = propertyOrNull("jwt.validityHours")?.getString()
-    val validityHours = if (rawValidity == null) {
-        DEFAULT_VALIDITY_HOURS
-    } else {
-        rawValidity.trim().toLongOrNull()?.takeIf { it > 0 }
-            ?: error("Invalid jwt.validityHours '$rawValidity': use a whole number of hours greater than 0.")
-    }
+    val rawValidity = requiredJwtValue("validityHours")
+    val validityHours = rawValidity.toLongOrNull()?.takeIf { it > 0 }
+        ?: error("Invalid jwt.validityHours '$rawValidity': use a whole number of hours greater than 0.")
     val validity = validityHours.hours
 
     return JwtProperties(
@@ -53,10 +43,13 @@ fun ApplicationConfig.jwtProperties(): JwtProperties {
         audience = audience,
         validity = validity
     )
-        //, secretGenerated = secretGenerated
-
 }
-//Keuze A voor nu: ask Paul for input
+
+/** Reads a jwt.* value that must be present. application.yaml is the only source of these values. */
+private fun ApplicationConfig.requiredJwtValue(key: String): String =
+    propertyOrNull("jwt.$key")?.getString()?.trim()?.ifBlank { null }
+        ?: error("jwt.$key is not set. Add it to the jwt section of application.yaml.")
+//TIJDELIJKE FALLBACKFUNCTIE
 //private fun fallbackSecret(): String {
 //    val bytes = ByteArray(MIN_SECRET_BYTES).also { SecureRandom().nextBytes(it) }
 //    return Base64.encode(bytes)
