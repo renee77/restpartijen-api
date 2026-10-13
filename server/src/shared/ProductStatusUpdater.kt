@@ -9,11 +9,6 @@ interface ProductStatusUpdater {
     /** Sets RESERVED only if the product is still LISTED. Returns false if someone else was first. */
     suspend fun markReserved(productId: Long): Boolean
 
-    // Nog bespreken: markListed en markCollected gaven Unit terug. De aanroeper zag dus niet of de
-    // overgang lukte, bijvoorbeeld markCollected op een partij die niet RESERVED is. Nu geven ze,
-    // net als markReserved en markRemoved, false terug als de partij niet in de verwachte status was.
-    // Stefan (F2) en Lonneke (F3) moeten die false afhandelen, bijvoorbeeld met een 409.
-
     /** Sets RESERVED back to LISTED (reservation cancelled or lapsed). Returns false if it was not RESERVED. */
     suspend fun markListed(productId: Long): Boolean
 

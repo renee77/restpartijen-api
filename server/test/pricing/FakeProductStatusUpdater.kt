@@ -7,11 +7,11 @@ class FakeProductStatusUpdater(private val expiredCount: Int? = null): ProductSt
         return expiredCount ?: productIds.size
     }
 
-    override suspend fun markCollected(productId: Long) {
+    override suspend fun markCollected(productId: Long): Boolean {
         TODO("Not needed for the expiry tests")
     }
 
-    override suspend fun markListed(productId: Long) {
+    override suspend fun markListed(productId: Long): Boolean {
         TODO("Not needed for the expiry tests")
     }
 
