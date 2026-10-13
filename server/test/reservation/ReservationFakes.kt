@@ -45,8 +45,8 @@ class FakeProductReader(private val products: List<ProductView>) : ProductReader
 class FakeProductStatusUpdater : ProductStatusUpdater {
     val reserved = mutableListOf<Long>()
     override suspend fun markReserved(productId: Long): Boolean = reserved.add(productId)
-    override suspend fun markListed(productId: Long) {}
-    override suspend fun markCollected(productId: Long) {}
+    override suspend fun markListed(productId: Long): Boolean = true
+    override suspend fun markCollected(productId: Long): Boolean = true
     override suspend fun markExpired(productIds: List<Long>): Int = 0
     override suspend fun markRemoved(productId: Long): Boolean = false
 }

@@ -16,6 +16,6 @@ interface ReservationMaintenance {
      */
     suspend fun lapseOverdue(now: Instant): Int
 
-    /** Lapses the active reservation of one product, before an admin removes it (US-09, decision point 3). */
+    /** Lapses the active reservation of one product, before an admin removes it (US-09, B-19). */
     suspend fun lapseActiveFor(productId: Long): Boolean
 }

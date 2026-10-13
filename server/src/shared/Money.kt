@@ -2,7 +2,7 @@ package com.restpartijen.api.shared
 
 import kotlin.math.roundToLong
 /**
- * An amount in whole euro cents (decision ADR-08).
+ * An amount in whole euro cents (decision ADR-08, B-13).
  * Create it only through fromCents or fromEuros.
  */
 @JvmInline
