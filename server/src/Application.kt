@@ -10,6 +10,7 @@ import com.restpartijen.api.plugins.configureRequestValidation
 import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.pricing.configureMaintenanceLoop
+import com.restpartijen.api.pricing.routes.configurePricingRouting
 import com.restpartijen.api.product.repository.ProductsTable
 import com.restpartijen.api.product.routes.configureProductRouting
 import com.restpartijen.api.security.repository.UsersTable
@@ -43,13 +44,13 @@ fun Application.module() {
     // 2. PLUGINS
     configureSerialization()
     configureDependencies()
+    // configureMaintenanceLoop()
     configureStatusPages()
     configureRequestValidation()
     configureCallLogging()
     configureCors()
 
     // 3. SECURITY
-    configureMaintenanceLoop()
     configureSecurityModule(
         JwtSettings(
             secret = jwtProperties.secret,
@@ -65,4 +66,5 @@ fun Application.module() {
 //    configureReservationRouting()
     // TODO: F3 routes
     configureAuthRouting()
+    // configurePricingRouting()
 }
