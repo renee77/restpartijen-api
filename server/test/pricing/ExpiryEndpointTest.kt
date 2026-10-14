@@ -89,8 +89,7 @@ class ExpiryEndpointTest {
     }
 
     @Test
-    fun `updater changing fewer products than found gives 409`() = testApplication {
-        // Arrange: two expired products found, but the updater only manages to change one
+    fun `updater changing fewer products than found still gives 200 and reports the real count`() = testApplication {
         application {
             setUpPricingTestApp(
                 productReader = FakeProductReader(listOf(FakeProductView(1), FakeProductView(2))),
@@ -104,10 +103,9 @@ class ExpiryEndpointTest {
             bearerAuth(token)
         }
 
-        // Assert: StatusPages turns the exception into 409 with the error model
-        assertEquals(HttpStatusCode.Conflict, response.status)
-        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
-        assertEquals(ErrorCode.CONFLICT, error.code)
+        // Assert: StatusPages throws an OK
+        assertEquals(HttpStatusCode.OK, response.status)
+        val error = Json.decodeFromString<MaintenanceReport>(response.bodyAsText())
     }
 
 }
