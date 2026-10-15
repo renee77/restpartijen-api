@@ -1,6 +1,5 @@
 package com.restpartijen.api.reservation
 
-import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.reservation.model.ReservationEvent
 import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.service.ReservationStateMachine
@@ -20,10 +19,10 @@ class ReservationStateMachineTest {
         val product = ProductStatus.LISTED
         val reservation: ReservationStatus? = null
         // Act
-        val response = ReservationStateMachine.transition(event, product, reservation)
+        val result = ReservationStateMachine.transition(event, product, reservation)
         // Assert
-        assertEquals(ProductStatus.RESERVED, response.product)
-        assertEquals(ReservationStatus.ACTIVE, response.reservation)
+        assertEquals(ProductStatus.RESERVED, result.product)
+        assertEquals(ReservationStatus.ACTIVE, result.reservation)
     }
 
     @Test

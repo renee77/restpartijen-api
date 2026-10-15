@@ -3,13 +3,7 @@ package com.restpartijen.api.reservation.service
 import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationEvent
 import com.restpartijen.api.reservation.repository.ReservationRepository
-import com.restpartijen.api.shared.DomainRuleException
-import com.restpartijen.api.shared.IllegalStateTransitionException
-import com.restpartijen.api.shared.NotFoundException
-import com.restpartijen.api.shared.PriceProvider
-import com.restpartijen.api.shared.ProductReader
-import com.restpartijen.api.shared.ProductStatus
-import com.restpartijen.api.shared.ProductStatusUpdater
+import com.restpartijen.api.shared.*
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
@@ -29,10 +23,6 @@ class ReservationService(
         val product = productReader.findById(productId)
             ?: throw NotFoundException("Product $productId not found")
 
-//        // 409: only a LISTED product can be reserved (§5.5)
-//        if (product.status != ProductStatus.LISTED) {
-//            throw IllegalStateTransitionException("Product $productId not listed")
-//        }
         // 409 for every combination outside §9.5; the state machine decides
         ReservationStateMachine.transition(ReservationEvent.RESERVE, product.status, reservation = null)
 

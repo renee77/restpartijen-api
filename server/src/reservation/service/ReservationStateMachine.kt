@@ -7,6 +7,8 @@ import com.restpartijen.api.reservation.model.ReservationEvent.LAPSE
 import com.restpartijen.api.reservation.model.ReservationEvent.RESERVE
 import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.model.ReservationStatus.ACTIVE
+import com.restpartijen.api.reservation.model.ReservationStatus.CANCELLED
+import com.restpartijen.api.reservation.model.ReservationStatus.LAPSED
 import com.restpartijen.api.shared.IllegalStateTransitionException
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.shared.ProductStatus.LISTED
@@ -19,18 +21,20 @@ import com.restpartijen.api.shared.ProductStatus.RESERVED
 object ReservationStateMachine {
 
     /** Where a transition starts. reservation is null for RESERVE: there is no reservation yet. */
-    private data class From(val event: ReservationEvent, val product: ProductStatus, val reservation: ReservationStatus?)
+    private data class From(
+        val event: ReservationEvent,
+        val product: ProductStatus,
+        val reservation: ReservationStatus?
+    )
 
     /** Where a transition ends: both statuses change together, in one transaction. */
     data class To(val product: ProductStatus, val reservation: ReservationStatus)
 
     private val transitions: Map<From, To> = mapOf(
         From(RESERVE, LISTED, null) to To(RESERVED, ACTIVE),
-        // TODO (yours): COLLECT, CANCEL and LAPSE, from the table in §9.5
-        From(COLLECT, RESERVED, ReservationStatus.ACTIVE) to To(ProductStatus.COLLECTED, ReservationStatus.COLLECTED),
-        From(CANCEL, RESERVED, ReservationStatus.ACTIVE) to To(ProductStatus.LISTED, ReservationStatus.CANCELLED),
-        From(LAPSE, RESERVED, ReservationStatus.ACTIVE) to To(LISTED, ReservationStatus.LAPSED)
-
+        From(COLLECT, RESERVED, ACTIVE) to To(ProductStatus.COLLECTED, ReservationStatus.COLLECTED),
+        From(CANCEL, RESERVED, ACTIVE) to To(LISTED, CANCELLED),
+        From(LAPSE, RESERVED, ACTIVE) to To(LISTED, LAPSED)
     )
 
     fun transition(event: ReservationEvent, product: ProductStatus, reservation: ReservationStatus?): To =
