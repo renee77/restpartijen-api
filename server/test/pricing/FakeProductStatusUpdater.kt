@@ -12,11 +12,15 @@ class FakeProductStatusUpdater(
     val calls: MutableList<String> = mutableListOf(),
 ) : ProductStatusUpdater {
 
+    /** The ids that markExpired was asked to expire. */
+    val expiredIds = mutableListOf<Long>()
+
     /** The ids that markRemoved successfully removed. */
     val removedIds = mutableListOf<Long>()
 
     override suspend fun markExpired(productIds: List<Long>): Int {
         calls += "markExpired"
+        expiredIds += productIds
         return expiredCount ?: productIds.size
     }
 

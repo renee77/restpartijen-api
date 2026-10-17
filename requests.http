@@ -148,3 +148,107 @@ Content-Type: application/json
 {
   "email": "ontbrekende@informatie.com"
 }
+
+### Feature 3 - Admin tokens
+### F3 - Login as admin: expect 200 with token and role ADMIN (needs the seeded admin account)
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@mail.com",
+  "password": "ReplaceWithTheSeededAdminPassword"
+}
+
+> {% client.global.set("adminToken", response.body.token); %}
+
+### F3 - Login as collector: expect 200 with token and role COLLECTOR
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "di-test@mail.com",
+  "password": "MyTestPassword123"
+}
+
+> {% client.global.set("collectorToken", response.body.token); %}
+
+### Feature 3 - Status monitoring (US-08)
+### F3 - Run maintenance without a token: expect 401
+POST http://localhost:8080/api/v1/admin/maintenance/expire
+
+### F3 - Run maintenance as collector: expect 403
+POST http://localhost:8080/api/v1/admin/maintenance/expire
+Authorization: Bearer {{collectorToken}}
+
+### F3 - Run maintenance as admin: expect 200 with the report (lapsedReservations, expiredProducts)
+POST http://localhost:8080/api/v1/admin/maintenance/expire
+Authorization: Bearer {{adminToken}}
+
+### F3 - Run maintenance again right after: expect 200 with zero and zero
+POST http://localhost:8080/api/v1/admin/maintenance/expire
+Authorization: Bearer {{adminToken}}
+
+### Feature 3 - Admin overview (US-09)
+### F3 - Overview without a token: expect 401
+GET http://localhost:8080/api/v1/admin/products
+
+### F3 - Overview as collector: expect 403
+GET http://localhost:8080/api/v1/admin/products
+Authorization: Bearer {{collectorToken}}
+
+### F3 - Overview without a filter: expect 200, every status except REMOVED
+GET http://localhost:8080/api/v1/admin/products
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### F3 - Overview filtered on one status: expect 200, only LISTED
+GET http://localhost:8080/api/v1/admin/products?status=LISTED
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### F3 - Overview filtered on two statuses: expect 200, LISTED and RESERVED
+GET http://localhost:8080/api/v1/admin/products?status=LISTED&status=RESERVED
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### F3 - Overview of removed products: expect 200, only REMOVED
+GET http://localhost:8080/api/v1/admin/products?status=REMOVED
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### F3 - Overview with an unknown status: expect 400, field status, allowed values in the message
+GET http://localhost:8080/api/v1/admin/products?status=BESTAATNIET
+Authorization: Bearer {{adminToken}}
+Accept: application/json
+
+### Feature 3 - Admin delete (US-09)
+### F3 - Delete without a token: expect 401
+DELETE http://localhost:8080/api/v1/admin/products/1
+
+### F3 - Delete as collector: expect 403
+DELETE http://localhost:8080/api/v1/admin/products/1
+Authorization: Bearer {{collectorToken}}
+
+### F3 - Delete a listed product: expect 204 (pick the id of a LISTED product from the seed data)
+DELETE http://localhost:8080/api/v1/admin/products/1
+Authorization: Bearer {{adminToken}}
+
+### F3 - Delete the same product again: expect 404 (a removed product does not exist for the API)
+DELETE http://localhost:8080/api/v1/admin/products/1
+Authorization: Bearer {{adminToken}}
+
+### F3 - Delete a reserved product: expect 204, the reservation lapses first (pick a RESERVED id from the seed data)
+DELETE http://localhost:8080/api/v1/admin/products/2
+Authorization: Bearer {{adminToken}}
+
+### F3 - Delete a collected product: expect 409 (pick a COLLECTED id from the seed data)
+DELETE http://localhost:8080/api/v1/admin/products/3
+Authorization: Bearer {{adminToken}}
+
+### F3 - Delete an unknown product: expect 404
+DELETE http://localhost:8080/api/v1/admin/products/999
+Authorization: Bearer {{adminToken}}
+
+### F3 - Delete with an id that is not a number: expect 400, field id
+DELETE http://localhost:8080/api/v1/admin/products/abc
+Authorization: Bearer {{adminToken}}
