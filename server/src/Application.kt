@@ -9,9 +9,9 @@ import com.restpartijen.api.plugins.configureDependencies
 import com.restpartijen.api.plugins.configureRequestValidation
 import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
-import com.restpartijen.api.pricing.configureMaintenanceLoop
-import com.restpartijen.api.pricing.routes.configurePricingRouting
+import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductsTable
+import com.restpartijen.api.product.repository.SuppliersTable
 import com.restpartijen.api.product.routes.configureProductRouting
 import com.restpartijen.api.security.repository.UsersTable
 import com.restpartijen.api.security.routes.configureAuthRouting
@@ -39,12 +39,18 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
-    DatabaseFactory.init(environment.config.databaseSettings(), ProductsTable, UsersTable, ReservationsTable)
+    DatabaseFactory.init(
+        environment.config.databaseSettings(),
+        UsersTable,
+        SuppliersTable,
+        ProductsTable,
+        ProductAllergensTable,
+        ReservationsTable,
+    )
 
     // 2. PLUGINS
     configureSerialization()
     configureDependencies()
-    // configureMaintenanceLoop()
     configureStatusPages()
     configureRequestValidation()
     configureCallLogging()
@@ -66,5 +72,4 @@ fun Application.module() {
 //    configureReservationRouting()
     // TODO: F3 routes
     configureAuthRouting()
-    // configurePricingRouting()
 }
