@@ -72,4 +72,43 @@ sealed class SurplusProduct(
             )
         }
     }
+
+    /**
+     * Builds the subclass that belongs to [category] (§9.3).
+     *
+     * Takes plain values instead of a database row, so the model
+     * does not depend on Exposed and the same factory serves both
+     * the repository and a request to list a product.
+     */
+    companion object ProductFactory {
+        fun create(
+            category: ProductCategory,
+            id: Long,
+            name: String,
+            barcode: String?,
+            originalPrice: Money,
+            supplier: SupplierSummary,
+            bestBeforeAt: Instant,
+            quantity: Int,
+            status: ProductStatus,
+            pickupWindow: PickupWindow,
+            allergens: Set<Allergen>,
+        ): SurplusProduct = when (category) {
+            ProductCategory.FRESH -> FreshProduct(
+                id = id, supplier = supplier, name = name, barcode = barcode, originalPrice = originalPrice,
+                bestBeforeAt = bestBeforeAt, quantity = quantity, status = status,
+                pickupWindow = pickupWindow, allergens = allergens,
+            )
+            ProductCategory.FROZEN -> FrozenProduct(
+                id = id, supplier = supplier, name = name, barcode = barcode, originalPrice = originalPrice,
+                bestBeforeAt = bestBeforeAt, quantity = quantity, status = status,
+                pickupWindow = pickupWindow, allergens = allergens,
+            )
+            ProductCategory.AMBIENT -> AmbientProduct(
+                id = id, supplier = supplier, name = name, barcode = barcode, originalPrice = originalPrice,
+                bestBeforeAt = bestBeforeAt, quantity = quantity, status = status,
+                pickupWindow = pickupWindow, allergens = allergens,
+            )
+        }
+    }
 }

@@ -20,5 +20,5 @@ data class ProductResponse(
 fun SurplusProduct.toResponse(): ProductResponse = ProductResponse(
     id = id,
     name = name,
-    category = category,
+    category = category.name,
 )

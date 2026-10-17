@@ -46,13 +46,17 @@ fun aProduct(
     status: ProductStatus = ProductStatus.LISTED,
     pickupWindow: PickupWindow = PickupWindow(from = testNow, until = testNow + 2.days),
     allergens: Set<Allergen> = emptySet(),
-): SurplusProduct = ProductFactory.from(
-    category, id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens
+): SurplusProduct = ProductFactory.create(
+    category = category, id = id, name = name, barcode = barcode, originalPrice = originalPrice,
+    supplier = supplier, bestBeforeAt = bestBeforeAt, quantity = quantity, status = status,
+    pickupWindow = pickupWindow, allergens = allergens,
 )
 
 /** The same product with another id. SurplusProduct has no copy(), because it is not a data class. */
-fun SurplusProduct.withId(id: Long): SurplusProduct = ProductFactory.from(
-    category, id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens
+fun SurplusProduct.withId(id: Long): SurplusProduct = ProductFactory.create(
+    category = category, id = id, name = name, barcode = barcode, originalPrice = originalPrice,
+    supplier = supplier, bestBeforeAt = bestBeforeAt, quantity = quantity, status = status,
+    pickupWindow = pickupWindow, allergens = allergens,
 )
 
 /**
