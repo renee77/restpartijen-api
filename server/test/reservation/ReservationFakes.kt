@@ -3,6 +3,7 @@ package com.restpartijen.api.reservation
 import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.repository.ReservationRepository
 import com.restpartijen.api.persistence.Repository
+import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.PriceBreakdown
@@ -36,6 +37,7 @@ class FakeProductReader(private val products: List<ProductView>) : ProductReader
     override suspend fun findById(id: Long): ProductView? = products.find { it.id == id }
     override suspend fun findAvailable(now: Instant): List<ProductView> =
         products.filter { it.status == ProductStatus.LISTED }
+
     override suspend fun findExpiredListings(now: Instant): List<ProductView> = emptyList()
     override suspend fun findByStatus(statuses: Set<ProductStatus>): List<ProductView> =
         products.filter { it.status in statuses }
@@ -44,8 +46,9 @@ class FakeProductReader(private val products: List<ProductView>) : ProductReader
 /** Records which products were reserved, so a test can check the service really called it. */
 class FakeProductStatusUpdater : ProductStatusUpdater {
     val reserved = mutableListOf<Long>()
+    val listed = mutableListOf<Long>()
     override suspend fun markReserved(productId: Long): Boolean = reserved.add(productId)
-    override suspend fun markListed(productId: Long): Boolean = true
+    override suspend fun markListed(productId: Long): Boolean = listed.add(productId)
     override suspend fun markCollected(productId: Long): Boolean = true
     override suspend fun markExpired(productIds: List<Long>): Int = 0
     override suspend fun markRemoved(productId: Long): Boolean = false
@@ -59,6 +62,15 @@ class FakePriceProvider(private val price: Money?) : PriceProvider {
 }
 
 /** In-memory reservations, reusing Eva's generic FakeRepository via delegation. */
-class FakeReservationRepository :
+class FakeReservationRepository(initial: List<Reservation> = emptyList()) :
     ReservationRepository,
-    Repository<Reservation> by FakeRepository(idOf = { it.id }, withId = { r, id -> r.copy(id = id) })
+    Repository<Reservation> by FakeRepository(
+        idOf = { it.id }, withId = { r, id -> r.copy(id = id) }, initialItems = initial,
+    ) {
+
+    override suspend fun findOverdue(now: Instant): List<Reservation> =
+        findAll().filter { it.status == ReservationStatus.ACTIVE && it.expiresAt <= now }
+
+    override suspend fun findActiveByProductId(productId: Long): Reservation? =
+        findAll().firstOrNull { it.status == ReservationStatus.ACTIVE && it.productId == productId }
+}
