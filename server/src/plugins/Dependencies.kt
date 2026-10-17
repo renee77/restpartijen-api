@@ -1,5 +1,6 @@
 package com.restpartijen.api.plugins
 
+import com.restpartijen.api.pricing.service.AdminProductService
 import com.restpartijen.api.pricing.service.PricingService
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
@@ -9,6 +10,11 @@ import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.shared.PriceProvider
+import com.restpartijen.api.shared.ProductStatusUpdater
+import com.restpartijen.api.pricing.service.ExpiryScheduler
+import com.restpartijen.api.shared.ProductReader
+import com.restpartijen.api.shared.ProductStatus
+import com.restpartijen.api.shared.ReservationMaintenance
 import kotlin.time.Clock
 
 
@@ -29,6 +35,8 @@ fun Application.configureDependencies() {
 
         // F3: Pricing
         provide<PriceProvider>(::PricingService)
+        provide<ExpiryScheduler>(::ExpiryScheduler)
+        provide<AdminProductService>(::AdminProductService)
 
     }
 }
