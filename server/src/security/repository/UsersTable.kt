@@ -17,7 +17,7 @@ object UsersTable: Table ("users") {
     // Role stored by its name (for example "COLLECTOR"), read back as a Role.
     val role = enumerationByName<Role>("role", length = 20)
     val createdAt = timestamp("created_at")
-    val deleted = bool("deleted_at").default(false)
+    val deletedAt = timestamp("deleted_at").nullable()
 
     // Tells Exposed (and the generated SQL) which column is the primary key.
     override val primaryKey = PrimaryKey(id)
