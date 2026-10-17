@@ -1,9 +1,18 @@
 package com.restpartijen.api.product
 
 import com.restpartijen.api.persistence.Repository
-import com.restpartijen.api.product.model.Product
+import com.restpartijen.api.product.model.SurplusProduct
+import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductRepository
+import com.restpartijen.api.shared.Allergen
+import com.restpartijen.api.shared.Money
+import com.restpartijen.api.shared.PickupWindow
+import com.restpartijen.api.shared.ProductCategory
+import com.restpartijen.api.shared.ProductStatus
+import com.restpartijen.api.shared.SupplierSummary
 import com.restpartijen.api.testsupport.FakeRepository
+import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 
 /**
  * A ProductRepository for tests, backed by the generic FakeRepository (decision 6.4).
@@ -11,9 +20,45 @@ import com.restpartijen.api.testsupport.FakeRepository
  * Delegation (`by`) passes every Repository call on to the fake, so no repository logic is repeated here.
  * Once ProductRepository gets product-specific queries, this object has to implement those itself.
  */
-fun fakeProductRepository(vararg products: Product): ProductRepository =
-    object : ProductRepository, Repository<Product> by FakeRepository(
+fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository =
+    object : ProductRepository, Repository<SurplusProduct> by FakeRepository(
         idOf = { it.id },
-        withId = { product, id -> product.copy(id = id) },
+        withId = { product, id -> product.withId(id) },
         initialItems = products.toList()
     ) {}
+
+/** The moment the default dates of [aProduct] are based on; tests use it for their FixedClock. */
+val testNow: Instant = Instant.parse("2026-10-01T00:00:00Z")
+
+/**
+ * Builds a valid product; a test passes only the values it is about.
+ * Id 0 means "not stored yet": the database or fake chooses the real id.
+ */
+fun aProduct(
+    category: ProductCategory = ProductCategory.FRESH,
+    id: Long = 0,
+    supplier: SupplierSummary = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0, longitude = 5.0),
+    name: String = "Volkoren brood",
+    barcode: String? = null,
+    originalPrice: Money = Money.fromCents(350),
+    bestBeforeAt: Instant = testNow + 3.days,
+    quantity: Int = 1,
+    status: ProductStatus = ProductStatus.LISTED,
+    pickupWindow: PickupWindow = PickupWindow(from = testNow, until = testNow + 2.days),
+    allergens: Set<Allergen> = emptySet(),
+): SurplusProduct = ProductFactory.from(
+    category, id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens
+)
+
+/** The same product with another id. SurplusProduct has no copy(), because it is not a data class. */
+fun SurplusProduct.withId(id: Long): SurplusProduct = ProductFactory.from(
+    category, id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens
+)
+
+/**
+ * All values of a product, for assertEquals.
+ * SurplusProduct is not a data class, so equals() compares identity instead of content.
+ */
+fun SurplusProduct.fields(): List<Any?> = listOf(
+    id, category, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens
+)
