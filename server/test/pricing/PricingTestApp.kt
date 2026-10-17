@@ -12,6 +12,7 @@ import com.restpartijen.api.shared.ProductStatusUpdater
 import com.restpartijen.api.shared.ReservationMaintenance
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
+import com.restpartijen.api.pricing.service.AdminProductService
 
 /**
  * Test app for the pricing endpoints: real route, fakes behind the service.
@@ -37,6 +38,11 @@ fun Application.setUpPricingTestApp(
     // The route requires a DI binding for ExpiryScheduler, which is the service that runs the maintenance. We provide a fake implementation for testing.
     dependencies.provide<ExpiryScheduler> {
         ExpiryScheduler(reservationMaintenance, productReader, productStatusUpdater, TestClock.fixed)
+    }
+
+    // The route also needs AdminProductService. It uses the same three fakes as ExpiryScheduler.
+    dependencies.provide<AdminProductService> {
+        AdminProductService(productReader, productStatusUpdater, reservationMaintenance)
     }
 
     // The real route from src/pricing/routes/PricingRoutes.kt, which uses the ExpiryScheduler service. In this test app, the service is a fake that we control.
