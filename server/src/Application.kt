@@ -41,19 +41,20 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
+    //Zet een tabel na de tabel waar hij naar verwijst.
     DatabaseFactory.init(
         environment.config.databaseSettings(),
         UsersTable,
         SuppliersTable,
         ProductsTable,
         ProductAllergensTable,
-        ReservationsTable,
+        ReservationsTable
     )
 
     // 2. PLUGINS
     configureSerialization()
     configureDependencies()
-    // configureMaintenanceLoop()
+    configureMaintenanceLoop()
     configureStatusPages()
     configureRequestValidation()
     configureCallLogging()
