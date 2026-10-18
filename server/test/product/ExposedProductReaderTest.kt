@@ -2,13 +2,9 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.product.repository.ExposedProductReader
 import com.restpartijen.api.product.repository.ExposedProductRepository
-import com.restpartijen.api.product.repository.ProductsTable
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.testsupport.FixedClock
 import kotlinx.coroutines.test.runTest
-import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -157,10 +153,5 @@ class ExposedProductReaderTest {
 
         // Assert
         assertEquals(emptyList(), found)
-    }
-
-    // The repository always stores a new product as LISTED, so a test sets any other status in the table itself.
-    private fun setStatus(productId: Long, status: ProductStatus) = transaction {
-        ProductsTable.update({ ProductsTable.id eq productId }) { it[ProductsTable.status] = status }
     }
 }

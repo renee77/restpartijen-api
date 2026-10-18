@@ -15,8 +15,11 @@ import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.shared.SupplierSummary
 import com.restpartijen.api.testsupport.FakeRepository
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
+import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
@@ -90,4 +93,16 @@ fun emptyDatabaseWithSupplier(): SupplierSummary {
         }[SuppliersTable.id]
     }
     return supplier.copy(id = id)
+}
+
+/** Sets a status in the table itself: the repository always stores a new product as LISTED. */
+fun setStatus(productId: Long, status: ProductStatus) {
+    transaction {
+        ProductsTable.update({ ProductsTable.id eq productId }) { it[ProductsTable.status] = status }
+    }
+}
+
+/** Reads the status from the table itself, because findById hides a REMOVED product. */
+fun statusOf(productId: Long): ProductStatus = transaction {
+    ProductsTable.selectAll().where { ProductsTable.id eq productId }.single()[ProductsTable.status]
 }
