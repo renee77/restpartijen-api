@@ -3,7 +3,10 @@ package com.restpartijen.api.product
 import com.restpartijen.api.persistence.Repository
 import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
+import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
+import com.restpartijen.api.product.repository.ProductsTable
+import com.restpartijen.api.product.repository.SuppliersTable
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
@@ -11,6 +14,9 @@ import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.shared.SupplierSummary
 import com.restpartijen.api.testsupport.FakeRepository
+import com.restpartijen.api.testsupport.createEmptyTestDatabase
+import org.jetbrains.exposed.v1.jdbc.insert
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
@@ -66,3 +72,22 @@ fun SurplusProduct.withId(id: Long): SurplusProduct = ProductFactory.create(
 fun SurplusProduct.fields(): List<Any?> = listOf(
     id, category, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens
 )
+
+/**
+ * Gives the calling test its own empty database with the F1 tables and one stored supplier.
+ * A product must belong to a supplier (foreign key), so every database test of F1 starts here.
+ */
+fun emptyDatabaseWithSupplier(): SupplierSummary {
+    createEmptyTestDatabase(SuppliersTable, ProductsTable, ProductAllergensTable)
+    val supplier = SupplierSummary(id = 0, name = "Bakkerij Test", latitude = 51.59, longitude = 4.78)
+    val id = transaction {
+        SuppliersTable.insert {
+            it[userId] = 1
+            it[name] = supplier.name
+            it[address] = "Teststraat 1, Breda"
+            it[latitude] = supplier.latitude
+            it[longitude] = supplier.longitude
+        }[SuppliersTable.id]
+    }
+    return supplier.copy(id = id)
+}

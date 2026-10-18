@@ -4,20 +4,15 @@ import com.restpartijen.api.product.model.AmbientProduct
 import com.restpartijen.api.product.model.FreshProduct
 import com.restpartijen.api.product.model.FrozenProduct
 import com.restpartijen.api.product.repository.ExposedProductRepository
-import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductsTable
-import com.restpartijen.api.product.repository.SuppliersTable
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ProductStatus
-import com.restpartijen.api.shared.SupplierSummary
 import com.restpartijen.api.testsupport.FixedClock
-import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.test.Test
@@ -283,21 +278,5 @@ class ExposedProductRepositoryTest {
 
         // Assert
         assertFalse(updateSucceeded)
-    }
-
-    // A product must belong to a supplier (foreign key), so every test starts with one stored supplier.
-    private fun emptyDatabaseWithSupplier(): SupplierSummary {
-        createEmptyTestDatabase(SuppliersTable, ProductsTable, ProductAllergensTable)
-        val supplier = SupplierSummary(id = 0, name = "Bakkerij Test", latitude = 51.59, longitude = 4.78)
-        val id = transaction {
-            SuppliersTable.insert {
-                it[userId] = 1
-                it[name] = supplier.name
-                it[address] = "Teststraat 1, Breda"
-                it[latitude] = supplier.latitude
-                it[longitude] = supplier.longitude
-            }[SuppliersTable.id]
-        }
-        return supplier.copy(id = id)
     }
 }
