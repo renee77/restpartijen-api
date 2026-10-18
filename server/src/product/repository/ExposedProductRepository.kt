@@ -1,5 +1,6 @@
 package com.restpartijen.api.product.repository
 
+import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.dbQuery
 import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.shared.ProductStatus

@@ -12,10 +12,10 @@ import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.pricing.configureMaintenanceLoop
 import com.restpartijen.api.pricing.routes.configurePricingRouting
-import com.restpartijen.api.product.repository.ProductsTable
-import com.restpartijen.api.product.repository.SuppliersTable
+import com.restpartijen.api.persistence.ProductsTable
+import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.product.routes.configureProductRouting
-import com.restpartijen.api.security.repository.UsersTable
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.security.routes.configureAuthRouting
 import com.restpartijen.api.security.configureSecurityModule
 import com.restpartijen.api.security.service.JwtSettings
