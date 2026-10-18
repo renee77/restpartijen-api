@@ -4,7 +4,7 @@ import com.restpartijen.api.product.model.AmbientProduct
 import com.restpartijen.api.product.model.FreshProduct
 import com.restpartijen.api.product.model.FrozenProduct
 import com.restpartijen.api.product.repository.ExposedProductRepository
-import com.restpartijen.api.product.repository.ProductsTable
+import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow

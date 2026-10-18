@@ -9,7 +9,7 @@ import com.restpartijen.api.shared.DomainRuleException
 import com.restpartijen.api.testsupport.FakeUserRepository
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.FixedClock
-import com.restpartijen.api.security.repository.UsersTable
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.security.repository.ExposedUserRepository
 import com.restpartijen.api.testsupport.RaceUserRepository
 import kotlinx.coroutines.test.runTest

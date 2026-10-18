@@ -1,5 +1,7 @@
 package com.restpartijen.api.reservation.repository
 
+import com.restpartijen.api.persistence.ProductsTable
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.reservation.model.ReservationStatus
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.datetime.timestamp
@@ -8,9 +10,10 @@ import org.jetbrains.exposed.v1.datetime.timestamp
 object ReservationsTable : Table("reservations") {
     val id = long("id").autoIncrement()
 
-    // No Exposed reference to ProductsTable: F2 may not import F1's package (§8.3, GI-5).
-    val productId = long("product_id")
-    val collectorId = long("collector_id")
+    // Both tables live in persistence, so F2 may refer to them (issue #36).
+    // The database refuses an unknown product or collector.
+    val productId = long("product_id").references(ProductsTable.id)
+    val collectorId = long("collector_id").references(UsersTable.id)
 
     // Price at the moment of reserving, in whole cents (ADR-08, §5.5).
     val reservedPriceCents = long("reserved_price_cents")

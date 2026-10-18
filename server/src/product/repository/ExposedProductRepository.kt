@@ -1,5 +1,7 @@
 package com.restpartijen.api.product.repository
 
+import com.restpartijen.api.persistence.SuppliersTable
+import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.dbQuery
 import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.shared.Allergen

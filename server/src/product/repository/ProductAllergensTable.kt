@@ -1,5 +1,6 @@
 package com.restpartijen.api.product.repository
 
+import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.shared.Allergen
 import org.jetbrains.exposed.v1.core.Table
 

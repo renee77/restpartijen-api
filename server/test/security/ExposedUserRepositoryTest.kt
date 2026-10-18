@@ -5,7 +5,7 @@ import kotlinx.datetime.toLocalDateTime
 import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.security.model.User
 import com.restpartijen.api.security.repository.ExposedUserRepository
-import com.restpartijen.api.security.repository.UsersTable
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import kotlinx.coroutines.test.runTest

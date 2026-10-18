@@ -5,7 +5,7 @@ import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.testsupport.setUpAuthTestApp
 import com.restpartijen.api.security.dto.UserResponse
 import com.restpartijen.api.security.repository.ExposedUserRepository
-import com.restpartijen.api.security.repository.UsersTable
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.security.service.JwtConfig
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.createEmptyTestDatabase

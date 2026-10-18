@@ -1,5 +1,6 @@
 package com.restpartijen.api.security.repository
 
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.persistence.dbQuery
 import com.restpartijen.api.security.model.User
 import org.jetbrains.exposed.v1.core.Op
