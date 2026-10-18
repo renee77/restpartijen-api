@@ -10,6 +10,8 @@ import com.restpartijen.api.plugins.configureRequestValidation
 import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.product.repository.ProductAllergensTable
+import com.restpartijen.api.pricing.configureMaintenanceLoop
+import com.restpartijen.api.pricing.routes.configurePricingRouting
 import com.restpartijen.api.product.repository.ProductsTable
 import com.restpartijen.api.product.repository.SuppliersTable
 import com.restpartijen.api.product.routes.configureProductRouting
@@ -51,6 +53,7 @@ fun Application.module() {
     // 2. PLUGINS
     configureSerialization()
     configureDependencies()
+    // configureMaintenanceLoop()
     configureStatusPages()
     configureRequestValidation()
     configureCallLogging()
@@ -72,4 +75,5 @@ fun Application.module() {
 //    configureReservationRouting()
     // TODO: F3 routes
     configureAuthRouting()
+    // configurePricingRouting()
 }
