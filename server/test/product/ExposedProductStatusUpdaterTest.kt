@@ -123,4 +123,134 @@ class ExposedProductStatusUpdaterTest {
         // Assert
         assertFalse(listed)
     }
+
+    @Test
+    fun `markCollected marks a reserved product as collected`() = runTest {
+        // Arrange
+        val supplier = emptyDatabaseWithSupplier()
+        val product = repository.create(aProduct(supplier = supplier))
+        setStatus(product.id, ProductStatus.RESERVED)
+
+        // Act
+        val collected = updater.markCollected(product.id)
+
+        // Assert
+        assertTrue(collected)
+        assertEquals(ProductStatus.COLLECTED, statusOf(product.id))
+    }
+
+    @Test
+    fun `markCollected returns false and changes nothing for a product that is not reserved`() = runTest {
+        // Arrange: a LISTED product was never reserved, so nobody can have collected it (§9.5)
+        val supplier = emptyDatabaseWithSupplier()
+        val product = repository.create(aProduct(supplier = supplier))
+
+        // Act
+        val collected = updater.markCollected(product.id)
+
+        // Assert
+        assertFalse(collected)
+        assertEquals(ProductStatus.LISTED, statusOf(product.id))
+    }
+
+    @Test
+    fun `markCollected returns false for an unknown id`() = runTest {
+        // Arrange
+        emptyDatabaseWithSupplier()
+
+        // Act
+        val collected = updater.markCollected(999)
+
+        // Assert
+        assertFalse(collected)
+    }
+
+    @Test
+    fun `markRemoved removes a listed product`() = runTest {
+        // Arrange
+        val supplier = emptyDatabaseWithSupplier()
+        val product = repository.create(aProduct(supplier = supplier))
+
+        // Act
+        val removed = updater.markRemoved(product.id)
+
+        // Assert
+        assertTrue(removed)
+        assertEquals(ProductStatus.REMOVED, statusOf(product.id))
+    }
+
+    @Test
+    fun `markRemoved returns false and changes nothing for a product that is not listed`() = runTest {
+        // Arrange: a reserved product is held for a collector; the admin lapses the reservation first (US-09)
+        val supplier = emptyDatabaseWithSupplier()
+        val product = repository.create(aProduct(supplier = supplier))
+        setStatus(product.id, ProductStatus.RESERVED)
+
+        // Act
+        val removed = updater.markRemoved(product.id)
+
+        // Assert
+        assertFalse(removed)
+        assertEquals(ProductStatus.RESERVED, statusOf(product.id))
+    }
+
+    @Test
+    fun `markRemoved returns false for an unknown id`() = runTest {
+        // Arrange
+        emptyDatabaseWithSupplier()
+
+        // Act
+        val removed = updater.markRemoved(999)
+
+        // Assert
+        assertFalse(removed)
+    }
+
+    @Test
+    fun `markExpired expires only the listed products it is given and returns how many`() = runTest {
+        // Arrange: two products in the list, and one that is not in it
+        val supplier = emptyDatabaseWithSupplier()
+        val first = repository.create(aProduct(supplier = supplier))
+        val second = repository.create(aProduct(supplier = supplier))
+        val notInList = repository.create(aProduct(supplier = supplier))
+
+        // Act
+        val expired = updater.markExpired(listOf(first.id, second.id))
+
+        // Assert
+        assertEquals(2, expired)
+        assertEquals(ProductStatus.EXPIRED, statusOf(first.id))
+        assertEquals(ProductStatus.EXPIRED, statusOf(second.id))
+        assertEquals(ProductStatus.LISTED, statusOf(notInList.id))
+    }
+
+    @Test
+    fun `markExpired skips a product that is no longer listed`() = runTest {
+        // Arrange: reserved between findExpiredListings and markExpired, so it must stay reserved
+        val supplier = emptyDatabaseWithSupplier()
+        val listed = repository.create(aProduct(supplier = supplier))
+        val reserved = repository.create(aProduct(supplier = supplier))
+        setStatus(reserved.id, ProductStatus.RESERVED)
+
+        // Act
+        val expired = updater.markExpired(listOf(listed.id, reserved.id))
+
+        // Assert: the count says what really changed
+        assertEquals(1, expired)
+        assertEquals(ProductStatus.RESERVED, statusOf(reserved.id))
+    }
+
+    @Test
+    fun `markExpired returns 0 for an empty list`() = runTest {
+        // Arrange
+        val supplier = emptyDatabaseWithSupplier()
+        val product = repository.create(aProduct(supplier = supplier))
+
+        // Act
+        val expired = updater.markExpired(emptyList())
+
+        // Assert
+        assertEquals(0, expired)
+        assertEquals(ProductStatus.LISTED, statusOf(product.id))
+    }
 }
