@@ -2,7 +2,7 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.product.repository.ExposedProductRepository
-import com.restpartijen.api.product.repository.ProductsTable
+import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import kotlinx.coroutines.test.runTest
