@@ -3,9 +3,11 @@ package com.restpartijen.api.testsupport
 import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
+import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.Role
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 // Rows for the shared tables in persistence (issue #36). With foreign keys, a test that stores a row
@@ -38,10 +40,21 @@ fun insertSupplier(userId: Long): Long = transaction {
     }[SuppliersTable.id]
 }
 
-/** Stores a valid product and returns its id. */
-fun insertProduct(): Long = transaction {
+/**
+ * Stores a valid product and returns its id.
+ * A product needs a supplier (foreign key); without [supplierId] a new supplier with its own user is stored first.
+ */
+fun insertProduct(supplierId: Long = insertSupplier(insertUser(Role.SUPPLIER))): Long = transaction {
+    val now = Instant.parse("2026-10-01T00:00:00Z")
     ProductsTable.insert {
+        it[ProductsTable.supplierId] = supplierId
+        it[category] = ProductCategory.FRESH
         it[name] = "Volkoren brood"
-        it[category] = "FRESH"
+        it[originalPriceCents] = 350
+        it[bestBeforeAt] = now + 3.days
+        it[quantity] = 1
+        it[pickupFrom] = now
+        it[pickupUntil] = now + 2.days
+        it[createdAt] = now
     }[ProductsTable.id]
 }

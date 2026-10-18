@@ -3,7 +3,6 @@ package com.restpartijen.api.product
 import io.mockk.mockk
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.service.ProductService
 import io.mockk.coEvery
@@ -16,7 +15,7 @@ class ProductServiceMockkTest {
         // Arrange
         val mockRepository = mockk<ProductRepository>()
         coEvery { mockRepository.findById(1) } returns
-            Product(1, "Volkoren Brood", "FRESH")
+            aProduct(id = 1, name = "Volkoren Brood")
         val service = ProductService(mockRepository)
 
         // Act

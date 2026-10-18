@@ -2,7 +2,6 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.module
 import com.restpartijen.api.product.dto.ProductResponse
-import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.testsupport.testConfig
 import io.ktor.client.request.get
@@ -22,7 +21,7 @@ class ProductRoutesTest {
         environment { config = testConfig() }
         application {
             dependencies.provide<ProductRepository> {
-                fakeProductRepository(Product(id = 1, name = "Volkoren brood", category = "FRESH"))
+                fakeProductRepository(aProduct(id = 1, name = "Volkoren brood"))
             }
             module()
         }

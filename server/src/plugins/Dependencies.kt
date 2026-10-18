@@ -5,16 +5,19 @@ import com.restpartijen.api.pricing.service.PricingService
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.plugins.di.provide
-// TODO: imports for the product repository types and ProductService
+import com.restpartijen.api.product.repository.ExposedProductReader
 import com.restpartijen.api.product.repository.ExposedProductRepository
+import com.restpartijen.api.product.repository.ExposedProductStatusUpdater
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.ProductStatusUpdater
 import com.restpartijen.api.pricing.service.ExpiryScheduler
 import com.restpartijen.api.shared.ProductReader
-import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.shared.ReservationMaintenance
+import com.restpartijen.api.reservation.repository.ExposedReservationRepository
+import com.restpartijen.api.reservation.repository.ReservationRepository
+import com.restpartijen.api.reservation.service.ReservationMaintenanceService
 import kotlin.time.Clock
 
 
@@ -30,8 +33,12 @@ fun Application.configureDependencies() {
         // F1
         provide<ProductRepository>(::ExposedProductRepository)
         provide(::ProductService)
+        provide<ProductReader>(::ExposedProductReader)
+        provide<ProductStatusUpdater>(::ExposedProductStatusUpdater)
 
-        // F2 (Stefan), F3 (Lonneke): register their contracts here once they exist
+        // F2 (Stefan)
+        provide<ReservationRepository>(::ExposedReservationRepository)
+        provide<ReservationMaintenance>(::ReservationMaintenanceService)
 
         // F3: Pricing
         provide<PriceProvider>(::PricingService)

@@ -1,8 +1,8 @@
 package com.restpartijen.api
 
+import com.restpartijen.api.product.aProduct
 import com.restpartijen.api.product.fakeProductRepository
 import com.restpartijen.api.product.dto.ProductResponse
-import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.testsupport.testConfig
 import io.ktor.client.request.get
@@ -23,7 +23,7 @@ class DependencyInjectionTest {
     @Test
     fun `a test can replace the product repository with a fake`() = testApplication {
         // Arrange
-        val fakeProduct = Product(id = 42, name = "Fake product", category = "FRESH")
+        val fakeProduct = aProduct(id = 42, name = "Fake product")
         environment { config = testConfig() }
         application {
             // Registered before module(): in tests, Ktor ignores the conflicting

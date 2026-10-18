@@ -76,5 +76,4 @@ fun Application.module() {
 //    configureReservationRouting()
     // TODO: F3 routes
     configureAuthRouting()
-    // configurePricingRouting()
 }
