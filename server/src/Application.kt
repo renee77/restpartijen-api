@@ -81,4 +81,6 @@ fun Application.module() {
 //    configureReservationRouting()
     // TODO: F3 routes
     configureAuthRouting()
+    // F3, owner Lonneke: admin overview and status monitoring (US-08, US-09).
+    configurePricingRouting()
 }
