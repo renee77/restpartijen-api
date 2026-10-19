@@ -20,6 +20,23 @@ On Windows: `kotlin.bat run`
 
 Tests live in `server/test`, not in `server/src`.
 
+## Demo accounts
+
+On an empty database the app seeds six accounts, three suppliers and 21 products (`server/src/seed/SeedData.kt`).
+All accounts share one password, for the demo only: `Demo-Restpartij-2026`.
+
+| Email | Role |
+|---|---|
+| `admin@mail.com` | ADMIN |
+| `supermarkt@mail.com` | SUPPLIER |
+| `bakker@mail.com` | SUPPLIER |
+| `groothandel@mail.com` | SUPPLIER |
+| `afhaler-a@mail.com` | COLLECTOR |
+| `afhaler-b@mail.com` | COLLECTOR |
+
+The dates are relative to the moment of starting. Overdue products and reservations are processed by the
+first maintenance run, five minutes after the start.
+
 ## Working agreements
 
 - `main` always works. Nobody commits directly to `main`.
