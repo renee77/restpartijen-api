@@ -16,6 +16,7 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.time.Clock
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 /** One account to seed; every account gets the demo password. */
@@ -68,23 +69,104 @@ private data class SeedReservation(
 )
 
 object SeedData {
+    // Six accounts (§9.7). The emails are lower case, because login normalises them.
     private val users = listOf(
         SeedUser("admin@mail.com", "Pad Min", Role.ADMIN),
+        SeedUser("supermarkt@mail.com", "Supermarkt Breda Centrum", Role.SUPPLIER),
         SeedUser("bakker@mail.com", "Bakkerij De Korenschoof", Role.SUPPLIER),
+        SeedUser("groothandel@mail.com", "Groothandel Vers & Vries", Role.SUPPLIER),
         SeedUser("afhaler-a@mail.com", "Afhaler A", Role.COLLECTOR),
+        SeedUser("afhaler-b@mail.com", "Afhaler B", Role.COLLECTOR),
     )
 
+    // A supermarket, a bakery and a wholesaler in Breda, so the distance in search results means something.
     private val suppliers = listOf(
+        SeedSupplier("supermarkt@mail.com", "Supermarkt Breda Centrum", "Grote Markt 5, Breda", 51.5890, 4.7760),
         SeedSupplier("bakker@mail.com", "Bakkerij De Korenschoof", "Ginnekenweg 12, Breda", 51.5795, 4.7820),
+        SeedSupplier("groothandel@mail.com", "Groothandel Vers & Vries", "Minervum 7001, Breda", 51.6020, 4.7350),
     )
 
     private val products = listOf(
+        // One LISTED product per discount tier (§9.4), all with an open pickup window (-2h to +6h).
+        // FRESH: more than 48h (0%), up to 48h (10%), up to 24h (40%), up to 12h (60%).
+        SeedProduct(
+            key = "supermarkt-melk", supplierEmail = "supermarkt@mail.com", category = ProductCategory.FRESH,
+            name = "Halfvolle melk 1 liter", priceCents = 249, quantity = 6,
+            bestBefore = 72.hours, pickupFrom = (-2).hours, pickupUntil = 6.hours,
+            allergens = setOf(Allergen.MILK),
+        ),
         SeedProduct(
             key = "bakker-brood", supplierEmail = "bakker@mail.com", category = ProductCategory.FRESH,
-            name = "Volkoren brood", priceCents = 349,
+            name = "Volkoren brood", priceCents = 349, quantity = 3,
             bestBefore = 30.hours, pickupFrom = (-2).hours, pickupUntil = 6.hours,
             allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN),
         ),
+        SeedProduct(
+            key = "supermarkt-salade", supplierEmail = "supermarkt@mail.com", category = ProductCategory.FRESH,
+            name = "Caesarsalade", priceCents = 399, quantity = 2,
+            bestBefore = 20.hours, pickupFrom = (-2).hours, pickupUntil = 6.hours,
+            allergens = setOf(Allergen.EGGS, Allergen.MILK, Allergen.CEREALS_CONTAINING_GLUTEN),
+        ),
+        // Also the maxPrice demo of Stefan: €5,00 originally, €2,00 after 60% discount.
+        SeedProduct(
+            key = "bakker-taart", supplierEmail = "bakker@mail.com", category = ProductCategory.FRESH,
+            name = "Aardbeienvlaai", priceCents = 500,
+            bestBefore = 10.hours, pickupFrom = (-2).hours, pickupUntil = 6.hours,
+            allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN, Allergen.EGGS, Allergen.MILK),
+        ),
+        // FROZEN: more than 7 days (0%), up to 7 days (15%), up to 24h (40%).
+        SeedProduct(
+            key = "supermarkt-pizza", supplierEmail = "supermarkt@mail.com", category = ProductCategory.FROZEN,
+            name = "Pizza margherita", priceCents = 299, quantity = 4,
+            bestBefore = 30.days, pickupFrom = (-2).hours, pickupUntil = 6.hours,
+            allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN, Allergen.MILK),
+        ),
+        SeedProduct(
+            key = "groothandel-groente", supplierEmail = "groothandel@mail.com", category = ProductCategory.FROZEN,
+            name = "Diepvries boerenkool 2,5 kg", priceCents = 450, quantity = 10,
+            bestBefore = 5.days, pickupFrom = (-2).hours, pickupUntil = 6.hours,
+        ),
+        SeedProduct(
+            key = "groothandel-vis", supplierEmail = "groothandel@mail.com", category = ProductCategory.FROZEN,
+            name = "Kabeljauwfilet 1 kg", priceCents = 1299, quantity = 2,
+            bestBefore = 20.hours, pickupFrom = (-2).hours, pickupUntil = 6.hours,
+            allergens = setOf(Allergen.FISH),
+        ),
+        // AMBIENT: more than 14 days (0%), up to 14 days (15%), up to 7 days (40%).
+        SeedProduct(
+            key = "groothandel-rijst", supplierEmail = "groothandel@mail.com", category = ProductCategory.AMBIENT,
+            name = "Basmatirijst 5 kg", priceCents = 899, quantity = 5,
+            bestBefore = 60.days, pickupFrom = (-2).hours, pickupUntil = 6.hours,
+        ),
+        SeedProduct(
+            key = "supermarkt-koekjes", supplierEmail = "supermarkt@mail.com", category = ProductCategory.AMBIENT,
+            name = "Roomboterkoekjes", priceCents = 199, quantity = 8,
+            bestBefore = 10.days, pickupFrom = (-2).hours, pickupUntil = 6.hours,
+            allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN, Allergen.MILK, Allergen.EGGS),
+        ),
+        SeedProduct(
+            key = "bakker-beschuit", supplierEmail = "bakker@mail.com", category = ProductCategory.AMBIENT,
+            name = "Beschuit", priceCents = 149, quantity = 4,
+            bestBefore = 5.days, pickupFrom = (-2).hours, pickupUntil = 6.hours,
+            allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN),
+        ),
+
+        // Stefan, 422 on reserving: still fresh, but the pickup window has passed.
+        SeedProduct(
+            key = "groothandel-kaas", supplierEmail = "groothandel@mail.com", category = ProductCategory.FRESH,
+            name = "Jonge kaas 1 kg", priceCents = 1099,
+            bestBefore = 40.hours, pickupFrom = (-10).hours, pickupUntil = (-4).hours,
+            allergens = setOf(Allergen.MILK),
+        ),
+        // Lonneke, status monitoring: LISTED but past its date; the first maintenance run expires it.
+        SeedProduct(
+            key = "supermarkt-yoghurt", supplierEmail = "supermarkt@mail.com", category = ProductCategory.FRESH,
+            name = "Griekse yoghurt", priceCents = 179,
+            bestBefore = (-3).hours, pickupFrom = (-10).hours, pickupUntil = (-4).hours,
+            allergens = setOf(Allergen.MILK),
+        ),
+
+        // RESERVED: each has exactly one ACTIVE reservation below (§9.5).
         SeedProduct(
             key = "bakker-croissants", supplierEmail = "bakker@mail.com", category = ProductCategory.FRESH,
             name = "Roomboter croissants", priceCents = 450,
@@ -92,10 +174,90 @@ object SeedData {
             status = ProductStatus.RESERVED,
             allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN, Allergen.MILK),
         ),
+        SeedProduct(
+            key = "supermarkt-kip", supplierEmail = "supermarkt@mail.com", category = ProductCategory.FRESH,
+            name = "Kipfilet 500 g", priceCents = 899,
+            bestBefore = 30.hours, pickupFrom = (-1).hours, pickupUntil = 10.hours,
+            status = ProductStatus.RESERVED,
+        ),
+        SeedProduct(
+            key = "groothandel-soep", supplierEmail = "groothandel@mail.com", category = ProductCategory.FRESH,
+            name = "Verse tomatensoep 1 liter", priceCents = 600,
+            bestBefore = 10.hours, pickupFrom = (-1).hours, pickupUntil = 4.hours,
+            status = ProductStatus.RESERVED,
+            allergens = setOf(Allergen.CELERY),
+        ),
+        SeedProduct(
+            key = "supermarkt-wraps", supplierEmail = "supermarkt@mail.com", category = ProductCategory.FRESH,
+            name = "Wraps kip-kerrie", priceCents = 399,
+            bestBefore = 20.hours, pickupFrom = (-6).hours, pickupUntil = (-1).hours,
+            status = ProductStatus.RESERVED,
+            allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN, Allergen.MUSTARD),
+        ),
+        SeedProduct(
+            key = "groothandel-yoghurt", supplierEmail = "groothandel@mail.com", category = ProductCategory.FRESH,
+            name = "Volle yoghurt 5 liter", priceCents = 250,
+            bestBefore = 30.hours, pickupFrom = (-30).hours, pickupUntil = 5.hours,
+            status = ProductStatus.RESERVED,
+            allergens = setOf(Allergen.MILK),
+        ),
+        // Lonneke, status monitoring: RESERVED but past its date.
+        SeedProduct(
+            key = "supermarkt-brood", supplierEmail = "supermarkt@mail.com", category = ProductCategory.FRESH,
+            name = "Wit casinobrood", priceCents = 300,
+            bestBefore = (-2).hours, pickupFrom = (-8).hours, pickupUntil = (-3).hours,
+            status = ProductStatus.RESERVED,
+            allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN),
+        ),
+
+        // End states.
+        SeedProduct(
+            key = "bakker-appeltaart", supplierEmail = "bakker@mail.com", category = ProductCategory.FRESH,
+            name = "Appeltaart", priceCents = 650,
+            bestBefore = 15.hours, pickupFrom = (-6).hours, pickupUntil = 2.hours,
+            status = ProductStatus.COLLECTED,
+            allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN, Allergen.EGGS, Allergen.MILK),
+        ),
+        SeedProduct(
+            key = "groothandel-melk", supplierEmail = "groothandel@mail.com", category = ProductCategory.FRESH,
+            name = "Karnemelk 1 liter", priceCents = 129,
+            bestBefore = (-24).hours, pickupFrom = (-48).hours, pickupUntil = (-30).hours,
+            status = ProductStatus.EXPIRED,
+            allergens = setOf(Allergen.MILK),
+        ),
+        // B-31: a removed product, so the admin overview can filter on status=REMOVED.
+        SeedProduct(
+            key = "supermarkt-sap", supplierEmail = "supermarkt@mail.com", category = ProductCategory.AMBIENT,
+            name = "Appelsap 1,5 liter", priceCents = 219,
+            bestBefore = 20.days, pickupFrom = (-2).hours, pickupUntil = 6.hours,
+            status = ProductStatus.REMOVED,
+        ),
     )
 
+    // Each price is the original price minus the discount of the tier the product was in when it was reserved.
     private val reservations = listOf(
+        // Collector A, live in the demo: one to cancel, one to collect. Both stay ACTIVE for hours.
         SeedReservation("bakker-croissants", "afhaler-a@mail.com", priceCents = 270, reservedAgo = 1.hours),
+        SeedReservation("supermarkt-kip", "afhaler-a@mail.com", priceCents = 809, reservedAgo = 2.hours),
+        // Collector B, fixed price: reserved 20 hours ago at 10%, the product is now at 60% (€5,40 against €2,40).
+        SeedReservation("groothandel-soep", "afhaler-b@mail.com", priceCents = 540, reservedAgo = 20.hours),
+        // lapseOverdue: one past its pickup window, one older than 24 hours.
+        SeedReservation("supermarkt-wraps", "afhaler-a@mail.com", priceCents = 239, reservedAgo = 3.hours),
+        SeedReservation("groothandel-yoghurt", "afhaler-b@mail.com", priceCents = 250, reservedAgo = 25.hours),
+        SeedReservation("supermarkt-brood", "afhaler-a@mail.com", priceCents = 120, reservedAgo = 6.hours),
+        // History of collector A. The COLLECTED one gets collected_at once issue #42 adds the column.
+        SeedReservation(
+            "bakker-appeltaart", "afhaler-a@mail.com", priceCents = 390, reservedAgo = 5.hours,
+            status = ReservationStatus.COLLECTED,
+        ),
+        SeedReservation(
+            "supermarkt-melk", "afhaler-a@mail.com", priceCents = 249, reservedAgo = 10.hours,
+            status = ReservationStatus.CANCELLED,
+        ),
+        SeedReservation(
+            "groothandel-groente", "afhaler-a@mail.com", priceCents = 382, reservedAgo = 30.hours,
+            status = ReservationStatus.LAPSED,
+        ),
     )
 
     // Demo only: public on purpose, because README.md and requests.http name it for every seed account.
