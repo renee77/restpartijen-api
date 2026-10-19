@@ -68,6 +68,13 @@ private data class SeedReservation(
     val status: ReservationStatus = ReservationStatus.ACTIVE,
 )
 
+/**
+ * The start state of the database for the demo and manual tests (FTD §9.7).
+ *
+ * Lives in its own package next to Application.kt, because it writes into the tables of every feature:
+ * in persistence or shared it would make a lower layer import a feature (open point 20).
+ * It writes into the tables directly instead of through the contracts; §12.1 allows that for the seed only.
+ */
 object SeedData {
     // Six accounts (§9.7). The emails are lower case, because login normalises them.
     private val users = listOf(
@@ -263,6 +270,15 @@ object SeedData {
     // Demo only: public on purpose, because README.md and requests.http name it for every seed account.
     private const val DEMO_PASSWORD = "Demo-Restpartij-2026"
 
+    /**
+     * Fills the database when it has no users yet; otherwise it does nothing, so a restart in file mode adds no
+     * duplicates. Everything goes in one transaction: a failure halfway leaves an empty database, not a half one.
+     *
+     * Not suspend: it runs once at startup, before the first request can arrive.
+     *
+     * @param clock the moment all seed dates are relative to; tests pass a fixed one.
+     * @param hasher hashes the demo password, so /auth/login accepts the seed accounts.
+     */
     fun seedIfEmpty(clock: Clock, hasher: PasswordHasher) {
         val isEmpty = transaction { UsersTable.selectAll().empty() }
         if (!isEmpty) return
