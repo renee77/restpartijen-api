@@ -13,6 +13,8 @@ import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.ProductStatusUpdater
 import com.restpartijen.api.pricing.service.ExpiryScheduler
+import com.restpartijen.api.product.repository.ExposedSupplierRepository
+import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.shared.ProductReader
 import com.restpartijen.api.shared.ReservationMaintenance
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
@@ -35,6 +37,7 @@ fun Application.configureDependencies() {
         provide(::ProductService)
         provide<ProductReader>(::ExposedProductReader)
         provide<ProductStatusUpdater>(::ExposedProductStatusUpdater)
+        provide<SupplierRepository>(::ExposedSupplierRepository)
 
         // F2 (Stefan)
         provide<ReservationRepository>(::ExposedReservationRepository)

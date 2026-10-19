@@ -3,7 +3,9 @@ package com.restpartijen.api
 import com.restpartijen.api.product.aProduct
 import com.restpartijen.api.product.fakeProductRepository
 import com.restpartijen.api.product.dto.ProductResponse
+import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.product.repository.ProductRepository
+import com.restpartijen.api.shared.SupplierIdLookup
 import com.restpartijen.api.testsupport.testConfig
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -13,6 +15,7 @@ import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 /**
  * Proves the GI-2 acceptance criterion: testApplication can replace a dependency
@@ -39,5 +42,19 @@ class DependencyInjectionTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val body = Json.decodeFromString<ProductResponse>(response.bodyAsText())
         assertEquals("Fake product", body.name)
+    }
+
+    @Test
+    fun `the application provides an implementation of SupplierIdLookup`() = testApplication {
+        // Arrange: GI-3 asks for the contract type, not for F1's repository (A15)
+        environment { config = testConfig() }
+        application { module() }
+        startApplication()
+
+        // Act
+        val lookup: SupplierIdLookup = application.dependencies.resolve()
+
+        // Assert: F1's implementation, so login gets the real supplier id
+        assertIs<ExposedSupplierRepository>(lookup)
     }
 }
