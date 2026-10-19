@@ -7,6 +7,9 @@ package com.restpartijen.api.persistence
  * They get read-only access through the interfaces in shared (K-1, K-6).
  *
  * Deleted items count as not found: no function returns them.
+ *
+ * Every function is suspend (B-21): a database call waits on JDBC, and implementations run it through
+ * dbQuery on Dispatchers.IO, so a waiting request does not block one of Ktor's few request threads.
  */
 interface Repository<T> {
 
