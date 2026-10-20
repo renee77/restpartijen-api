@@ -17,12 +17,12 @@ class ProductServiceMockkTest {
         val mockRepository = mockk<ProductRepository>()
         coEvery { mockRepository.findById(1) } returns
             aProduct(id = 1, name = "Volkoren Brood")
-        val service = ProductService(mockRepository, fakeSupplierRepository(), FixedClock(testNow))
+        val service = ProductService(mockRepository, fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow))
 
         // Act
-        val product = service.getProduct(1)
+        val detail = service.getProduct(1)
         // Assert
-        assertEquals("Volkoren Brood", product.name)
+        assertEquals("Volkoren Brood", detail.product.name)
 
         coVerify(exactly = 1) { mockRepository.findById(1) }
     }

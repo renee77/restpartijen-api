@@ -3,6 +3,7 @@ package com.restpartijen.api.product
 import com.restpartijen.api.module
 import com.restpartijen.api.product.dto.ProductResponse
 import com.restpartijen.api.product.repository.ProductRepository
+import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.testsupport.testConfig
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -12,6 +13,7 @@ import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class ProductRoutesTest {
     @Test
@@ -31,6 +33,47 @@ class ProductRoutesTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val body = Json.decodeFromString<ProductResponse>(response.bodyAsText())
         assertEquals("Volkoren brood", body.name)
+    }
+
+    @Test
+    fun `GET product shows the price breakdown`() = testApplication {
+        // Arrange: §5.7 and §10.1, original price, discount and current price in the detail
+        environment { config = testConfig() }
+        application {
+            dependencies.provide<ProductRepository> { fakeProductRepository(aProduct(id = 1)) }
+            dependencies.provide<PriceProvider> { FixedPriceProvider(aBreakdown) }
+            module()
+        }
+
+        // Act
+        val response = client.get("/api/v1/products/1")
+
+        // Assert: the values of aBreakdown, in euros (B-25)
+        val body = Json.decodeFromString<ProductResponse>(response.bodyAsText())
+        assertEquals(3.50, body.originalPrice)
+        assertEquals(40, body.discountPercentage)
+        assertEquals(2.10, body.currentPrice)
+    }
+
+    @Test
+    fun `GET expired product returns 200 with status EXPIRED and no price`() = testApplication {
+        // Arrange: SD-3, no price means expired; the product is still LISTED in storage
+        environment { config = testConfig() }
+        application {
+            dependencies.provide<ProductRepository> { fakeProductRepository(aProduct(id = 1)) }
+            dependencies.provide<PriceProvider> { FixedPriceProvider(breakdown = null) }
+            module()
+        }
+
+        // Act
+        val response = client.get("/api/v1/products/1")
+
+        // Assert
+        assertEquals(HttpStatusCode.OK, response.status)
+        val body = Json.decodeFromString<ProductResponse>(response.bodyAsText())
+        assertEquals("EXPIRED", body.status)
+        assertNull(body.discountPercentage)
+        assertNull(body.currentPrice)
     }
 
     @Test

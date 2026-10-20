@@ -32,10 +32,11 @@ fun Application.configureProductRouting() {
             val id = call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Product id must be a number")
 
             // Unknown id: the service throws NotFoundException; StatusPages turns it into a 404.
-            val product = service.getProduct(id)
+            // The detail holds the product with its price breakdown (§5.7, SD-3).
+            val detail = service.getProduct(id)
 
             // ContentNegotiation (configureSerialization) turns the @Serializable DTO into JSON.
-            call.respond(product.toResponse())
+            call.respond(detail.toResponse())
         }
         // Only a supplier may place a product: no token gives 401, another role 403 (decision 3.6).
         requireRole(Role.SUPPLIER) {
@@ -48,10 +49,11 @@ fun Application.configureProductRouting() {
 
                 // The supplier comes from the user in the token, never from the body (§16.2).
                 // The service checks the rules (403, 422) and stores the product.
-                val product = service.createProduct(call.currentUser().id, command)
+                val detail = service.createProduct(call.currentUser().id, command)
 
-                // 201: a new resource was made; the body is the stored product, with the id the database chose.
-                call.respond(HttpStatusCode.Created, product.toResponse())
+                // 201: a new resource was made; the body is the stored product, with the id the database chose
+                // and its price breakdown (§10.1).
+                call.respond(HttpStatusCode.Created, detail.toResponse())
             }
         }
     }
