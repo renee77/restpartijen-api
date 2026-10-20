@@ -29,7 +29,7 @@ object ProductsTable : Table("surplus_products") {
     // Optional: not every product has a barcode (§9.8).
     val barcode = varchar("barcode", length = 255).nullable()
 
-    // Price before discount, in whole cents (ADR-08).
+    // Price before discount, in whole cents (ADR-07).
     val originalPriceCents = long("original_price_cents")
 
     val bestBeforeAt = timestamp("best_before_at")

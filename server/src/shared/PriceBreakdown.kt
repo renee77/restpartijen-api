@@ -3,7 +3,7 @@ package com.restpartijen.api.shared
 /**
  * How the current price was built up; shown in GET /products/{id} (§5.7).
  *
- * Amounts are [Money] in whole cents, the discount is a whole percentage (ADR-08).
+ * Amounts are [Money] in whole cents, the discount is a whole percentage (ADR-07).
  * The class guards itself, like PickupWindow does.
  */
 data class PriceBreakdown(

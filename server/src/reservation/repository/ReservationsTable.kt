@@ -15,7 +15,7 @@ object ReservationsTable : Table("reservations") {
     val productId = long("product_id").references(ProductsTable.id)
     val collectorId = long("collector_id").references(UsersTable.id)
 
-    // Price at the moment of reserving, in whole cents (ADR-08, §5.5).
+    // Price at the moment of reserving, in whole cents (ADR-07, §5.5).
     val reservedPriceCents = long("reserved_price_cents")
     val reservedAt = timestamp("reserved_at")
     val expiresAt = timestamp("expires_at")
