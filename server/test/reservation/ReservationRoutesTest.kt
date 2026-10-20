@@ -18,6 +18,7 @@ import com.restpartijen.api.shared.ProductStatusUpdater
 import com.restpartijen.api.shared.ProductView
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
+import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -48,6 +49,7 @@ class ReservationRoutesTest {
     private val statusUpdater = FakeProductStatusUpdater()
 
     private fun Application.testApp(products: List<ProductView>) {
+        createEmptyTestDatabase()
         configureSerialization()
         configureStatusPages()
         configureSecurity(JwtConfig(TestJwtSettings.default, Clock.System))
