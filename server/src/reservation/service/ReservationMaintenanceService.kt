@@ -1,5 +1,6 @@
 package com.restpartijen.api.reservation.service
 
+import com.restpartijen.api.persistence.dbQuery
 import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationEvent
 import com.restpartijen.api.reservation.repository.ReservationRepository
@@ -28,14 +29,20 @@ class ReservationMaintenanceService(
     }
 
     /** Lapses one reservation. Returns false if it could not lapse; the caller decides what that means. */
-    private suspend fun lapse(reservation: Reservation): Boolean {
-        val product = productReader.findById(reservation.productId) ?: return false
+    private suspend fun lapse(reservation: Reservation): Boolean = dbQuery {
+        val product = productReader.findById(reservation.productId) ?: return@dbQuery false
+
         val to = try {
             ReservationStateMachine.transition(ReservationEvent.LAPSE, product.status, reservation.status)
         } catch (e: IllegalStateTransitionException) {
-            return false
+            return@dbQuery false
         }
-        if (!productStatusUpdater.markListed(product.id)) return false
-        return reservations.update(reservation.copy(status = to.reservation))
+
+        if (!productStatusUpdater.markListed(product.id)) return@dbQuery false
+
+        check(reservations.update(reservation.copy(status = to.reservation))) {
+            "Reservation ${reservation.id} disappeared while lapsing"
+        }
+        true
     }
 }
