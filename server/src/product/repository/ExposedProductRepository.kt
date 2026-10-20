@@ -18,6 +18,7 @@ import kotlin.time.Clock
 
 /**
  * Products in the database. Deleting is a soft delete: the row stays and gets status REMOVED (§9.5, B-19).
+ * Only a LISTED product can be deleted; delete returns false for any other status (§5.3).
  * A REMOVED product counts as not found, as the Repository contract promises.
  */
 class ExposedProductRepository(private val clock: Clock) : ProductRepository {
@@ -65,8 +66,9 @@ class ExposedProductRepository(private val clock: Clock) : ProductRepository {
     }
 
     override suspend fun delete(id: Long): Boolean = dbQuery {
-        // Soft delete: only the status changes. A second delete finds no row that is not REMOVED.
-        ProductsTable.update({ (ProductsTable.id eq id) and notRemoved() }) {
+        // Soft delete: only the status changes, and only LISTED may become REMOVED (§5.3, §9.5).
+        // Any other status, REMOVED included, matches no row and gives false.
+        ProductsTable.update({ (ProductsTable.id eq id) and (ProductsTable.status eq ProductStatus.LISTED) }) {
             it[ProductsTable.status] = ProductStatus.REMOVED
         } > 0
     }

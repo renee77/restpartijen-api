@@ -35,6 +35,7 @@ interface Repository<T> {
      * Deletes the item with this id.
      * Implementations may soft-delete (for products: status REMOVED, §9.5).
      * Returns false if there was nothing to delete: unknown id or already deleted.
+     * An implementation may refuse more; products return false for any status other than LISTED (§5.3).
      */
     suspend fun delete(id: Long): Boolean
 }
