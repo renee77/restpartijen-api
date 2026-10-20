@@ -1,19 +1,28 @@
 package com.restpartijen.api.product.routes
 
+import com.restpartijen.api.product.dto.PlaceProductRequest
+import com.restpartijen.api.product.dto.toCommand
 import com.restpartijen.api.product.dto.toResponse
 import com.restpartijen.api.product.service.ProductService
+import com.restpartijen.api.security.service.currentUser
+import com.restpartijen.api.security.service.requireRole
+import com.restpartijen.api.shared.Role
 import com.restpartijen.api.shared.ValidationException
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
+import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 
 /**
  * Registers the F1 product routes.
  *
- * Walking skeleton version: only GET /api/v1/products/{id}.
- * The route knows the service, never the repository (§8.3).
+ * GET /api/v1/products/{id} reads one product; POST /api/v1/products places one (US-01).
+ * The route knows the service, never the repository (§8.3). It only handles HTTP: errors are
+ * exceptions from the layers below, which StatusPages turns into the right status code (GI-4).
  */
 fun Application.configureProductRouting() {
     val service: ProductService by dependencies
@@ -27,6 +36,23 @@ fun Application.configureProductRouting() {
 
             // ContentNegotiation (configureSerialization) turns the @Serializable DTO into JSON.
             call.respond(product.toResponse())
+        }
+        // Only a supplier may place a product: no token gives 401, another role 403 (decision 3.6).
+        requireRole(Role.SUPPLIER) {
+            post("/api/v1/products") {
+                // The JSON body becomes the request DTO; a missing field or unknown allergen gives a 400.
+                val request = call.receive<PlaceProductRequest>()
+
+                // Checks the shape (negative price, empty window: 400) and turns it into domain types.
+                val command = request.toCommand()
+
+                // The supplier comes from the user in the token, never from the body (§16.2).
+                // The service checks the rules (403, 422) and stores the product.
+                val product = service.createProduct(call.currentUser().id, command)
+
+                // 201: a new resource was made; the body is the stored product, with the id the database chose.
+                call.respond(HttpStatusCode.Created, product.toResponse())
+            }
         }
     }
 }

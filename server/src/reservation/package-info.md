@@ -1,5 +1,4 @@
-Alles over de reservering staat hier voor de verwerking van een reservering van een product. Ook statussen worden bijgehouden via deze feature.
-Product search reservations and status, dat implementeert het reserveringstraject. 
+Feature F2: zoeken en reserveren. Het reserveringstraject van een partij: reserveren, intrekken en ophalen bevestigen, met `ReservationStateMachine` die bewaakt welke statusovergangen mogen (§9.5). Levert het contract `ReservationMaintenance` aan F3.
 
 Eigenaar: Stefan
 Feature: F2

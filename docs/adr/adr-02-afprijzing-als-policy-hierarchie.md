@@ -8,7 +8,7 @@ timestamp: 2026-10-04T00:00:00
 
 # ADR-02 — Afprijzing als aparte policy-hiërarchie
 
-> Tot en met v2.3 stond dit ADR in §8.6 van het FTD. Het staat nu alleen hier. Verwijzingen naar paragrafen (§) gaan over het FTD ([[FTD-restpartijen-webapi-v2_3]]).
+> Tot en met v2.3 stond dit ADR in §8.6 van het FTD. Het staat nu alleen hier. Verwijzingen naar paragrafen (§) gaan over het FTD ([[FTD-restpartijen-webapi-v2_4]]).
 
 - **Context.** De afprijzing verschilt per productsoort. In de eerste opzet van de casus was dat een method in de productklassen zelf. Dat zou betekenen dat de eigenaar van de producthiërarchie en de eigenaar van de afprijzing in dezelfde bestanden schrijven.
 - **Besluit.** `SurplusProduct` houdt `shelfLifeRemaining()` — dat is een eigenschap van het product. De afprijzing verhuist naar een aparte interface `DiscountPolicy` met drie implementaties, met een eigen eigenaar.
