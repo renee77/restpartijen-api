@@ -20,8 +20,11 @@ import com.restpartijen.api.security.routes.configureAuthRouting
 import com.restpartijen.api.security.configureSecurityModule
 import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.reservation.repository.ReservationsTable
+import com.restpartijen.api.security.service.PasswordHasher
+import com.restpartijen.api.seed.SeedData
 import io.ktor.server.application.*
 import io.ktor.server.netty.*
+import kotlin.time.Clock
 
 /**
  * Entry point of the application.
@@ -51,6 +54,8 @@ fun Application.module() {
         ReservationsTable
     )
 
+    SeedData.seedIfEmpty(clock = Clock.System, hasher = PasswordHasher())
+
     // 2. PLUGINS
     configureSerialization()
     configureDependencies()
@@ -76,4 +81,6 @@ fun Application.module() {
 //    configureReservationRouting()
     // TODO: F3 routes
     configureAuthRouting()
+    // F3, owner Lonneke: admin overview and status monitoring (US-08, US-09).
+    configurePricingRouting()
 }
