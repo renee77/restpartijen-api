@@ -10,7 +10,7 @@ database:
   file: ./data/restpartijen # only used when mode is file
 
 jwt:
-  secret: "$?JWT_SECRET"    # never a real value here; see README $? adds option for no value (GROUP DECISION)
+  secret: "$?JWT_SECRET"    # never a real value here. "$?" means: no error when the variable is missing; config then stops the application with a clear message (issue #5, B-52)
   issuer: restpartijen-api
   audience: restpartijen-app
   validityHours: 24
