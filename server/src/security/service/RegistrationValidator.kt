@@ -1,6 +1,8 @@
 package com.restpartijen.api.security.service
 
 import com.restpartijen.api.shared.DomainRuleException
+import com.restpartijen.api.shared.ValidationException
+
 object RegistrationValidator {
     // All the limits for the input
         const val EMAIL_MAX_LENGTH = 254
@@ -50,5 +52,5 @@ object RegistrationValidator {
         }
 
         private fun fail(field: String, message: String): Nothing =
-            throw DomainRuleException(message, field)
+            throw ValidationException(message, field)
 }

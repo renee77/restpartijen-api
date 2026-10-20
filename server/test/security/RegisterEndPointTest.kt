@@ -103,27 +103,27 @@ class RegisterEndpointTest {
     }
 
     @Test
-    fun `register with a too short password returns 422 and field password`() = testApplication {
+    fun `register with a too short password returns 400 and field password`() = testApplication {
         createEmptyTestDatabase(UsersTable)
         setUpRegisterApp()
 
         val response = client.register(body(password = "abc"))
         val error = response.errorBody()
 
-        assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
-        assertEquals(ErrorCode.DOMAIN_RULE_VIOLATION, error.code)
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals(ErrorCode.VALIDATION_ERROR, error.code)
         assertEquals("password", error.field)
     }
 
     @Test
-    fun `register with an invalid email returns 422 and field email`() = testApplication {
+    fun `register with an invalid email returns 400 and field email`() = testApplication {
         createEmptyTestDatabase(UsersTable)
         setUpRegisterApp()
 
         val response = client.register(body(email = "not-an-email"))
         val error = response.errorBody()
 
-        assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
+        assertEquals(HttpStatusCode.BadRequest, response.status)
         assertEquals("email", error.field)
     }
 
@@ -135,7 +135,7 @@ class RegisterEndpointTest {
         val response = client.register(body(displayName = "   "))
         val error = response.errorBody()
 
-        assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
+        assertEquals(HttpStatusCode.BadRequest, response.status)
         assertEquals("displayName", error.field)
     }
 

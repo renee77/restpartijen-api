@@ -14,6 +14,7 @@ import com.restpartijen.api.security.repository.ExposedUserRepository
 import com.restpartijen.api.testsupport.RaceUserRepository
 import kotlinx.coroutines.test.runTest
 import com.restpartijen.api.shared.IllegalStateTransitionException
+import com.restpartijen.api.shared.ValidationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -112,7 +113,7 @@ class RegistrationServiceTest {
         val tooShort = "a".repeat(RegistrationValidator.PASSWORD_MIN_LENGTH - 1)
 
         // Act: registration must fail on validation
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             service.register(
                 email = "test@mail.com",
                 password = tooShort,

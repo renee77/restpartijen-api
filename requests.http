@@ -54,7 +54,7 @@ Content-Type: application/json
   "displayName": "HenkTest"
 }
 
-### F3 - Register with a too short password: expect 422, field password
+### F3 - Register with a too short password: expect 400, field password
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 
@@ -64,7 +64,7 @@ Content-Type: application/json
   "displayName": "LisaTest"
 }
 
-### F3 - Register with a too long password: expect 422, field password
+### F3 - Register with a too long password: expect 400, field password
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 
@@ -74,7 +74,7 @@ Content-Type: application/json
   "displayName": "EllaTest"
 }
 
-### F3 - Register with an invalid email: expect 422, field email
+### F3 - Register with an invalid email: expect 400, field email
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 
@@ -84,7 +84,7 @@ Content-Type: application/json
   "displayName": "EllaTest"
 }
 
-### F3 - Register with a blank display name: expect 422, field displayName
+### F3 - Register with a blank display name: expect 400, field displayName
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
 

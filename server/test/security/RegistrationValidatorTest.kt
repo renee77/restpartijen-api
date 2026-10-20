@@ -1,7 +1,7 @@
 package com.restpartijen.api.security
 
 import com.restpartijen.api.security.service.RegistrationValidator
-import com.restpartijen.api.shared.DomainRuleException
+import com.restpartijen.api.shared.ValidationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -15,7 +15,7 @@ class RegistrationValidatorTest {
         val tooShort = "a".repeat(RegistrationValidator.PASSWORD_MIN_LENGTH - 1)
 
         // Act + Assert: validation must throw, and the error points at the password field
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = "test@mail.com",
                 password = tooShort,
@@ -58,7 +58,7 @@ class RegistrationValidatorTest {
         val tooLong = "a".repeat(RegistrationValidator.PASSWORD_MAX_LENGTH + 1)
 
         // Act + Assert: validation must throw, and the error points at the password field
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = "test@mail.com",
                 password = tooLong,
@@ -88,7 +88,7 @@ class RegistrationValidatorTest {
         val emptyMail = ""
 
         // Act + Assert: validation must throw, and the error points at the password field
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = emptyMail,
                 password = "testPassword",
@@ -104,7 +104,7 @@ class RegistrationValidatorTest {
         val mail = "NotReallyAMail.com"
 
         // Act + Assert: validation must throw, and the error points at the password field
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = mail,
                 password = "testPassword",
@@ -120,7 +120,7 @@ class RegistrationValidatorTest {
         val mail = "NotReally@AMail"
 
         // Act + Assert: validation must throw, and the error points at the password field
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = mail,
                 password = "testPassword",
@@ -136,7 +136,7 @@ class RegistrationValidatorTest {
         val spaceMail = "ThisIs NotAMail"
 
         // Act + Assert: validation must throw, and the error points at the password field
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = spaceMail,
                 password = "testPassword",
@@ -166,7 +166,7 @@ class RegistrationValidatorTest {
         val tooLong = "testmail@word." + "a".repeat(RegistrationValidator.EMAIL_MAX_LENGTH - 13)
 
         // Act + Assert: validation must throw, and the error points at the password field
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = tooLong,
                 password = "TestPassword",
@@ -183,7 +183,7 @@ class RegistrationValidatorTest {
         val emptyName = ""
 
         // Act + Assert: validation must throw, and the error points at the password field
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = "test@email.com",
                 password = "testPassword",
@@ -199,7 +199,7 @@ class RegistrationValidatorTest {
         val tooLong = "a".repeat(RegistrationValidator.DISPLAY_NAME_MAX_LENGTH + 1)
 
         // Act + Assert: validation must throw, and the error points at the password field
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = "test@mailtest.com",
                 password = "TestPassword",
