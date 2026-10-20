@@ -73,4 +73,7 @@ class FakeReservationRepository(initial: List<Reservation> = emptyList()) :
 
     override suspend fun findActiveByProductId(productId: Long): Reservation? =
         findAll().firstOrNull { it.status == ReservationStatus.ACTIVE && it.productId == productId }
+
+    override suspend fun findByCollectorId(collectorId: Long): List<Reservation> =
+        findAll().filter { it.collectorId == collectorId }.sortedByDescending { it.reservedAt }
 }
