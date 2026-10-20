@@ -7,11 +7,15 @@ import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.isNull
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
+import kotlin.time.Clock
 
-class ExposedUserRepository : UserRepository {
+class ExposedUserRepository(
+    private val clock: Clock = Clock.System,
+) : UserRepository {
 
     override suspend fun findById(id: Long): User? = dbQuery {
         UsersTable.selectAll()
@@ -58,9 +62,9 @@ class ExposedUserRepository : UserRepository {
     }
 
     override suspend fun delete(id: Long): Boolean = dbQuery {
-        // Soft delete: the row stays, but is invisible to every query.
+        // Soft delete: the row stays, but gets a deleted_at timestamp and is invisible to every query.
         UsersTable.update({ (UsersTable.id eq id) and notRemoved() }) {
-            it[deleted] = true
+            it[deletedAt] = clock.now()
         } > 0
     }
 }
@@ -68,8 +72,8 @@ class ExposedUserRepository : UserRepository {
 // The one place where an email is normalized, so lookups and saves always agree.
 private fun normalizeEmail(email: String): String = email.trim().lowercase()
 
-// The condition every query shares: a removed user is invisible to the rest of the application.
-private fun notRemoved(): Op<Boolean> = UsersTable.deleted eq false
+// The condition every query shares: a removed user (deleted_at is set) is invisible to the rest of the application.
+private fun notRemoved(): Op<Boolean> = UsersTable.deletedAt.isNull()
 
 // Translates a database row into a User.
 private fun ResultRow.toUser(): User = User(
@@ -79,5 +83,5 @@ private fun ResultRow.toUser(): User = User(
     display_name = this[UsersTable.displayName],
     role = this[UsersTable.role],
     createdAt = this[UsersTable.createdAt],
-    deleted = this[UsersTable.deleted],
+    deleted_at = this[UsersTable.deletedAt],
 )

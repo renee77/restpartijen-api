@@ -5,6 +5,7 @@ import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
+import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
@@ -38,6 +39,19 @@ fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository =
         withId = { product, id -> product.withId(id) },
         initialItems = products.toList()
     ) {}
+
+/** The supplier the product fakes use by default; the same values as the default supplier of [aProduct]. */
+val aSupplier = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0, longitude = 5.0)
+
+/**
+ * A SupplierRepository for tests that knows one supplier, or none.
+ * [ownerUserId] is the account the supplier belongs to; any other user has no supplier.
+ */
+fun fakeSupplierRepository(supplier: SupplierSummary? = aSupplier, ownerUserId: Long = 7): SupplierRepository =
+    object : SupplierRepository {
+        override suspend fun findByUserId(userId: Long): SupplierSummary? = supplier.takeIf { userId == ownerUserId }
+        override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
+    }
 
 /** The moment the default dates of [aProduct] are based on; tests use it for their FixedClock. */
 val testNow: Instant = Instant.parse("2026-10-01T00:00:00Z")
