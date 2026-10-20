@@ -4,6 +4,7 @@ import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.shared.Role
+import com.restpartijen.api.shared.SupplierSummary
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.insertSupplier
 import com.restpartijen.api.testsupport.insertUser
@@ -58,6 +59,35 @@ class ExposedSupplierRepositoryTest {
 
         // Act
         val found = repository.lookupSupplierId(999)
+
+        // Assert
+        assertNull(found)
+    }
+
+    @Test
+    fun `findByUserId returns the supplier of that user as a summary`() = runTest {
+        // Arrange: a collector first, so the user id (2) differs from the supplier id (1)
+        createEmptyTestDatabase(UsersTable, SuppliersTable)
+        insertUser(Role.COLLECTOR)
+        val userId = insertUser(Role.SUPPLIER)
+        val supplierId = insertSupplier(userId)
+
+        // Act
+        val found = repository.findByUserId(userId)
+
+        // Assert: the values insertSupplier stores
+        assertEquals(SupplierSummary(id = supplierId, name = "Bakkerij Test", latitude = 51.59, longitude = 4.78), found)
+    }
+
+    @Test
+    fun `findByUserId returns null for a user without a supplier`() = runTest {
+        // Arrange: supplier 1 exists for another user, so the wrong column would wrongly find it
+        createEmptyTestDatabase(UsersTable, SuppliersTable)
+        val userId = insertUser(Role.COLLECTOR)
+        insertSupplier(insertUser(Role.SUPPLIER))
+
+        // Act
+        val found = repository.findByUserId(userId)
 
         // Assert
         assertNull(found)
