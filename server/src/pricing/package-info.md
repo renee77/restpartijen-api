@@ -1,7 +1,12 @@
-In pricing wordt de prijs, prijsberekening, houdbaarheid en houdbaarheidsonderhoud van een product bijgehouden. Ook wordt hier de prijsberekening van een product gedaan.
+Feature F3: prijs, houdbaarheid en statusbewaking, plus de beheerdersendpoints.
 
+- `model`: de afprijsstaffels (`DiscountPolicy` met drie implementaties, `DiscountTier`, `DiscountPolicyResolver`) en `MaintenanceReport`.
+- `service`: `PricingService` (implementeert `PriceProvider`), `ExpiryScheduler` (de statusbewaking, US-08) en `AdminProductService` (beheeroverzicht en verwijderen als beheerder, US-09).
+- `routes`: `configurePricingRouting()` met `GET /admin/products`, `DELETE /admin/products/{id}` en `POST /admin/maintenance/expire`.
+- `dto`: `AdminProductResponse`.
+- `MaintenanceLoop.kt`: de periodieke run van de statusbewaking (B-41).
 
-!! Beslispunt - Removed gebruiken voor ADMIN product service. Eerst laten vallen via maintenance, daarna via pricing omzetten naar Removed.
-Verwijderen als beheerder hangt aan beslispunt 3. Neemt de groep REMOVED over, dan gebruikt AdminProductService twee contracten achter elkaar: eerst de reservering laten vervallen via ReservationMaintenance, daarna de partij op REMOVED zetten via ProductStatusUpdater. Dat moet in één transactie (draaiboek, blok 4).
+Verwijderen als beheerder gebruikt twee contracten achter elkaar, in één transactie: eerst de reservering laten vervallen via `ReservationMaintenance`, daarna de partij op `REMOVED` zetten via `ProductStatusUpdater` (§5.9, B-38, B-39).
+
 Eigenaar: Lonneke
 Feature: F3

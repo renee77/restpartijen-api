@@ -8,7 +8,7 @@ timestamp: 2026-10-08T00:00:00
 
 # ADR-05 — Ktor-plugins en verantwoordelijkheden
 
-> Tot en met v2.3 stond dit ADR in §8.6 van het FTD. Het staat nu alleen hier. Verwijzingen naar paragrafen (§) gaan over het FTD ([[FTD-restpartijen-webapi-v2_3]]).
+> Tot en met v2.3 stond dit ADR in §8.6 van het FTD. Het staat nu alleen hier. Verwijzingen naar paragrafen (§) gaan over het FTD ([[FTD-restpartijen-webapi-v2_4]]).
 
 - **Context.** De rubric vraagt voor niveau "goed" inzicht in de opbouw van Ktor-modules, routing, plugins en verantwoordelijkheden (r.373).
 - **Besluit.** De volgende plugins worden geïnstalleerd, elk met één duidelijke verantwoordelijkheid:
