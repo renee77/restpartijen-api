@@ -55,4 +55,7 @@ class ReservationService(
             ),
         )
     }
+
+    /** The collector's own reservations (§10.1). Who it is comes from the token, never from the request. */
+    suspend fun findOwn(collectorId: Long): List<Reservation> = reservations.findByCollectorId(collectorId)
 }

@@ -11,6 +11,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 
@@ -25,6 +26,13 @@ fun Application.configureReservationRouting() {
                 val reservation = service.reserve(request.productId, collectorId = call.currentUser().id)
                 call.respond(HttpStatusCode.Created, reservation.toResponse())
             }
+
+            get("/api/v1/reservations") {
+                val reservations = service.findOwn(call.currentUser().id)
+                val response = reservations.map { it.toResponse() }
+                call.respond(response)
+            }
         }
+
     }
 }
