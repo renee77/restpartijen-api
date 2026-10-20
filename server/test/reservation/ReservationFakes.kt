@@ -34,7 +34,7 @@ data class FakeProduct(
 }
 
 class FakeProductReader(private val products: List<ProductView>) : ProductReader {
-    override suspend fun findById(id: Long): ProductView? = products.find { it.id == id }
+    override suspend fun findById(id: Long): ProductView? = products.find { it.id == id && it.status != ProductStatus.REMOVED }
     override suspend fun findAvailable(now: Instant): List<ProductView> =
         products.filter { it.status == ProductStatus.LISTED }
 
