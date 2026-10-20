@@ -16,13 +16,13 @@ object UsersTable: Table ("users") {
     // E-mail. This is also a Unique Key in the database. There cannot be another user with the same e-mail address.
     val email = varchar("email", length = 255).uniqueIndex()
 
-    val passwordHash = varchar("passwordhash", length = 255)
-    val displayName = varchar("displayname", length = 255)
+    val passwordHash = varchar("password_hash", length = 255)
+    val displayName = varchar("display_name", length = 255)
 
     // Role stored by its name (for example "COLLECTOR"), read back as a Role.
     val role = enumerationByName<Role>("role", length = 20)
     val createdAt = timestamp("created_at")
-    val deleted = bool("deleted_at").default(false)
+    val deletedAt = timestamp("deleted_at").nullable()
 
     // Tells Exposed (and the generated SQL) which column is the primary key.
     override val primaryKey = PrimaryKey(id)

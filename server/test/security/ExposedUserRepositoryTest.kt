@@ -32,7 +32,6 @@ class ExposedUserRepositoryTest {
         email="testmail@mail.com", passwordHash="passwordHash", display_name="TestName",
         role=Role.COLLECTOR,
         createdAt = fixedNow,
-        deleted = false
     )
 
     @Test
@@ -133,7 +132,6 @@ class ExposedUserRepositoryTest {
             display_name = "Test User",
             role = Role.COLLECTOR,
             createdAt = fixedNow,
-            deleted = false
         )
 
         // Act
