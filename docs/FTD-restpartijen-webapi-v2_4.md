@@ -8,6 +8,8 @@ timestamp: 2026-10-03T00:00:00
 
 # Restpartijenplatform — Functioneel Technisch Ontwerp Web API
 
+> **Wijziging in v2.4.** Het document is gelijkgetrokken met de code van F3 op `main` van 20 oktober 2026 en met vier punten uit de bouw van F1. Nieuw zijn de besluiten B-38 tot en met B-47 in de tabel "Besluiten in v2.4": `404` bij het verwijderen van een al verwijderde partij, het antwoord en de parameters van de beheerendpoints, de periodieke statusbewaking, de logging van de statusbewaking, `maxShelfLife` als property, `id = 0` tot het opslaan en de sleutels in het ERD. B-32 is bevestigd. Eén punt staat open als **Opmerking v2.4**: wat de aanbieder krijgt bij het verwijderen van een al verwijderde partij (§5.3).
+
 > **Wijziging in v2.3.** Twee issues zijn verwerkt: `Repository<T>` heeft `create` en `update` in plaats van `save`, en de afspraken over security (wachtwoordhashing, foutafhandeling, JWT-instellingen). Alles staat in de besluittabel "Besluiten in v2.3". Punten die nog opgepakt moeten worden, staan in de tekst als **Opmerking v2.3**.
 
 > **Wijziging in v2.2.** De besluiten van de docent (bedragen in hele centen, Ktor 3.6.0) en de besluiten uit de startsessie zijn verwerkt. De contracten in §12.1 zijn gelijkgetrokken met de code in `shared`. Alles staat in de besluittabel "Besluiten van de startsessie en daarna (v2.2)". Punten die Lonneke en Stefan nog moeten bevestigen of oppakken, staan in de tekst als **Opmerking v2.2**. Zoek op die term om ze allemaal te vinden.
@@ -16,11 +18,11 @@ timestamp: 2026-10-03T00:00:00
 
 | Veld | Waarde |
 |------|--------|
-| Document ID | FTD-restpartijen-webapi-v2.3 |
+| Document ID | FTD-restpartijen-webapi-v2.4 |
 | Scenario | project |
 | Auteurs | Eva Bouwman, Lonneke van Oers, Stefan Pellikaan |
-| Datum | 2026-10-03 |
-| Status | Casus en sensoronderwerp goedgekeurd door de vakdocent (september 2026); besluiten van 19 september, de besluiten van de docent van 20 september, de besluiten uit de startsessie en de besluiten uit de issues van begin oktober verwerkt. B-26 en B-31 zijn goedgekeurd. B-24 en B-32 wachten op bevestiging door Lonneke en Stefan |
+| Datum | 2026-10-20 |
+| Status | Casus en sensoronderwerp goedgekeurd door de vakdocent (september 2026); besluiten van 19 september, de besluiten van de docent van 20 september, de besluiten uit de startsessie en de besluiten uit de issues van begin oktober verwerkt. B-26, B-31 en B-32 zijn goedgekeurd. B-24 wacht op bevestiging door Lonneke en Stefan; B-38 voor de aanbieder (§5.3) ligt als issue #45 bij de profgroep |
 | Classificatie | Intern (schoolproject) |
 | Module | AI-powered software development, periode 1, LU1 |
 
@@ -33,6 +35,7 @@ timestamp: 2026-10-03T00:00:00
 | 2.0 | 2026-09-19 | Profgroep | Besluiten van de profgroep van 19 september verwerkt: de prijs van het moment van reserveren geldt, `/auth/register` blijft en is van Lonneke, US-10 komt erin als Should, een reservering is maximaal 24 uur geldig, `Repository<T>` is van Eva, statuscode `502` is geschrapt en de grens voor vers is 14 dagen. De afgehandelde bespreekpunten zijn uit §21. Bijlage B legt uit wat H2 is en hoe wij het gebruiken. Zie de besluiten onder het wijzigingsoverzicht. |
 | 2.1 | 2026-09-19 | Profgroep | Het antwoord van `/auth/login` is vastgelegd: naast het token bevat het de rol en, bij een aanbieder, het `supplierId`. Eigenaar is Lonneke. Het beslispunt in §21 is daarmee vervallen en vervangen: Lonneke heeft geen endpoint die de app aanroept en kiest tussen account aanmaken en het prijsverloop. |
 | 2.2 | 2026-09-29 | Eva Bouwman, namens de profgroep | Besluiten van de docent verwerkt: bedragen als hele centen in een `Long` (nieuw ADR-07) en Ktor 3.6.0. Besluiten uit de startsessie verwerkt: `PriceProvider` geeft `null` bij een verlopen partij, de eindstatus `REMOVED`, de aanbieder als `SupplierSummary` op `ProductView`, `suspend` in de contracten die de database raken, en de uitkomst van B-6 en B-10. De contracten in §12.1 volgen nu de code. Nieuw: de afrondingsregel, bedragen in euro's in de API, `findByStatus` voor het beheeroverzicht, en de afspraak over Nederlands werkcommentaar. Twee voorstellen: een verwijderde partij in de seeddata, en `404` bij het reserveren van een verwijderde partij. |
+| 2.4 | 2026-10-20 | Eva Bouwman, namens de profgroep | Feedback van Lonneke op de code van F3 verwerkt en vier punten uit de bouw van F1. Verwijderen: een al verwijderde partij levert bij de beheerder `404` in plaats van `409` (B-38); mislukt het verwijderen na het laten vervallen van de reservering, dan draait de transactie terug en volgt `409` (B-39). Statusbewaking: een lager aantal van `markExpired` is geen fout (B-40), de periodieke run is beschreven (B-41), het antwoord van `POST /admin/maintenance/expire` is vastgelegd (B-42), net als de parameters en het antwoord van `GET /admin/products` (B-43) en de logging (B-44). F1: `maxShelfLife` is een property (B-45), een nieuwe partij heeft `id = 0` tot het opslaan (B-46), en het ERD toont de sleutels en de toegestane waarden (B-47). B-32 is bevestigd via issue #16. De voorstellen voor Lonneke in §11.3 zijn uitgevoerd; `runTest` is beschikbaar (§21). Open: `404` of `409` voor de aanbieder in §5.3. |
 | 2.3 | 2026-10-03 | Eva Bouwman, namens de profgroep | Twee issues verwerkt. `Repository<T>`: `save` is vervangen door `create` en `update`, met een generieke fake voor testen (B-33). Security: wachtwoorden met Argon2id via Spring Security Crypto in plaats van BCrypt (B-34), security gooit excepties die `StatusPages` omzet (B-35), en de JWT-instellingen in `application.yaml` met de klassen `JwtProperties` en `JwtSettings` (B-36). Goedgekeurd: `findByStatus` voor het beheeroverzicht (B-26) en een verwijderde partij in de seeddata (B-31). Nederlands werkcommentaar mag op `main` en is weg bij de oplevering (B-37). |
 
 > **Dit is het ontwikkeldocument voor deel 1 van de proftaak.** Versie 1.0 was tevens het voorstel waarmee de casus en het sensoronderwerp voor deel 2 ter goedkeuring zijn voorgelegd. De vakdocent heeft beide goedgekeurd; zijn terugkoppeling staat in §20. Alle regelverwijzingen (r.) verwijzen naar `opdrachten/proftaak-casus-en-portfolio.md`, zodat elke eis na te lopen is. Waar de checklist en de rubric van elkaar verschillen, is de rubric aangehouden.
@@ -127,7 +130,7 @@ Deze tabel volgt op de besluiten van 19 september. De kolom *Door* zegt wie besl
 | B-29 | Technische opzet | Packages als mappen direct onder `../server/src`, zonder `com/restpartijen/api`; start via `EngineMain` met `../server/resources`; de `Authentication`-plugin, `JwtConfig` en de `/auth`-endpoints staan in `security` | Startsessie | §8.3, §13 (GI-2, GI-3) | Vast |
 | B-30 | Namen in de sequence diagrams | De aanroepen in SD-2 en SD-4 heten zoals de functions in de contracten | Volgt uit de contracten | §8.5 | Vast |
 | B-31 | Seeddata en `REMOVED` | De seeddata bevat ook een partij met status `REMOVED` | Voorstel Eva, 29 september 2026 | §9.7 | Vast; goedgekeurd (v2.3) |
-| B-32 | Reserveren van een verwijderde partij | `404 Not Found`, net als bij `GET /products/{id}`: voor de publieke API bestaat een verwijderde partij niet | Voorstel Eva, 29 september 2026 | §5.5, §8.5 (SD-2), §9.5 | Voorstel; bevestigen bij de review van v2.2 |
+| B-32 | Reserveren van een verwijderde partij | `404 Not Found`, net als bij `GET /products/{id}`: voor de publieke API bestaat een verwijderde partij niet | Voorstel Eva, 29 september 2026; bevestigd door Stefan in issue #16, 6 oktober 2026 | §5.5, §8.5 (SD-2), §9.5 | Vast; in de code: `findById` geeft `null` bij `REMOVED` |
 
 ## Besluiten in v2.3
 
@@ -140,6 +143,23 @@ B-33 tot en met B-36 komen uit twee issues in de repository: één over `Reposit
 | B-35 | Foutmeldingen uit security | Security gooit een exceptie uit de hiërarchie van §10.2; `StatusPages` maakt er het foutantwoord van. De challenge gooit `UnauthorizedException` (401), de rolcheck `ForbiddenException` (403). Nooit gooien in `validate`. De volgorde van de installs maakt niet uit | Profgroep, in het issue (optie 1) | §10.2, §13 (GI-3 besluit 3.10) | Vast |
 | B-36 | JWT-instellingen | `application.yaml` heeft onder `jwt` de sleutels `secret`, `issuer`, `audience` en `validityHours`. Alleen het secret komt uit de omgevingsvariabele `JWT_SECRET`. `config` leest ze in als `JwtProperties` (Stefan); `security` werkt met de eigen klasse `JwtSettings` (Lonneke). De naam van de provider is een constante in `security`, niet in `application.yaml` | Stefan en Lonneke, in het issue | §13 (GI-2 besluit 2.3, GI-3 besluiten 3.9 en 3.11), §16.4 | Vast; de koppeling van `JwtProperties` naar `JwtSettings` in `Application.module()` volgt nog |
 | B-37 | Nederlands commentaar (wijzigt B-27) | Een Nederlandse commentaarregel blijft een werknotitie, maar mag op `main` staan. Zo is zichtbaar welk werk nog in uitvoering is. Bij de oplevering is zij weg. De controle per pull request vervalt; er komt één controle vóór de oplevering | Eva, 3 oktober 2026 | §3.2, §12.3 | Vast |
+
+## Besluiten in v2.4
+
+B-38 tot en met B-44 volgen uit de code van F3 op `main` van 20 oktober 2026, nagelopen door Lonneke. B-45 tot en met B-47 komen uit de bouw van F1. Waar het document en de code verschilden, volgt het document de code, met één uitzondering: B-38 geldt voor de aanbieder (§5.3) pas na een besluit van de profgroep.
+
+| # | Onderwerp | Besluit | Door | Verwerkt in | Status |
+|---|-----------|---------|------|-------------|--------|
+| B-38 | Verwijderen van een al verwijderde partij | De beheerder krijgt `404 Not Found`, niet `409 Conflict`. `findById` geeft een `REMOVED` partij niet terug (B-32), dus de service ziet haar niet en behandelt haar als onbekend. Alleen `COLLECTED` en `EXPIRED` leveren `409` | Lonneke, in de code, oktober 2026 | §5.9, §9.5, §10.1 | Vast voor de beheerder; voor de aanbieder (§5.3) open, zie issue #45 en de Opmerking v2.4 |
+| B-39 | Race bij verwijderen door de beheerder | Laat de service de reservering vervallen en geeft `markRemoved` daarna `false`, omdat de status intussen is veranderd, dan gooit de service een `IllegalStateTransitionException`. De transactie draait terug, ook het vervallen, en het antwoord is `409 Conflict` | Lonneke, in de code, oktober 2026 | §5.9, §9.5 | Vast; in de code |
+| B-40 | Lager aantal bij `markExpired` | Zet `markExpired` minder partijen om dan `findExpiredListings` vond, dan is dat geen fout. Tussen de twee aanroepen kan een afhaler een partij reserveren, en `markExpired` zet alleen partijen om die nog `LISTED` zijn. Het rapport toont het werkelijke aantal | Lonneke, in de code, oktober 2026 | §5.8, §8.5 (SD-4) | Vast; in de code |
+| B-41 | Periodieke statusbewaking | De lus start bij het opstarten van de applicatie in de scope van de applicatie, wacht eerst het interval van vijf minuten af en draait dan. Een fout in één run wordt gelogd en stopt de lus niet; alleen het stoppen van de applicatie stopt de lus | Lonneke, in de code, oktober 2026 | §5.8, §11.3 | Vast; in de code |
+| B-42 | Antwoord van `POST /admin/maintenance/expire` | `200 OK` met het rapport `MaintenanceReport` als JSON: `lapsedReservations` (aantal vervallen reserveringen) en `expiredProducts` (aantal verlopen partijen) | Lonneke, in de code, oktober 2026 | §8.5 (SD-4), §10.1 | Vast; in de code |
+| B-43 | Parameters en antwoord van `GET /admin/products` | Meer statussen gaan als herhaalde parameter (`?status=LISTED&status=RESERVED`), niet kommagescheiden; de waarden zijn hoofdlettergevoelig. Zonder parameter geeft de route een lege set door en vertaalt de service die naar alles behalve `REMOVED` (B-26). Een onbekende waarde levert `400` met de toegestane waarden en `field` gelijk aan `status`. Het antwoord is een lijst van `AdminProductResponse`: `id`, `name`, `status`, `supplierName`, `pickupWindowStart` en `pickupWindowEnd`, zonder prijs en zonder persoonsgegevens (§15) | Lonneke, in de code, oktober 2026 | §5.9, §10.1, §11.3 | Vast; in de code |
+| B-44 | Logging van de statusbewaking | `ExpiryScheduler` heeft een eigen SLF4J-logger en logt per run alleen de twee aantallen. De periodieke lus logt een mislukte run met de exceptie via de logger van de applicatie. Geen van beide logt gegevens van een partij of een persoon | Lonneke, in de code, oktober 2026 | §16.7 | Vast; in de code |
+| B-45 | `maxShelfLife` is een property | `abstract val maxShelfLife: Duration` in `SurplusProduct`; elke subklasse overschrijft haar met een vaste waarde. De Kotlin-conventie kiest een property als de waarde geen parameters heeft, niets gooit, goedkoop is en altijd gelijk blijft (JetBrains s.r.o., z.j.-p). Dezelfde reden als bij `category` (B-23) | Eva, 13 oktober 2026 | §8.4, §11.1 | Vast; in de code |
+| B-46 | `id = 0` tot het opslaan | Een nieuwe partij krijgt `id = 0`; `0` betekent "nog niet opgeslagen". `SurplusProduct` is geen data class en heeft dus geen `copy()`; `create` bouwt na het opslaan een nieuw object met `ResultRow.toProduct()` en geeft dat terug | Eva, 13 oktober 2026 | §9.3 | Vast; in de code |
+| B-47 | Sleutels en waarden in het ERD | `PRODUCT_ALLERGENS` heeft een samengestelde primaire sleutel op `product_id` en `allergen`: een partij noemt elk allergeen hooguit één keer. `SUPPLIERS.user_id` is uniek en verwijst sinds issue #36 met een foreign key naar `USERS`. Bij `status`, `category` en `role` staan de toegestane waarden als commentaar, omdat de kolom een `string` is en de lezer anders de code moet openen | Eva, 13 en 20 oktober 2026 | §9.1 | Vast; in de code |
 
 ---
 
@@ -444,6 +464,8 @@ Elk criterium is één toetsbare uitspraak. Statuscodes zijn onderdeel van het c
 - Alleen een partij met status `LISTED` kan worden verwijderd. Een partij met status `RESERVED`, `COLLECTED`, `EXPIRED` of `REMOVED` levert `409 Conflict`.
 - Een verzoek op een niet-bestaande partij levert `404 Not Found`. Een partij met status `REMOVED` telt als niet-bestaand: `GET /products/{id}` levert dan ook `404 Not Found`.
 
+> **Opmerking v2.4 — voor Eva: verwijderen van een al verwijderde partij.** Bij de beheerder levert dit `404` (B-38), omdat `findById` een `REMOVED` partij niet teruggeeft en de service haar dus niet ziet. Hierboven staat voor de aanbieder nog `409`. Dat botst met de regel dat een `REMOVED` partij als niet-bestaand telt, en het vraagt van de repository van F1 dat zij een verwijderde partij wél teruggeeft. Het voorstel is `404`, gelijk aan de beheerder. De keuze ligt bij de profgroep in issue #45; tot die tijd blijft het criterium staan.
+
 ### 5.4 US-04 — Aanbod zoeken en filteren
 
 - Zonder filters levert de endpoint alleen partijen met status `LISTED` waarvan de houdbaarheidsdatum nog niet is verstreken, gesorteerd op oplopende resterende houdbaarheid. De service kijkt daarvoor zelf naar de tijd en wacht niet op de statusbewaking.
@@ -493,21 +515,26 @@ Elk criterium is één toetsbare uitspraak. Statuscodes zijn onderdeel van het c
 - Een gereserveerde partij waarvan ook de houdbaarheidsdatum is verstreken, eindigt in dezelfde run op `EXPIRED` en niet op `LISTED`.
 - Een partij met status `COLLECTED` wordt door de statusbewaking niet gewijzigd.
 - De statusbewaking is idempotent: twee keer draaien levert hetzelfde resultaat.
-- De statusbewaking is via een beheerdersendpoint handmatig te starten, zodat het tijdens de demo te tonen is.
+- Zet `markExpired` minder partijen om dan er gevonden waren, dan is dat geen fout: tussen het opvragen en het omzetten kan een afhaler een partij reserveren. Het rapport toont het werkelijke aantal (B-40).
+- De statusbewaking is via een beheerdersendpoint handmatig te starten, zodat het tijdens de demo te tonen is. Het antwoord is `200 OK` met het rapport (B-42).
+- De statusbewaking draait ook periodiek. De lus start bij het opstarten van de applicatie, wacht eerst vijf minuten en draait dan. Een fout in één run wordt gelogd en stopt de lus niet (B-41).
 
 ### 5.9 US-09 — Aanbod verwijderen als beheerder
 
 - Een gebruiker met rol `ADMIN` kan elke partij verwijderen, ongeacht de aanbieder; het antwoord is `204 No Content` en de partij krijgt status `REMOVED`.
 - Bij het verwijderen van een gereserveerde partij vervalt eerst de bijbehorende reservering; daarna krijgt de partij status `REMOVED`. Beide gebeuren in één transactie.
-- Een partij met status `COLLECTED`, `EXPIRED` of `REMOVED` kan niet worden verwijderd; het antwoord is `409 Conflict`.
+- Is de status na het vervallen van de reservering intussen veranderd, zodat `markRemoved` `false` geeft, dan draait de transactie terug en is het antwoord `409 Conflict` (B-39).
+- Een partij met status `COLLECTED` of `EXPIRED` kan niet worden verwijderd; het antwoord is `409 Conflict`.
+- Een partij met status `REMOVED` telt als niet-bestaand en levert `404 Not Found`, net als een onbekend id (B-32, B-38).
 - Een gebruiker zonder rol `ADMIN` krijgt `403 Forbidden`.
 
 **Beheeroverzicht (`GET /admin/products`).** Tot v2.2 had het beheeroverzicht geen eigen criteria. Het hoort bij de beheerder en staat daarom hier. De criteria volgen besluit B-26, dat is goedgekeurd.
 
 - Een gebruiker met rol `ADMIN` krijgt alle partijen, ongeacht de aanbieder; het antwoord is `200 OK`.
-- Zonder filter bevat het overzicht partijen in elke status behalve `REMOVED`.
-- Met het filter `status` bevat het overzicht alleen partijen met de gevraagde status. Er mogen meer waarden tegelijk worden opgegeven. `status=REMOVED` toont de verwijderde partijen.
-- Een onbekende waarde voor `status` levert `400 Bad Request` met de toegestane waarden in de foutmelding.
+- Het antwoord is een lijst met per partij `id`, `name`, `status`, `supplierName`, `pickupWindowStart` en `pickupWindowEnd`. Er staat geen prijs in en geen persoonsgegeven (§15, B-43).
+- Zonder filter bevat het overzicht partijen in elke status behalve `REMOVED`. De route geeft dan een lege set door; de service vertaalt die naar "alles behalve `REMOVED`" (B-26, B-43).
+- Met het filter `status` bevat het overzicht alleen partijen met de gevraagde status. Meer waarden geef je op als herhaalde parameter (`?status=LISTED&status=RESERVED`), niet kommagescheiden. De waarden zijn hoofdlettergevoelig. `status=REMOVED` toont de verwijderde partijen.
+- Een onbekende waarde voor `status` levert `400 Bad Request` met de toegestane waarden in de foutmelding en `field` gelijk aan `status`.
 - Een gebruiker zonder rol `ADMIN` krijgt `403 Forbidden`.
 
 ### 5.10 US-10 — Openingstijden vastleggen
@@ -675,7 +702,7 @@ classDiagram
         +PickupWindow pickupWindow
         +Set~Allergen~ allergens
         +ProductCategory category*
-        +maxShelfLife()* Duration
+        +Duration maxShelfLife*
         +shelfLifeRemaining(Clock) Duration
         +isExpired(Clock) Boolean
         +validateForListing(Clock)
@@ -683,15 +710,15 @@ classDiagram
 
     class FreshProduct {
         +ProductCategory category
-        +maxShelfLife() Duration
+        +Duration maxShelfLife
     }
     class FrozenProduct {
         +ProductCategory category
-        +maxShelfLife() Duration
+        +Duration maxShelfLife
     }
     class AmbientProduct {
         +ProductCategory category
-        +maxShelfLife() Duration
+        +Duration maxShelfLife
     }
 
     class Money {
@@ -843,7 +870,7 @@ classDiagram
 
 Het diagram toont de kernklassen van de drie features, niet alle klassen. Services, repositories en DTO's die geen OO-concept laten zien, staan alleen in de verdelingsmatrix (§11).
 
-**Waar de abstractie zit** (r.165): `SurplusProduct` is een abstracte, `sealed` class. Wat voor elke soort gelijk is, staat in de basisklasse: de gedeelde velden, `shelfLifeRemaining()`, `isExpired()` en de controle bij het plaatsen, `validateForListing()`. Wat per soort verschilt, vullen de drie subklassen in: de property `category` en de function `maxShelfLife()`, de langste houdbaarheid die voor die soort nog geloofwaardig is (§9.10). Een `*` in het diagram betekent abstract. Tot v2.1 was `category()` een function; het contract `PricedProduct` maakt er een property van, en `SurplusProduct` volgt het contract (B-23). Het polymorfisme blijft gelijk: elke subklasse overschrijft de property met de eigen soort. Dat is ook het antwoord op de vraag waarom dit een abstracte class is en geen interface: er is gedeelde toestand en gedeelde implementatie. Omdat de class `sealed` is, controleert de compiler dat de factory elke soort afhandelt. `DiscountPolicy` is een interface met drie implementaties. Sinds v1.1 levert elke implementatie alleen de eigen staffels via `tiers()`; `discountPercentage()` en `maxDiscount()` staan als default implementatie in de interface zelf, zodat de opzoeklogica op één plek staat. Sinds v2.2 is een korting een heel percentage (`Int`), geen factor; daarom heet de function `discountPercentage()` en niet meer `discountFactor()` (ADR-07). `Repository<T>` is een generieke interface. Tot v2.2 had hij één `save()`; sinds v2.3 zijn dat `create()` en `update()`, zodat "niet gevonden" bij het bijwerken een eigen antwoord heeft (B-33). `DiscountPolicyResolver` is een object declaration (singleton). Daarmee zijn overerving, interfaces, abstracte classes, polymorfisme, generics en het singleton-patroon alle zes aanwijsbaar in het diagram. `PricedProduct`, `ProductView` en `PriceProvider` zijn contracten uit §12.1: de features zien elkaar alleen door deze interfaces. `Money` en `SupplierSummary` staan in `shared`, omdat ze in een contract voorkomen. `PriceProvider` geeft `null` terug als een partij verlopen is (B-18): geen prijs is een gewone toestand en geen fout, en de compiler dwingt elke aanroeper dat geval af te handelen.
+**Waar de abstractie zit** (r.165): `SurplusProduct` is een abstracte, `sealed` class. Wat voor elke soort gelijk is, staat in de basisklasse: de gedeelde velden, `shelfLifeRemaining()`, `isExpired()` en de controle bij het plaatsen, `validateForListing()`. Wat per soort verschilt, vullen de drie subklassen in: de properties `category` en `maxShelfLife`, de langste houdbaarheid die voor die soort nog geloofwaardig is (§9.10). Een `*` in het diagram betekent abstract. Tot v2.1 was `category()` een function; het contract `PricedProduct` maakt er een property van, en `SurplusProduct` volgt het contract (B-23). Sinds v2.4 is ook `maxShelfLife` een property (B-45): de waarde heeft geen parameters, gooit niets, is goedkoop en blijft altijd gelijk, en dan kiest de Kotlin-conventie een property boven een function (JetBrains s.r.o., z.j.-p). Het polymorfisme blijft gelijk: elke subklasse overschrijft de property met de eigen waarde. Dat is ook het antwoord op de vraag waarom dit een abstracte class is en geen interface: er is gedeelde toestand en gedeelde implementatie. Omdat de class `sealed` is, controleert de compiler dat de factory elke soort afhandelt. `DiscountPolicy` is een interface met drie implementaties. Sinds v1.1 levert elke implementatie alleen de eigen staffels via `tiers()`; `discountPercentage()` en `maxDiscount()` staan als default implementatie in de interface zelf, zodat de opzoeklogica op één plek staat. Sinds v2.2 is een korting een heel percentage (`Int`), geen factor; daarom heet de function `discountPercentage()` en niet meer `discountFactor()` (ADR-07). `Repository<T>` is een generieke interface. Tot v2.2 had hij één `save()`; sinds v2.3 zijn dat `create()` en `update()`, zodat "niet gevonden" bij het bijwerken een eigen antwoord heeft (B-33). `DiscountPolicyResolver` is een object declaration (singleton). Daarmee zijn overerving, interfaces, abstracte classes, polymorfisme, generics en het singleton-patroon alle zes aanwijsbaar in het diagram. `PricedProduct`, `ProductView` en `PriceProvider` zijn contracten uit §12.1: de features zien elkaar alleen door deze interfaces. `Money` en `SupplierSummary` staan in `shared`, omdat ze in een contract voorkomen. `PriceProvider` geeft `null` terug als een partij verlopen is (B-18): geen prijs is een gewone toestand en geen fout, en de compiler dwingt elke aanroeper dat geval af te handelen.
 
 `OpeningHours` en `PickupWindowCalculator` horen bij US-10 (§9.9). De calculator kent geen repository en geen HTTP: hij krijgt openingstijden en twee tijdstippen en geeft een afhaalvenster terug, of `null` als de aanbieder vóór `bestBeforeAt` niet meer open is.
 
@@ -1047,7 +1074,7 @@ Het diagram bevat twee polymorfe aanroepen. `category` wordt beantwoord door de 
 sequenceDiagram
     autonumber
     actor A as Beheerder
-    participant AR as AdminRoutes
+    participant AR as PricingRoutes
     participant ES as ExpiryScheduler
     participant RM as ReservationMaintenance (F2)
     participant F1 as Contracten van F1<br/>ProductReader,<br/>ProductStatusUpdater
@@ -1066,14 +1093,14 @@ sequenceDiagram
     ES->>F1: findExpiredListings(clock.now()) (ProductReader)
     F1-->>ES: partijen die LISTED zijn en over de datum
     ES->>F1: markExpired(productIds) (ProductStatusUpdater)
-    F1-->>ES: aantal verlopen
+    F1-->>ES: aantal verlopen (kan lager zijn dan gevonden, B-40)
 
     Note over ES: idempotent — tweede aanroep<br/>levert hetzelfde resultaat
-    ES-->>AR: rapport (aantallen per overgang)
-    AR-->>A: 200 OK
+    ES-->>AR: MaintenanceReport(lapsedReservations, expiredProducts)
+    AR-->>A: 200 OK met het rapport als JSON
 ```
 
-SD-4 toont de statusbewaking. De beheerder start haar hier handmatig, zodat zij tijdens de demo te tonen is. F3 beslist wat er moet gebeuren; F2 en F1 voeren het uit op hun eigen gegevens, via contracten (bijlage A). De volgorde van de twee stappen is een besluit. Eerst vervallen de reserveringen die over tijd zijn: het afhaalvenster is voorbij, of de reservering is ouder dan 24 uur. Dat is één aanroep, `lapseOverdue`. F2 bepaalt zelf welke reserveringen over tijd zijn en voert het vervallen uit via de statusmachine; de partij komt dan weer vrij (§9.5). Tot v2.1 tekende dit diagram twee aanroepen, een om de reserveringen op te vragen en een om ze te laten vervallen. Dat kan niet via een contract: een `Reservation` is een klasse van F2 en staat niet in `shared`. Het contract geeft daarom alleen een aantal terug. Daarna verlopen de partijen waarvan de datum is verstreken. Andersom zou een verlopen partij door de tweede stap weer op `LISTED` komen. Het antwoord is een rapport met de aantallen per overgang. Een tweede aanroep direct erna verandert niets meer.
+SD-4 toont de statusbewaking. De beheerder start haar hier handmatig, zodat zij tijdens de demo te tonen is. F3 beslist wat er moet gebeuren; F2 en F1 voeren het uit op hun eigen gegevens, via contracten (bijlage A). De volgorde van de twee stappen is een besluit. Eerst vervallen de reserveringen die over tijd zijn: het afhaalvenster is voorbij, of de reservering is ouder dan 24 uur. Dat is één aanroep, `lapseOverdue`. F2 bepaalt zelf welke reserveringen over tijd zijn en voert het vervallen uit via de statusmachine; de partij komt dan weer vrij (§9.5). Tot v2.1 tekende dit diagram twee aanroepen, een om de reserveringen op te vragen en een om ze te laten vervallen. Dat kan niet via een contract: een `Reservation` is een klasse van F2 en staat niet in `shared`. Het contract geeft daarom alleen een aantal terug. Daarna verlopen de partijen waarvan de datum is verstreken. Andersom zou een verlopen partij door de tweede stap weer op `LISTED` komen. Het antwoord is een `MaintenanceReport` met twee velden, `lapsedReservations` en `expiredProducts`, en gaat als JSON terug met `200 OK` (B-42). Het aantal in `expiredProducts` kan lager zijn dan het aantal partijen dat stap 2 vond: tussen `findExpiredListings` en `markExpired` kan een afhaler een partij reserveren, en `markExpired` zet alleen partijen om die nog `LISTED` zijn. Dat is geen fout; het rapport toont het werkelijke aantal (B-40). Een tweede aanroep direct erna verandert niets meer. Dezelfde `runMaintenance()` draait ook periodiek, elke vijf minuten, vanuit een coroutine in de scope van de applicatie (B-41). De route in het diagram heet `PricingRoutes`, omdat de beheerendpoints in de package `pricing` van F3 staan (§8.3).
 
 ### 8.6 Kwaliteitsscenario's
 
@@ -1101,12 +1128,12 @@ erDiagram
         string email UK
         string password_hash
         string display_name
-        string role
+        string role "SUPPLIER, COLLECTOR, ADMIN"
         timestamp created_at
     }
     SUPPLIERS {
         long id PK
-        long user_id FK
+        long user_id FK, UK
         string name
         string address
         double latitude
@@ -1121,13 +1148,13 @@ erDiagram
     SURPLUS_PRODUCTS {
         long id PK
         long supplier_id FK
-        string category
+        string category "FRESH, FROZEN, AMBIENT"
         string name
         string barcode
         long original_price_cents
         timestamp best_before_at
         int quantity
-        string status
+        string status "LISTED, RESERVED, COLLECTED, EXPIRED, REMOVED"
         timestamp pickup_from
         timestamp pickup_until
         timestamp created_at
@@ -1136,18 +1163,20 @@ erDiagram
         long id PK
         long product_id FK
         long collector_id FK
-        string status
+        string status "ACTIVE, COLLECTED, CANCELLED, LAPSED"
         long reserved_price_cents
         timestamp reserved_at
         timestamp collected_at
     }
     PRODUCT_ALLERGENS {
-        long product_id FK
-        string allergen
+        long product_id PK, FK
+        string allergen PK
     }
 ```
 
 Het ERD heeft zes tabellen. Een account (`USERS`) kan bij een aanbieder horen; alleen dan is er een rij in `SUPPLIERS`. Een aanbieder heeft partijen en openingstijden. De drie productsoorten staan samen in één tabel met de kolom `category` (§9.3). Allergenen staan in een eigen tabel, omdat een partij er nul tot veertien kan hebben. Een reservering verwijst naar één afhaler en één partij, geldt voor die hele partij, en bewaart de prijs van het moment van reserveren. Bedragen staan als hele centen in een `long`-kolom; de naam eindigt daarom op `_cents` (ADR-07).
+
+**Sleutels en toegestane waarden (B-47).** `PRODUCT_ALLERGENS` heeft een samengestelde primaire sleutel op `product_id` en `allergen`: een partij noemt elk allergeen hooguit één keer, en de database weigert een dubbele combinatie. `SUPPLIERS.user_id` is uniek, want een account hoort bij hooguit één aanbieder, en verwijst sinds issue #36 met een foreign key naar `USERS`; de tabellen waar een andere feature naar verwijst, staan daarvoor samen in `persistence`. De kolommen `status`, `category` en `role` zijn een `string`, omdat Exposed de enum als tekst opslaat (`enumerationByName`). Het ERD toont daarom de toegestane waarden als commentaar bij het attribuut; de bron van de waarden blijft de enum in de code.
 
 ### 9.2 Entiteiten
 
@@ -1170,6 +1199,8 @@ Deze keuze is bewust en is bij het assessment te verantwoorden (r.304):
 - **Prijs van deze keuze.** Zou een productsoort in de toekomst een eigen veld krijgen — bijvoorbeeld een vriestemperatuur — dan staat die kolom leeg bij de andere twee soorten.
 
 Een `Money`-waarde wordt opgeslagen als een geheel aantal centen in een `BIGINT`-kolom, de SQL-tegenhanger van een Kotlin-`Long`. Tot v2.1 was dat `DECIMAL`. Het doel is hetzelfde gebleven: geen `DOUBLE`, zodat er geen afrondingsfouten in prijsberekeningen ontstaan. Maar een `Long` bestaat op elk platform, en `BigDecimal` alleen op de JVM (ADR-07). Omdat `Money` een `value class` is, is het tijdens het draaien gewoon een `Long`; de omzetting tussen kolom en waardetype is één regel in de repository.
+
+**Een nieuwe partij heeft `id = 0` tot de database een id geeft (B-46).** De database kiest het id bij het opslaan (`autoIncrement`). Een partij die nog niet is opgeslagen, krijgt daarom `id = 0`; dat is de standaardwaarde in de constructors van de drie subklassen en betekent "nog niet opgeslagen". `SurplusProduct` is geen data class, omdat `copy()` de privé setter op `status` zou omzeilen (§8.4). Er is dus ook geen `copy(id = …)`. `create` bouwt na het opslaan een nieuw object op uit de opgeslagen rij, met `ResultRow.toProduct()`, en geeft dat terug. Zo belooft `Repository<T>.create` precies wat B-33 zegt: het item met het id dat de database koos.
 
 ### 9.4 Afprijsstaffels per productsoort
 
@@ -1220,9 +1251,11 @@ stateDiagram-v2
 
 Het diagram toont de status van een partij (`ProductStatus`). `COLLECTED`, `EXPIRED` en `REMOVED` zijn eindtoestanden: daarna verandert een partij niet meer.
 
-**Waarom verwijderen een status is (B-19).** Tot v2.1 verdween een verwijderde partij uit de tabel. Dat botst met het ERD: een reservering verwijst met een foreign key naar de partij (§9.1). Een partij met een oude, ingetrokken reservering is dan niet te verwijderen zonder die reservering mee te nemen, en dan is de geschiedenis weg. Met de eindstatus `REMOVED` blijft alles bewaard. Voor de publieke API bestaat een verwijderde partij niet meer: zoeken toont haar niet, `GET /products/{id}` levert `404`, en reserveren ook (voorstel B-32). Alleen een partij met status `LISTED` kan worden verwijderd. De beheerder die een gereserveerde partij verwijdert, laat eerst de reservering vervallen via `ReservationMaintenance`. De partij komt daarmee terug op `LISTED`, en gaat daarna naar `REMOVED`. Beide stappen vallen in één transactie (GI-1, besluit 1.4).
+**Waarom verwijderen een status is (B-19).** Tot v2.1 verdween een verwijderde partij uit de tabel. Dat botst met het ERD: een reservering verwijst met een foreign key naar de partij (§9.1). Een partij met een oude, ingetrokken reservering is dan niet te verwijderen zonder die reservering mee te nemen, en dan is de geschiedenis weg. Met de eindstatus `REMOVED` blijft alles bewaard. Voor de publieke API bestaat een verwijderde partij niet meer: zoeken toont haar niet, `GET /products/{id}` levert `404`, en reserveren ook (B-32). Alleen een partij met status `LISTED` kan worden verwijderd. De beheerder die een gereserveerde partij verwijdert, laat eerst de reservering vervallen via `ReservationMaintenance`. De partij komt daarmee terug op `LISTED`, en gaat daarna naar `REMOVED`. Beide stappen vallen in één transactie (GI-1, besluit 1.4).
 
-> **Opmerking v2.2 — voor Stefan: reserveren van een verwijderde partij levert `404` (B-32).** Tot nu toe volgde hier `409`, omdat een verwijderde partij niet `LISTED` is. Het voorstel is `404`. Drie redenen. Eén: zacht verwijderen, met een status in plaats van een rij die verdwijnt, is gewoonlijk een interne boekhouding; naar buiten doet de API alsof de partij weg is. Twee: RFC 9110 past daarbij. `404` betekent dat de server de bron niet vindt, of niet wil prijsgeven dat zij bestaat; `409` gaat over een botsing met de huidige toestand van een bron die er voor de gebruiker nog is (Fielding et al., 2022, §15.5.5 en §15.5.10). `410 Gone` is preciezer, maar komt minder vaak voor, vraagt een zevende exceptie en laat zien dat de partij ooit bestond (§15.5.11). Drie: `GET /products/{id}` levert al `404`. Zo krijgt de app op dezelfde vraag, bestaat deze partij, overal hetzelfde antwoord. In de code controleert de service `REMOVED` vóór de controle op `LISTED`, en gooit dan een `NotFoundException`. Een alternatief is dat `findById` zelf `null` geeft bij `REMOVED`, zodat elke gebruiker het vanzelf goed doet. Dat verandert wel de belofte van het contract en is dus een aparte keuze. Voeg bij de tests van US-05 een test toe voor dit geval.
+**Waarom een verwijderde partij `404` levert (B-32, bevestigd in issue #16).** Zacht verwijderen, met een status in plaats van een rij die verdwijnt, is een interne boekhouding; naar buiten doet de API alsof de partij weg is. RFC 9110 past daarbij: `404` betekent dat de server de bron niet vindt, of niet wil prijsgeven dat zij bestaat; `409` gaat over een botsing met de huidige toestand van een bron die er voor de gebruiker nog is (Fielding et al., 2022, §15.5.5 en §15.5.10). `410 Gone` is preciezer, maar vraagt een zevende exceptie en laat zien dat de partij ooit bestond (§15.5.11). De uitvoering is de tweede route uit v2.2: `findById` van `ProductReader` geeft `null` bij `REMOVED`, zodat elke aanroeper het vanzelf goed doet. Dat staat nu in het contract (§12.1).
+
+**Verwijderen door de beheerder volgt dezelfde regel (B-38, B-39).** Omdat `findById` een `REMOVED` partij niet teruggeeft, ziet `AdminProductService` haar niet en is het antwoord `404`, net als bij een onbekend id. Alleen `COLLECTED` en `EXPIRED` leveren `409`. De service laat bij een `RESERVED` partij eerst de reservering vervallen met `lapseActiveFor` en roept daarna `markRemoved` aan. Geeft die `false`, omdat de status intussen is veranderd, dan gooit de service een `IllegalStateTransitionException`; de transactie draait terug, het vervallen incluis, en het antwoord is `409`. Voor de aanbieder (§5.3) is dezelfde regel nog niet besloten; zie de Opmerking v2.4 daar.
 
 De overgangen `RESERVED → LISTED` bij een verlopen venster en `LISTED → EXPIRED` bij een verstreken datum zijn de twee automatische overgangen. Die worden niet door een gebruiker aangeroepen maar door de statusbewaking (§8.5, SD-4). Daar wordt de business logic zichtbaar. Een gereserveerde partij waarvan de datum verstrijkt, komt in dezelfde run eerst vrij en verloopt daarna (SD-4).
 
@@ -1356,11 +1389,13 @@ Basis-URL: `/api/v1`. De kolom "Rol" geeft de rol die de endpoint mag aanroepen;
 | `/reservations` | GET | `COLLECTOR` | Eigen reserveringen | F2 |
 | `/reservations/{id}` | DELETE | `COLLECTOR` | Reservering intrekken | F2 |
 | `/reservations/{id}/collect` | POST | `COLLECTOR` | Ophalen bevestigen | F2 |
-| `/admin/products` | GET | `ADMIN` | Beheeroverzicht van al het aanbod; standaard zonder `REMOVED`, met een optioneel filter `status` (B-26) | F3 |
-| `/admin/products/{id}` | DELETE | `ADMIN` | Partij verwijderen als beheerder | F3 |
-| `/admin/maintenance/expire` | POST | `ADMIN` | Statusbewaking handmatig starten | F3 |
+| `/admin/products` | GET | `ADMIN` | Beheeroverzicht van al het aanbod; standaard zonder `REMOVED`, met een optioneel filter `status` als herhaalde parameter (B-26, B-43) | F3 |
+| `/admin/products/{id}` | DELETE | `ADMIN` | Partij verwijderen als beheerder; `204`, of `404` als de partij onbekend of al verwijderd is (B-38) | F3 |
+| `/admin/maintenance/expire` | POST | `ADMIN` | Statusbewaking handmatig starten; `200 OK` met het rapport (B-42) | F3 |
 
 Alle vier de CRUD-soorten zijn hiermee gedekt (r.202): POST op `/products`, GET op `/products`, PUT op `/products/{id}` en DELETE op `/products/{id}`.
+
+**De beheerendpoints (B-42, B-43).** `POST /admin/maintenance/expire` antwoordt met `200 OK` en het rapport `MaintenanceReport` als JSON, met de velden `lapsedReservations` en `expiredProducts`. `GET /admin/products` neemt het filter `status` als herhaalde parameter: `?status=LISTED&status=RESERVED`, niet kommagescheiden. De waarden zijn hoofdlettergevoelig en komen uit `ProductStatus`. Zonder parameter geeft de route een lege set door en vertaalt `AdminProductService` die naar "alles behalve `REMOVED`" (B-26). Een onbekende waarde levert `400` met de toegestane waarden in de foutmelding en `field` gelijk aan `status`. Het antwoord is een lijst van `AdminProductResponse` met `id`, `name`, `status`, `supplierName`, `pickupWindowStart` en `pickupWindowEnd`; prijs en persoonsgegevens staan er niet in (§15).
 
 In v1.1 is `/products/{id}/pricing` vervallen. De prijs hoort bij de partij en staat daarom in het antwoord van de partij zelf, als drie velden: `originalPrice`, `discountPercentage` en `currentPrice`. Dat scheelt de app in periode 2 een aanroep per getoonde partij. De afprijslogica blijft van F3; F1 en F2 vragen de prijs op via `PriceProvider` (§12.1).
 
@@ -1419,7 +1454,7 @@ Deze matrix bestaat zodat niemand met een gat het assessment in gaat. Per studen
 | **Gedeeld onderdeel** | GI-1 Persistentielaag |
 | **Autorisatie** | Schrijft zelf de rolregels voor de endpoints van F1: `SUPPLIER` voor plaatsen, wijzigen, verwijderen, de barcode-lookup en de openingstijden, plus de eigenaarscontrole op het eigen aanbod (`OwnershipGuard`). Het mechanisme komt uit GI-3 |
 | **Eigen klassen** | `SurplusProduct` (abstract), `FreshProduct`, `FrozenProduct`, `AmbientProduct`, `ProductService`, `ProductRepository`, `OpenFoodFactsClient`, `AllergenMapper`, `ProductFactory`, `OwnershipGuard`, `OpeningHours`, `PickupWindowCalculator`, `PickupWindow` (staat in `shared`), `Repository<T>`, `DatabaseFactory`, `SeedData`, en de implementaties van de contracten `ProductReader` en `ProductStatusUpdater` |
-| **Kernmethoden** | `SurplusProduct.validateForListing()` (gedeelde controle in de basisklasse die de abstracte `maxShelfLife()` van de subklasse gebruikt), `SurplusProduct.shelfLifeRemaining()` (gedeeld in de basisklasse), `ProductFactory.from(row)`, `AllergenMapper.fromTags()`, `OpenFoodFactsClient.fetchProduct()`, `PickupWindowCalculator.defaultWindow()`, en de voorwaardelijke statusupdate achter `ProductStatusUpdater`: alleen naar `RESERVED` als de status nog `LISTED` is |
+| **Kernmethoden** | `SurplusProduct.validateForListing()` (gedeelde controle in de basisklasse die de abstracte property `maxShelfLife` van de subklasse gebruikt, B-45), `SurplusProduct.shelfLifeRemaining()` (gedeeld in de basisklasse), `ProductFactory.from(row)`, `AllergenMapper.fromTags()`, `OpenFoodFactsClient.fetchProduct()`, `PickupWindowCalculator.defaultWindow()`, en de voorwaardelijke statusupdate achter `ProductStatusUpdater`: alleen naar `RESERVED` als de status nog `LISTED` is |
 | **OO-concepten** | Abstracte `sealed` class, overerving, polymorfisme (`category` en `maxShelfLife` per soort, aangeroepen vanuit de basisklasse), interface (`SurplusProduct` implementeert `ProductView` en `PricedProduct`; F1 levert `ProductReader` en `ProductStatusUpdater`; `Repository<T>` is de generieke interface van GI-1), generics (`Repository<T>`), encapsulatie (privé setters op status; de status verandert alleen via `ProductStatusUpdater`), data class (DTO's), companion object (`ProductFactory`), exception handling |
 | **Kotlin features** | Null safety (`barcode` is nullable, Elvis bij terugval), scope functions (`apply` bij het opbouwen van een partij), extension functions (`ResultRow.toProduct()`), coroutines (`suspend` in de Open Food Facts-client), collections (`Set<Allergen>`), higher order functions en lambdas (de Exposed DSL, het vertalen van tags in `AllergenMapper`), named en default arguments (het command-object voor het plaatsen van een partij: `barcode` en afhaalvenster zijn optioneel) |
 | **Eigen testen** | Streven: een unittest bij elk model dat Eva schrijft. TC-01 partij plaatsen happy flow; datum in het verleden geweigerd; afhaalvenster na houdbaarheidsdatum geweigerd; `shelfLifeRemaining` met vaste klok; per productsoort de grens van `maxShelfLife`: precies op de grens toegestaan, één dag erover levert 422; allergeen buiten de EU-lijst levert 400; `AllergenMapper` vertaalt een bekende tag naar de juiste enumwaarde; `AllergenMapper` negeert een onbekende tag; lege allergenenlijst toegestaan; Open Food Facts-time-out valt terug op handmatige invoer; onbekende barcode levert 404; factory kiest de juiste subklasse per categorie; TC-03 eigen partij wijzigen happy flow; partij van een andere aanbieder wijzigen levert 403 (`OwnershipGuard`); eigen partij verwijderen levert 204; gereserveerde partij verwijderen levert 409; niet-bestaande partij levert 404; seeddata bevat alle statussen; afgeleid afhaalvenster begint bij het plaatsen als de aanbieder open is en anders op het eerstvolgende openingsmoment; afgeleid afhaalvenster eindigt op `bestBeforeAt` als de aanbieder dan open is; gesloten dag wordt overgeslagen; geen openingsmoment vóór de datum levert 422 |
@@ -1444,18 +1479,18 @@ Deze matrix bestaat zodat niemand met een gat het assessment in gaat. Per studen
 | **Feature** | Afprijsstaffels, prijsberekening, automatische statusbewaking, beheerdersfunctionaliteit |
 | **Gedeeld onderdeel** | GI-3 Authenticatie en rollen, met de endpoints `/auth/login` en `/auth/register` |
 | **Autorisatie** | Bouwt het gedeelde mechanisme (GI-3) en schrijft zelf de rolregels voor de endpoints van F3: alle beheerdersendpoints vragen `ADMIN` |
-| **Eigen klassen** | `DiscountPolicy` (interface), `FreshDiscountPolicy`, `FrozenDiscountPolicy`, `AmbientDiscountPolicy`, `DiscountTier`, `DiscountPolicyResolver` (object), `PricingService`, `PriceBreakdown`, `Money`, `ExpiryScheduler`, `AdminProductService`, `JwtConfig`, `JwtSettings`, `PasswordHasher`, `Role` |
+| **Eigen klassen** | `DiscountPolicy` (interface), `FreshDiscountPolicy`, `FrozenDiscountPolicy`, `AmbientDiscountPolicy`, `DiscountTier`, `DiscountPolicyResolver` (object), `PricingService`, `PriceBreakdown`, `Money`, `ExpiryScheduler`, `MaintenanceReport`, `AdminProductService`, `AdminProductResponse` met de extension function `ProductView.toAdminResponse()`, de routes in `PricingRoutes.kt` (`configurePricingRouting()`), de periodieke lus in `MaintenanceLoop.kt` (`configureMaintenanceLoop()`), `UserRepository` (interface, implementeert `Repository<User>`) en `ExposedUserRepository`, `JwtConfig`, `JwtSettings`, `PasswordHasher`, `Role` |
 | **Kernmethoden** | `DiscountPolicy.tiers()` (interface, drie implementaties), `DiscountPolicy.discountPercentage()` (default implementatie in de interface), `PricingService.currentPrice()`, `PricingService.priceBreakdown()`, `ExpiryScheduler.runMaintenance()`, `DiscountPolicyResolver.resolve()` |
-| **OO-concepten** | Interface met drie implementaties en een default implementatie, polymorfisme (`tiers` per soort), data class (`DiscountTier`), object declaration / singleton (`DiscountPolicyResolver`), generics (voorbeeld nog te kiezen, zie de opmerking hieronder), encapsulatie (`Money` als waardetype, voorstel: met privé constructor), exception handling |
+| **OO-concepten** | Interface met drie implementaties en een default implementatie, polymorfisme (`tiers` per soort), data class (`DiscountTier`, `MaintenanceReport`, `AdminProductResponse`), object declaration / singleton (`DiscountPolicyResolver`), generics (`UserRepository` implementeert `Repository<User>` uit GI-1), encapsulatie (`Money` als waardetype met privé constructor en de factories `fromCents` en `fromEuros`; `PriceBreakdown` bewaakt in `init` dat het percentage tussen 0 en 100 ligt en de actuele prijs niet boven de oorspronkelijke), exception handling |
 | **Kotlin features** | Scope functions (`also` bij logging in de scheduler), delegated property (`by lazy` op de policy-map), extension functions (`List<DiscountTier>.tierFor(Duration)`, voorstel ter vervanging van `Duration.toWholeDaysFloor()` dat met de staffels vervalt), coroutines (`launch` voor de periodieke statusbewaking), collections (`Map<ProductCategory, DiscountPolicy>`), `require`/`check` voor preconditions |
-| **Eigen testen** | TC-07 kortingspercentage per soort op elke staffelgrens (vers 48u, 24u, 12u; vries 7d, 24u; houdbaar 14d, 7d), telkens precies op de grens en één seconde erboven; percentage is nooit hoger dan de hoogste staffel; prijs is nooit negatief; prijs is nooit hoger dan de oorspronkelijke; verstreken partij levert geen prijs; twee aanroepen met dezelfde klok leveren dezelfde prijs; TC-08 verlopen partij krijgt EXPIRED; niet-opgehaalde reservering keert terug naar LISTED; statusbewaking is idempotent; opgehaalde partij wordt niet gewijzigd; gereserveerde én verlopen partij eindigt op EXPIRED en niet op LISTED; registreren maakt altijd een COLLECTOR-account, ook als het verzoek een andere rol meestuurt; registreren met een bestaand e-mailadres levert 409 |
+| **Eigen testen** | TC-07 kortingspercentage per soort op elke staffelgrens (vers 48u, 24u, 12u; vries 7d, 24u; houdbaar 14d, 7d), telkens precies op de grens en één seconde erboven; percentage is nooit hoger dan de hoogste staffel; prijs is nooit negatief; prijs is nooit hoger dan de oorspronkelijke; verstreken partij levert geen prijs; twee aanroepen met dezelfde klok leveren dezelfde prijs; TC-08 verlopen partij krijgt EXPIRED; niet-opgehaalde reservering keert terug naar LISTED; statusbewaking is idempotent; opgehaalde partij wordt niet gewijzigd; gereserveerde én verlopen partij eindigt op EXPIRED en niet op LISTED; registreren maakt altijd een COLLECTOR-account, ook als het verzoek een andere rol meestuurt; registreren met een bestaand e-mailadres levert 409; verwijderen door de beheerder: een gereserveerde partij laat eerst de reservering vervallen en wordt daarna verwijderd, een LISTED partij roept alleen `markRemoved` aan, COLLECTED en EXPIRED leveren 409, een onbekende of al verwijderde partij levert 404, en `false` van `markRemoved` levert 409 (B-38, B-39); beheeroverzicht: zonder filter vraagt de service elke status behalve REMOVED, met filter precies de gevraagde statussen, twee statussen tegelijk als herhaalde parameter, `status=REMOVED` toont alleen verwijderde partijen, een onbekende waarde levert 400 met `field` gelijk aan `status`, en het antwoord bevat de velden van B-43; statusbewaking: een lager aantal van `markExpired` is geen fout en het rapport toont het werkelijke aantal (B-40), beide stappen gebruiken hetzelfde moment, een run zonder werk rapporteert nul; foutcodes van de beheerendpoints: zonder token 401, met de rol COLLECTOR of SUPPLIER 403, met ADMIN 200 of 204, een id dat geen getal is 400 |
 
-> **Opmerking v2.2 — voor Lonneke.** Door ADR-07 en B-18 veranderen vier dingen in F3. Het zijn voorstellen; de keuze is aan jou.
+> **Besloten in v2.4 — de vier voorstellen voor Lonneke uit v2.2.** Alle vier zijn uitgevoerd en staan in de code op `main`.
 >
-> 1. **`Money` met een privé constructor.** Nu heeft `Money` een publieke constructor met een `require`. Met een privé constructor kan niemand meer rechtstreeks `Money(…)` schrijven, en gaat iedereen via een factory: één voor centen en één voor euro's. De omrekening uit §10.1 zit dan op precies één plek, en niemand kan haar overslaan. Dat is ook een sterker voorbeeld van encapsulatie dan alleen de `require`. Het bestand is `restpartijen-api/src/shared/Money.kt`. Een wijziging in `shared` gaat via een pull request met twee reviews (GI-5, besluit 5.3).
-> 2. **`PriceBreakdown` bewaakt zichzelf nog niet.** Twee regels passen erbij: het percentage ligt tussen 0 en 100, en de actuele prijs is niet hoger dan de oorspronkelijke. Dat is dezelfde aanpak als bij `PickupWindow`, dat controleert dat het begin vóór het einde ligt. Het bestand is `restpartijen-api/src/shared/PriceBreakdown.kt`.
-> 3. **Generics.** Tot v2.1 stond hier `Result<T>` bij de prijsberekening. Door B-18 geeft `PriceProvider` `null` terug in plaats van een `Result`. Dat voorbeeld vervalt, terwijl §11.4 bij jou een vinkje zet voor generics. Een voor de hand liggend alternatief: de repository voor `USERS` (T18) implementeert `Repository<User>` uit GI-1, net als bij Stefan.
-> 4. **Namen.** Een korting is nu een heel percentage. In het klassendiagram heet `discountFactor()` daarom `discountPercentage()`, en `DiscountTier.factor` heet `percentage`. De afronding staat in §9.4.
+> 1. **`Money` heeft een privé constructor** en twee factories in het companion object: `fromCents(cents)` voor waarden die al in centen zijn, bijvoorbeeld uit de database, en `fromEuros(euros)` voor euro's van buiten, die afrondt naar de dichtstbijzijnde cent (B-25). Niemand kan meer rechtstreeks `Money(…)` schrijven; de omrekening uit §10.1 zit op precies één plek.
+> 2. **`PriceBreakdown` bewaakt zichzelf** in `init`: het percentage ligt tussen 0 en 100, en de actuele prijs is niet hoger dan de oorspronkelijke. Dezelfde aanpak als `PickupWindow`.
+> 3. **Generics.** `UserRepository` in `security` implementeert `Repository<User>` uit GI-1 en voegt `findByEmail` toe; `ExposedUserRepository` is de uitvoering op `USERS`. Dat is het voorbeeld voor het vinkje in §11.4.
+> 4. **Namen.** `DiscountTier.percentage` is een `Int`, en de function in `DiscountPolicy` heet `discountPercentage()`. De afronding staat in §9.4.
 
 ### 11.4 Dekking van de beoordeelde concepten
 
@@ -1466,7 +1501,7 @@ Deze matrix bestaat zodat niemand met een gat het assessment in gaat. Per studen
 | Overerving | ✔ | | |
 | Polymorfisme | ✔ | ✔ | ✔ |
 | Encapsulatie | ✔ | | ✔ (`Money`, §11.3) |
-| Generics | ✔ | ✔ | ✔ (voorbeeld nog te kiezen, §11.3) |
+| Generics | ✔ | ✔ | ✔ (`UserRepository` implementeert `Repository<User>`, §11.3) |
 | Object declaration (singleton) | ✔ (companion) | | ✔ |
 | Delegation | | ✔ | ✔ |
 | Data class | ✔ | ✔ | ✔ |
@@ -1707,7 +1742,7 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 | 6.4 | Dubbels voor repositories | Fakes, geen mocks. Voor `Repository<T>` is er één generieke `FakeRepository<T>` in `../server/test/testsupport`; `FakeRepositoryTest` laat zien hoe je hem gebruikt | Een fake repository met een `MutableList` is leesbaarder en breekt niet bij elke refactor. Met één generieke fake schrijft niet iedereen een eigen versie (B-33). Mocks worden alleen gebruikt waar gedrag geverifieerd moet worden, zoals de time-out van de externe client. |
 | 6.5 | Tijd in testen | Injecteerbare `kotlin.time.Clock`, nooit rechtstreeks `Clock.System` | Zonder vaste klok zijn de afprijsstaffels, het afgeleide afhaalvenster en de statusbewaking niet reproduceerbaar te testen. `Clock` en `Instant` zitten sinds Kotlin 2.3 in de standard library, en de documentatie raadt zelf aan een `Clock` door te geven in plaats van `Clock.System` aan te roepen (JetBrains s.r.o., z.j.-b). Dit is een harde regel, geen voorkeur. |
 | 6.6 | Testdatabase | H2 in-memory, per test leeggemaakt | Elke test start van een bekende toestand; geen volgorde-afhankelijkheid tussen testen. |
-| 6.7 | Plaats van de testen | De map `../server/test` van de module; MockK en `ktor-server-test-host` onder `test-dependencies` in `../server/module.yaml` | Dit wijkt af van `../server/src` uit vrijwel elk voorbeeld. Vastleggen voorkomt dat testen op een plek belanden waar de toolchain ze niet vindt (JetBrains s.r.o., z.j.-l). |
+| 6.7 | Plaats van de testen | De map `../server/test` van de module; MockK, `ktor-server-test-host` en `kotlinx-coroutines-test` (voor `runTest` bij `suspend`-contracten) onder `test-dependencies` in `../server/module.yaml` | Dit wijkt af van `../server/src` uit vrijwel elk voorbeeld. Vastleggen voorkomt dat testen op een plek belanden waar de toolchain ze niet vindt (JetBrains s.r.o., z.j.-l). |
 
 **Wat per laag getest wordt.**
 
@@ -1800,6 +1835,8 @@ De afhankelijkheden worden vastgezet in `libs.versions.toml` in de projectroot, 
 ### 16.7 Logging
 
 Requests worden gelogd via `CallLogging` voor demonstratie en foutzoeken. Wachtwoorden, tokens en de `Authorization`-header worden nooit gelogd.
+
+Daarnaast logt de statusbewaking (B-44). `ExpiryScheduler` heeft een eigen SLF4J-logger en schrijft per run één regel met alleen de twee aantallen uit het rapport. De periodieke lus logt een mislukte run met de exceptie via de logger van de applicatie, zodat de fout zichtbaar is zonder dat de lus stopt (B-41). Geen van beide logt gegevens van een partij of een persoon.
 
 ---
 
@@ -1978,7 +2015,8 @@ Na versie 2.1 kwamen er drie adviezen bij. Het eerste gaf de docent eerder in se
 - **De afprijsstaffels in §9.4 zijn een keuze van deze profgroep**, geen gegeven uit de casusbeschrijving. Bij het assessment zijn er vragen over te verwachten, dus iedere student moet kunnen uitleggen waarom de grenzen liggen waar ze liggen.
 - **Beslispunt voor Lonneke: welke endpoint zij in de app verzorgt.** Alle endpoints van F3 zijn beheerdersendpoints, en die roept de app in periode 2 niet aan. Daardoor heeft Lonneke geen endpoint die vanuit de app wordt gebruikt. Zij kiest tussen account aanmaken, `/auth/register`, die de app bij het registreren aanroept (§18.4), en een endpoint voor het prijsverloop van een partij, voor de grafiek die de docent noemde (§20). Het prijsverloop vraagt een chart library in de app en de staffels van een partij in het antwoord van de API (§18.3). Lonneke komt op deze keuze terug.
 - **Gevolg van die keuze voor `/auth/register`.** Valt de keuze op het prijsverloop, dan is nog niet bepaald of `/auth/register` bij Lonneke blijft of naar een ander gaat. Tot dat besluit houdt dit document de endpoint bij haar (§10.1, §11.3, §13 besluit 3.7).
-- **Bevestigen.** De afrondingsregel (B-24, §9.4) en `404` bij het reserveren van een verwijderde partij (B-32, §9.5). B-26 en B-31 zijn in v2.3 goedgekeurd.
+- **Bevestigen.** De afrondingsregel (B-24, §9.4). B-26 en B-31 zijn in v2.3 goedgekeurd; B-32 is in v2.4 bevestigd via issue #16.
+- **Verwijderen van een al verwijderde partij door de aanbieder (§5.3).** Bij de beheerder is het `404` (B-38). Voor de aanbieder staat nog `409`. De profgroep beslist in issue #45; het voorstel is `404` voor beide.
 - **`DatabaseFactory` importeert `ProductsTable`.** De persistentielaag kent daardoor een tabel van F1, en dat is een afhankelijkheid de verkeerde kant op (§8.3). Nodig is een manier waarop elke feature de eigen tabellen aanmeldt. Eva lost dit op in basis T9; het hoort bij het acceptatiecriterium van GI-1 dat niemand een bestand van een ander hoeft te wijzigen.
 - **Indeling van de `/auth`-endpoints binnen `security`** (GI-3, besluit 3.9). Nog af te spreken met Lonneke.
 - **Starten zonder handmatige stappen tegenover het secret uit een omgevingsvariabele.** GI-2 eist dat de applicatie na `./kotlin run` start zonder handmatige stappen; §16.4 eist dat het JWT-secret uit een omgevingsvariabele komt. Komt er een ontwikkelwaarde als terugval, of telt het zetten van de variabele niet als handmatige stap? Stand op 3 oktober 2026: de code stopt zonder `JWT_SECRET`. Een terugval met een willekeurig secret staat als uitgecommentarieerd alternatief in `JwtProperties.kt`. De vraag ligt bij de docent. Tot het antwoord er is, haalt de applicatie het acceptatiecriterium van GI-2 niet.
@@ -1986,7 +2024,6 @@ Na versie 2.1 kwamen er drie adviezen bij. Het eerste gaf de docent eerder in se
 - **Van `JwtProperties` naar `JwtSettings`.** Beide klassen bestaan, maar `Application.module()` zet de ene nog niet om in de andere en roept `configureSecurity()` nog niet aan. Af te spreken tussen Stefan en Lonneke: wie schrijft die stap.
 - **`StatusPages` staat nog niet in de productiecode.** `ktor-server-status-pages` staat alleen onder `test-dependencies`. Tot GI-4 het installeert, komen de excepties uit B-35 niet als nette `401` en `403` terug.
 - **Testrapportage en loadtool.** NFR-03 en §8.6 verwijzen naar de testrapportage, maar zeggen niet waar die staat. §8.6 noemt de drempel voor performance, maar niet waarmee gemeten wordt.
-- **Unittesten van `suspend`-contracten.** Een test die een `suspend`-function aanroept, doet dat binnen `runTest` of `runBlocking`. Nog na te gaan is of `runTest` via de huidige test-dependencies beschikbaar is.
 
 ---
 
@@ -2033,6 +2070,8 @@ JetBrains s.r.o. (z.j.-m). *Testing with dependency injection*. Ktor. Geraadplee
 JetBrains s.r.o. (z.j.-n). *What's new in Ktor 3.6.0*. Ktor. Geraadpleegd op 29 september 2026, van https://ktor.io/docs/whats-new-360.html
 
 JetBrains s.r.o. (z.j.-o). *Working with databases*. Exposed documentation. Geraadpleegd op 19 september 2026, van https://jetbrains.com/help/exposed/working-with-database.html
+
+JetBrains s.r.o. (z.j.-p). *Coding conventions: Functions vs properties*. Kotlin Documentation. Geraadpleegd op 13 oktober 2026, van https://kotlinlang.org/docs/coding-conventions.html#functions-vs-properties
 
 JetBrains s.r.o. (2026, 26 augustus). *Migrating from 0.61.0 to 1.0.0*. Exposed Documentation. https://www.jetbrains.com/help/exposed/migration-guide-1-0-0.html
 

@@ -8,7 +8,7 @@ timestamp: 2026-10-04T00:00:00
 
 # ADR-06 — Staffels in plaats van doorlopende afprijscurves
 
-> Tot en met v2.3 stond dit ADR in §8.6 van het FTD. Het staat nu alleen hier. Verwijzingen naar paragrafen (§) gaan over het FTD ([[FTD-restpartijen-webapi-v2_3]]).
+> Tot en met v2.3 stond dit ADR in §8.6 van het FTD. Het staat nu alleen hier. Verwijzingen naar paragrafen (§) gaan over het FTD ([[FTD-restpartijen-webapi-v2_4]]).
 
 - **Context.** In v1.0 zakte de prijs doorlopend: elke minuut een fractie lager, volgens een formule per productsoort. Bij het nalopen bleken daar twee problemen aan te zitten. Een prijs is op geen enkel moment uit te leggen zonder de formule erbij te pakken. En het is onduidelijk welk moment telt: wie dagen vooruit reserveert voor een afhaalmoment vlak voor de datum, zou de hoogste korting kunnen opeisen.
 - **Besluit.** De korting verloopt in staffels met vaste grenzen per productsoort (§9.4). De prijs die geldt op het moment van reserveren wordt vastgelegd in de reservering.
