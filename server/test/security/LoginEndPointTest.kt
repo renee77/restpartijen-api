@@ -31,16 +31,21 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import com.restpartijen.api.security.service.PROVIDER_NAME
-import kotlin.time.Clock
+import com.restpartijen.api.testsupport.FixedClock
+import kotlin.time.Instant
 
 class LoginEndpointTest {
+    // Arrange: use a fixed clock for predictable token timestamps
+    val testClock = FixedClock(
+        Instant.parse("2026-10-20T12:00:00Z")
+    )
     private suspend fun HttpResponse.errorBody(): ErrorResponse =
         Json.decodeFromString<ErrorResponse>(bodyAsText())
 
     // Testbasics
     private val email = "login@mail.com"
     private val password = "MyTestPassword123"
-    private val jwtConfig = JwtConfig(TestJwtSettings.default, Clock.System)
+    private val jwtConfig = JwtConfig(TestJwtSettings.default, testClock)
 
     // Setting up the TestApp and the routing, for this test
     private fun ApplicationTestBuilder.setUpLoginApp() {

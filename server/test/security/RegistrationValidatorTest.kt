@@ -42,7 +42,7 @@ class RegistrationValidatorTest {
     @Test
     fun `password of 64 characters is accepted` () {
         // Arrange: A password that is exactly 64 characters.
-        val justRightLong = "a".repeat(RegistrationValidator.PASSWORD_MAX_LENGTH - 1)
+        val justRightLong = "a".repeat(RegistrationValidator.PASSWORD_MAX_LENGTH)
 
         // Act and Assert: No exception
         RegistrationValidator.validate(
@@ -101,7 +101,7 @@ class RegistrationValidatorTest {
     @Test
     fun `email without @ is rejected` () {
         // Arrange: an email without an @
-        val mail = "NotReallyAMail"
+        val mail = "NotReallyAMail.com"
 
         // Act + Assert: validation must throw, and the error points at the password field
         val exception = assertFailsWith<DomainRuleException> {
@@ -117,7 +117,7 @@ class RegistrationValidatorTest {
     @Test
     fun `email without dot is rejected` () {
         // Arrange: an email without a .
-        val mail = "NotReallyAMail"
+        val mail = "NotReally@AMail"
 
         // Act + Assert: validation must throw, and the error points at the password field
         val exception = assertFailsWith<DomainRuleException> {

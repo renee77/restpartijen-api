@@ -3,15 +3,20 @@ package com.restpartijen.api.security
 import com.auth0.jwt.JWT
 import com.restpartijen.api.security.service.JwtConfig
 import com.restpartijen.api.shared.Role
+import com.restpartijen.api.testsupport.FixedClock
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Clock
+import kotlin.time.Instant
 
 class JwtConfigTest {
     @Test
     fun `token only contains userId and role`() {
-        // Arrange the configuration with default test settings and a system clock
-        val jwtConfig = JwtConfig(TestJwtSettings.default, Clock.System)
+        // Arrange: use a fixed clock for predictable token timestamps
+        val testClock = FixedClock(
+            Instant.parse("2026-10-20T12:00:00Z")
+        )
+        // Arrange the configuration with default test settings and a test clock
+        val jwtConfig = JwtConfig(TestJwtSettings.default, testClock)
 
         // Act, create a token and decode it to inspect the claims
         val decoded = JWT.decode(jwtConfig.createToken(userId = 1L, role = Role.COLLECTOR))
