@@ -1,5 +1,6 @@
 package com.restpartijen.api.reservation.service
 
+import com.restpartijen.api.persistence.dbQuery
 import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationEvent
 import com.restpartijen.api.reservation.repository.ReservationRepository
@@ -18,7 +19,7 @@ class ReservationService(
     private val reservations: ReservationRepository,
     private val clock: Clock,
 ) {
-    suspend fun reserve(productId: Long, collectorId: Long): Reservation {
+    suspend fun reserve(productId: Long, collectorId: Long): Reservation = dbQuery {
         // 404: unknown, or REMOVED (findById returns null for REMOVED, B-32)
         val product = productReader.findById(productId)
             ?: throw NotFoundException("Product $productId not found")
@@ -43,7 +44,7 @@ class ReservationService(
 
         // Valid for 24 hours, or until the pickup window ends if that is earlier (§5.5)
         val expiresAt = minOf(now + 24.hours, product.pickupWindow.until)
-        return reservations.create(
+        reservations.create(
             Reservation(
                 id = 0,
                 productId = productId,
