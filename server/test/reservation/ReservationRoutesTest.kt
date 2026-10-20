@@ -54,7 +54,7 @@ class ReservationRoutesTest {
     private val openWindow = PickupWindow(now - 1.hours, now + 5.hours)
     private val statusUpdater = FakeProductStatusUpdater()
 
-    private fun Application.testApp(products: List<ProductView>, reservations: List<Reservation> = emptyList()) {
+    private fun Application.testApp(products: List<ProductView>, reservations: List<Reservation> = emptyList(), price: Money? = Money.fromCents(299)) {
         createEmptyTestDatabase()
         configureSerialization()
         configureStatusPages()
@@ -62,7 +62,7 @@ class ReservationRoutesTest {
         dependencies {
             provide<ProductReader> { FakeProductReader(products) }
             provide<ProductStatusUpdater> { statusUpdater }
-            provide<PriceProvider> { FakePriceProvider(Money.fromCents(299)) }
+            provide<PriceProvider> { FakePriceProvider(price) }
             provide<ReservationRepository> { FakeReservationRepository(reservations) }
             provide<Clock> { FixedClock(now) }
             provide(::ReservationService)
@@ -187,5 +187,58 @@ class ReservationRoutesTest {
         // Assert: the stored price, not the current one (§5.5)
         val body = Json.decodeFromString<List<ReservationResponse>>(response.bodyAsText())
         assertEquals(4.5, body.single().reservedPrice)
+    }
+
+    @Test
+    fun `reserving an unknown product gives 404`() = testApplication {
+        // Arrange: no products at all
+        setUp()
+        // Act
+        val response = reserve(productId = 99, token = tokenFor(Role.COLLECTOR))
+        // Assert
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `reserving a removed product gives 404`() = testApplication {
+        // Arrange: for the public API a REMOVED product no longer exists (B-32)
+        setUp(FakeProduct(id = 1, pickupWindow = openWindow, status = ProductStatus.REMOVED))
+        // Act
+        val response = reserve(productId = 1, token = tokenFor(Role.COLLECTOR))
+        // Assert
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `reserving an expired product that is still LISTED gives 409`() = testApplication {
+        // Arrange: status says LISTED, but the price provider returns null: past its best-before moment (B-18)
+        application { testApp(listOf(FakeProduct(id = 1, pickupWindow = openWindow)), price = null) }
+        // Act
+        val response = reserve(productId = 1, token = tokenFor(Role.COLLECTOR))
+        // Assert: refused, and the product was not touched
+        assertEquals(HttpStatusCode.Conflict, response.status)
+        assertTrue(statusUpdater.reserved.isEmpty())
+    }
+
+    @Test
+    fun `reserving after the pickup window gives 422`() = testApplication {
+        // Arrange: still sellable, but the window ended an hour ago
+        setUp(FakeProduct(id = 1, pickupWindow = PickupWindow(now - 5.hours, now - 1.hours)))
+        // Act
+        val response = reserve(productId = 1, token = tokenFor(Role.COLLECTOR))
+        // Assert
+        assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
+        assertTrue(statusUpdater.reserved.isEmpty())
+    }
+
+    @Test
+    fun `a reservation expires at the end of the pickup window when that comes before 24 hours`() = testApplication {
+        // Arrange: the window closes in 5 hours, well before now + 24h
+        setUp(FakeProduct(id = 1, pickupWindow = openWindow))
+        // Act
+        val response = reserve(productId = 1, token = tokenFor(Role.COLLECTOR))
+        // Assert (§5.5)
+        val body = Json.decodeFromString<ReservationResponse>(response.bodyAsText())
+        assertEquals(openWindow.until.toString(), body.expiresAt)
     }
 }
