@@ -1,0 +1,107 @@
+package com.restpartijen.api.product
+
+import com.restpartijen.api.product.dto.PickupWindowRequest
+import com.restpartijen.api.product.dto.PlaceProductRequest
+import com.restpartijen.api.product.dto.validatePlaceProductRequest
+import com.restpartijen.api.shared.ProductCategory
+import com.restpartijen.api.shared.ValidationException
+import io.ktor.server.plugins.requestvalidation.ValidationResult
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.time.Duration.Companion.days
+
+/**
+ * The shape check of POST /api/v1/products, registered in RequestValidation (§10.2, ADR-05, issue #46).
+ * A shape error throws a ValidationException with the field, so StatusPages answers 400 instead of 500.
+ * Limits: name and barcode fit the varchar(255) columns; a blank text counts as empty.
+ */
+class PlaceProductRequestValidatorTest {
+
+    private fun aRequest(
+        name: String = "Volkoren brood",
+        barcode: String? = null,
+        originalPrice: Double = 3.49,
+        pickupWindow: PickupWindowRequest? = PickupWindowRequest(from = testNow, until = testNow + 1.days),
+    ) = PlaceProductRequest(
+        category = ProductCategory.FRESH,
+        name = name,
+        originalPrice = originalPrice,
+        bestBeforeAt = testNow + 3.days,
+        quantity = 2,
+        barcode = barcode,
+        pickupWindow = pickupWindow,
+    )
+
+    // Runs the validator and returns the field it names; fails the test when nothing is thrown.
+    private fun fieldOfError(request: PlaceProductRequest): String? =
+        assertFailsWith<ValidationException> { validatePlaceProductRequest(request) }.field
+
+    @Test
+    fun `a valid request passes`() {
+        // Act
+        val result = validatePlaceProductRequest(aRequest())
+
+        // Assert
+        assertEquals(ValidationResult.Valid, result)
+    }
+
+    @Test
+    fun `a negative price is refused and names the field`() {
+        assertEquals("originalPrice", fieldOfError(aRequest(originalPrice = -1.0)))
+    }
+
+    @Test
+    fun `a pickup window that does not start before it ends is refused`() {
+        // Arrange: from equals until, which PickupWindow itself rejects with a 500
+        val window = PickupWindowRequest(from = testNow, until = testNow)
+
+        // Act + Assert
+        assertEquals("pickupWindow", fieldOfError(aRequest(pickupWindow = window)))
+    }
+
+    @Test
+    fun `an empty name is refused`() {
+        assertEquals("name", fieldOfError(aRequest(name = "")))
+    }
+
+    @Test
+    fun `a name of only spaces is refused`() {
+        assertEquals("name", fieldOfError(aRequest(name = "   ")))
+    }
+
+    @Test
+    fun `a name longer than 255 characters is refused`() {
+        assertEquals("name", fieldOfError(aRequest(name = "a".repeat(256))))
+    }
+
+    @Test
+    fun `a name of exactly 255 characters passes`() {
+        assertEquals(ValidationResult.Valid, validatePlaceProductRequest(aRequest(name = "a".repeat(255))))
+    }
+
+    @Test
+    fun `a request without a barcode passes`() {
+        assertEquals(ValidationResult.Valid, validatePlaceProductRequest(aRequest(barcode = null)))
+    }
+
+    @Test
+    fun `an empty barcode is refused`() {
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "")))
+    }
+
+    @Test
+    fun `a barcode of only spaces is refused`() {
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "   ")))
+    }
+
+    @Test
+    fun `a barcode longer than 255 characters is refused`() {
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "1".repeat(256))))
+    }
+
+    @Test
+    fun `a barcode of exactly 255 characters passes`() {
+        assertEquals(ValidationResult.Valid, validatePlaceProductRequest(aRequest(barcode = "1".repeat(255))))
+    }
+}

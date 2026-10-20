@@ -7,17 +7,15 @@ import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ProductCategory
-import com.restpartijen.api.shared.ValidationException
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 /**
- * The request for POST /api/v1/products: reading JSON, and checking its shape while turning it into a command.
- * A shape error gives a ValidationException (400) with the field, not a crash (500).
+ * The request for POST /api/v1/products: reading JSON, and turning it into a command.
+ * The shape checks are in PlaceProductRequestValidatorTest.
  */
 class PlaceProductRequestTest {
 
@@ -65,26 +63,5 @@ class PlaceProductRequestTest {
 
         // Assert
         assertEquals(PickupWindow(from = testNow, until = testNow + 1.days), command.pickupWindow)
-    }
-
-    @Test
-    fun `toCommand refuses a negative price and names the field`() {
-        // Act
-        val error = assertFailsWith<ValidationException> { aRequest(originalPrice = -1.0).toCommand() }
-
-        // Assert
-        assertEquals("originalPrice", error.field)
-    }
-
-    @Test
-    fun `toCommand refuses a pickup window that does not start before it ends`() {
-        // Arrange: from equals until, which PickupWindow itself rejects
-        val window = PickupWindowRequest(from = testNow, until = testNow)
-
-        // Act
-        val error = assertFailsWith<ValidationException> { aRequest(pickupWindow = window).toCommand() }
-
-        // Assert
-        assertEquals("pickupWindow", error.field)
     }
 }

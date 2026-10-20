@@ -5,7 +5,6 @@ import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ProductCategory
-import com.restpartijen.api.shared.ValidationException
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
@@ -28,23 +27,17 @@ data class PlaceProductRequest(
     val allergens: Set<Allergen> = emptySet(),
 )
 
-/** The pickup window as it arrives over the network; checked when it becomes a [PickupWindow]. */
+/** The pickup window as it arrives over the network; checked by validatePlaceProductRequest. */
 @Serializable
 data class PickupWindowRequest(val from: Instant, val until: Instant)
 
 /**
- * Turns the request into a command in domain types, and checks its shape on the way.
+ * Turns the request into a command in domain types; it only translates.
  *
- * Money and PickupWindow refuse wrong values with IllegalArgumentException, which StatusPages would answer
- * with a 500. Checking here first gives a 400 with the field instead. Domain rules, such as a date in the past,
- * are not checked here: they belong to the product (validateForListing, 422).
+ * The shape was already checked by validatePlaceProductRequest in RequestValidation (400), so Money and
+ * PickupWindow receive valid values here.
  */
 fun PlaceProductRequest.toCommand(): PlaceProductCommand {
-    if (originalPrice < 0) throw ValidationException("originalPrice must not be negative", field = "originalPrice")
-    if (pickupWindow != null && pickupWindow.from >= pickupWindow.until) {
-        throw ValidationException("pickupWindow.from must be before pickupWindow.until", field = "pickupWindow")
-    }
-
     return PlaceProductCommand(
         category = category,
         name = name,

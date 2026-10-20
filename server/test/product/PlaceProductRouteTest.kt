@@ -4,6 +4,7 @@ import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.plugins.ErrorResponse
+import com.restpartijen.api.plugins.configureRequestValidation
 import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.product.dto.ProductResponse
@@ -61,6 +62,7 @@ class PlaceProductRouteTest {
     ) {
         configureSerialization()
         configureStatusPages()
+        configureRequestValidation()
         configureSecurity(JwtConfig(TestJwtSettings.default, Clock.System))
         dependencies {
             provide<ProductRepository> { products }
@@ -166,6 +168,36 @@ class PlaceProductRouteTest {
 
         // Assert
         assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `an empty name gives 400 and names the field`() = testApplication {
+        // Arrange: validBody with an empty name (E-03: was stored as is)
+        application { testApp() }
+        val body = validBody.replace("\"Volkoren brood\"", "\"\"")
+
+        // Act
+        val response = place(body = body, token = tokenFor(Role.SUPPLIER))
+
+        // Assert: RequestValidation stops it before the route, with the field
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("name", error.field)
+    }
+
+    @Test
+    fun `a barcode longer than 255 characters gives 400 and names the field`() = testApplication {
+        // Arrange: validBody plus a barcode that does not fit varchar(255) (E-03: was a 500 on INSERT)
+        application { testApp() }
+        val body = validBody.replace("\"quantity\": 2,", "\"quantity\": 2, \"barcode\": \"${"1".repeat(256)}\",")
+
+        // Act
+        val response = place(body = body, token = tokenFor(Role.SUPPLIER))
+
+        // Assert
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("barcode", error.field)
     }
 
     @Test

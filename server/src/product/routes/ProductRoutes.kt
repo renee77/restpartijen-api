@@ -41,9 +41,10 @@ fun Application.configureProductRouting() {
         requireRole(Role.SUPPLIER) {
             post("/api/v1/products") {
                 // The JSON body becomes the request DTO; a missing field or unknown allergen gives a 400.
+                // RequestValidation then checks its shape (validatePlaceProductRequest, 400 with the field).
                 val request = call.receive<PlaceProductRequest>()
 
-                // Checks the shape (negative price, empty window: 400) and turns it into domain types.
+                // Turns the checked request into domain types.
                 val command = request.toCommand()
 
                 // The supplier comes from the user in the token, never from the body (§16.2).
