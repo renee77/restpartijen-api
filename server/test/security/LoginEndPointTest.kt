@@ -3,7 +3,7 @@ package com.restpartijen.api.security
 import com.restpartijen.api.plugins.ErrorCode
 import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.security.dto.LoginResponse
-import com.restpartijen.api.security.repository.UsersTable
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.security.service.JwtConfig
 import com.restpartijen.api.security.service.configureSecurity
 import com.restpartijen.api.shared.Role

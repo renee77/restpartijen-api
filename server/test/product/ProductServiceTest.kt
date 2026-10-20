@@ -1,6 +1,5 @@
 package com.restpartijen.api.product
 
-import com.restpartijen.api.product.model.Product
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.shared.NotFoundException
 import kotlinx.coroutines.test.runTest
@@ -13,7 +12,7 @@ class ProductServiceTest {
     fun `getProduct returns the product when the id exists`() = runTest {
         // Arrange
         val repository = fakeProductRepository(
-            Product(id = 1, name = "Volkoren brood", category = "FRESH"),
+            aProduct(id = 1, name = "Volkoren brood"),
         )
         val service = ProductService(repository)
         // Act

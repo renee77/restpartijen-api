@@ -29,10 +29,5 @@ interface ProductReader {
      * status except REMOVED by default, and for REMOVED only when filtering on it.
      * An empty set returns an empty list.
      */
-//    Alleen de verwijderde	findByStatus(setOf(REMOVED))	Alle partijen met status REMOVED
-//    Alleen de gereserveerde	findByStatus(setOf(RESERVED))	Alle partijen met status RESERVED
-//    Twee statussen samen	findByStatus(setOf(LISTED, RESERVED))	Alles wat LISTED of RESERVED is
-//    Alle lopende partijen	findByStatus(ProductStatus.entries.toSet() - REMOVED)	Alles behalve REMOVED
-
     suspend fun findByStatus(statuses: Set<ProductStatus>): List<ProductView>
 }

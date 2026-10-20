@@ -156,7 +156,7 @@ Content-Type: application/json
 
 {
   "email": "admin@mail.com",
-  "password": "ReplaceWithTheSeededAdminPassword"
+  "password": "Demo-Restpartij-2026"
 }
 
 > {% client.global.set("adminToken", response.body.token); %}
