@@ -26,6 +26,7 @@ class JwtConfig(
     val verifier: JWTVerifier = JWT.require(algorithm)
         .withIssuer(settings.issuer)
         .withAudience(settings.audience)
+        .ignoreIssuedAt()
         .build()
     // Only the user id and the role go into the token: no password, no e-mail.
     fun createToken(userId: Long, role: Role): String {

@@ -1,6 +1,7 @@
 package com.restpartijen.api.pricing
 
 import com.restpartijen.api.pricing.model.MaintenanceReport
+import com.restpartijen.api.security.TestClock
 import com.restpartijen.api.security.TestTokens
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.post
@@ -10,18 +11,12 @@ import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import com.restpartijen.api.testsupport.FixedClock
-import kotlin.time.Instant
 
 /**
  * The test class for the 4 tests in ExpiryEndpointTest.kt. The tests are in a separate file so that they can be run with a different test app than the other pricing tests, which use the real ExpiryScheduler service. This test app uses a fake ExpiryScheduler that we can control.
  */
 class ExpiryEndpointTest {
 
-    // Arrange: use a fixed clock for predictable token timestamps
-    val testClock = FixedClock(
-        Instant.parse("2026-10-20T12:00:00Z")
-    )
     // A test to show that the endpoint is secured.
     @Test
     fun `no token returns 401`() = testApplication {
@@ -42,7 +37,7 @@ class ExpiryEndpointTest {
         // Arrange
         application { setUpPricingTestApp() }
 
-        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "COLLECTOR", clock = testClock)
+        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "COLLECTOR", clock = TestClock.fixed)
 
         // Act: Make a post request to the protected route with the role that is not allowed to enter this route
         val response = client.post("/api/v1/admin/maintenance/expire") {
@@ -59,7 +54,7 @@ class ExpiryEndpointTest {
         // Arrange: two overdue reservations behind the service
         application { setUpPricingTestApp(reservationMaintenance = FakeReservationMaintenance(lapsedCount = 2)) }
 
-        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = testClock)
+        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = TestClock.fixed)
 
         // Act: Make a post request to the protected route with the role that is not allowed to enter this route
         val response = client.post("/api/v1/admin/maintenance/expire") {
@@ -78,7 +73,7 @@ class ExpiryEndpointTest {
         // Arrange: two overdue reservations behind the service, no expired products
         application { setUpPricingTestApp(reservationMaintenance = FakeReservationMaintenance(lapsedCount = 2)) }
 
-        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = testClock)
+        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = TestClock.fixed)
 
         // Act
         val response = client.post("/api/v1/admin/maintenance/expire") {
@@ -101,7 +96,7 @@ class ExpiryEndpointTest {
                 productStatusUpdater = FakeProductStatusUpdater(expiredCount = 1),
             )
         }
-        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = testClock)
+        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = TestClock.fixed)
 
         // Act
         val response = client.post("/api/v1/admin/maintenance/expire") {

@@ -12,13 +12,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import io.ktor.client.statement.bodyAsText
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Instant
 
 class ValidationTests {
-    // Arrange: use a fixed clock for predictable token timestamps
-    val testClock = FixedClock(
-        Instant.parse("2026-10-20T12:00:00Z")
-    )
     // Happy path
     @Test
     fun `valid token gets access`() = testApplication {
@@ -27,7 +22,7 @@ class ValidationTests {
 
         // Act: make a GET request to the protected route with a valid token
         val response = client.get("/test/protected") {
-            bearerAuth(TestTokens().createTestToken(userId = 1L, role = Role.COLLECTOR, clock = testClock))
+            bearerAuth(TestTokens().createTestToken(userId = 1L, role = Role.COLLECTOR, clock = TestClock.fixed))
         }
 
         // Assert: the response status should be 200 OK, indicating successful access
@@ -64,7 +59,7 @@ class ValidationTests {
     @Test
     fun `expired token gets 401`() = testApplication {
         application { setUpTestApp() }
-        val twoDaysAgo = FixedClock(testClock.now() - 48.hours)
+        val twoDaysAgo = FixedClock(TestClock.fixed.now() - 48.hours)
 
         val response = client.get("/test/protected") {
             bearerAuth(TestTokens().createTestToken(userId = 1L, role = Role.COLLECTOR, clock = twoDaysAgo))

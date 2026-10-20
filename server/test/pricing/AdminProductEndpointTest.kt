@@ -12,23 +12,17 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.pricing.dto.AdminProductResponse
+import com.restpartijen.api.security.TestClock
 import com.restpartijen.api.shared.ProductStatus
-import com.restpartijen.api.testsupport.FixedClock
 import kotlin.test.assertTrue
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import io.ktor.client.request.delete
-import kotlin.time.Instant
 
 class AdminProductEndpointTest {
-    // Arrange: use a fixed clock for predictable token timestamps
-    val testClock = FixedClock(
-        Instant.parse("2026-10-20T12:00:00Z")
-    )
-
-    val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = testClock)
+    val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = TestClock.fixed)
 
     private fun tokenFor(role: String) =
-        TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = role, clock = testClock)
+        TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = role, clock = TestClock.fixed)
 
     @Test
     fun `No token gives a 401`() = testApplication {
@@ -50,7 +44,7 @@ class AdminProductEndpointTest {
             setUpPricingTestApp(productReader = FakeProductReader(emptyList()))
         }
 
-        val collectorToken = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "COLLECTOR", clock = testClock)
+        val collectorToken = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "COLLECTOR", clock = TestClock.fixed)
 
         // Act
         val response = client.get("/api/v1/admin/products") {

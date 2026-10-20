@@ -25,7 +25,7 @@ object TestJwtSettings {
 
 /** One fixed moment, shared by the token helper and the JwtConfig in tests. */
 object TestClock {
-    val fixed = FixedClock(Instant.parse("2026-09-26T12:00:00Z"))
+    val fixed = FixedClock(Instant.parse("2099-01-01T12:00:00Z"))
 }
 
 /**
