@@ -3,23 +3,19 @@ package com.restpartijen.api.reservation
 import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
-import com.restpartijen.api.persistence.dbQuery
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationsTable
 import com.restpartijen.api.reservation.service.ReservationService
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ProductStatus
-import com.restpartijen.api.shared.ProductStatusUpdater
 import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.insertProduct
 import kotlinx.coroutines.test.runTest
-import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -59,21 +55,4 @@ class ReservationTransactionTest {
     private fun statusOf(productId: Long): ProductStatus = transaction {
         ProductsTable.selectAll().where { ProductsTable.id eq productId }.single()[ProductsTable.status]
     }
-}
-
-/**
- * Changes the status directly in ProductsTable, the same way F1's updater does.
- * ProductsTable lives in persistence, so F2 may use it (issue #36); F1's own class may not be imported (GI-5).
- */
-private class TableStatusUpdater : ProductStatusUpdater {
-    override suspend fun markReserved(productId: Long): Boolean = dbQuery {
-        ProductsTable.update({ (ProductsTable.id eq productId) and (ProductsTable.status eq ProductStatus.LISTED) }) {
-            it[ProductsTable.status] = ProductStatus.RESERVED
-        } > 0
-    }
-
-    override suspend fun markListed(productId: Long): Boolean = TODO("not needed here")
-    override suspend fun markCollected(productId: Long): Boolean = TODO("not needed here")
-    override suspend fun markExpired(productIds: List<Long>): Int = TODO("not needed here")
-    override suspend fun markRemoved(productId: Long): Boolean = TODO("not needed here")
 }
