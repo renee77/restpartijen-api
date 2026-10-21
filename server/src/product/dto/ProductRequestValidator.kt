@@ -13,16 +13,31 @@ private const val MAX_TEXT_LENGTH = 255
  * answers 400 with `field` filled in (option B). Domain rules, such as a date in the past or a quantity
  * below 1, are not checked here: they belong to the product (validateForListing, 422).
  */
-fun validatePlaceProductRequest(request: PlaceProductRequest): ValidationResult {
-    requireText(request.name, field = "name")
-    request.barcode?.let { requireText(it, field = "barcode") }
+fun validatePlaceProductRequest(request: PlaceProductRequest): ValidationResult =
+    validateProductFields(request.name, request.barcode, request.originalPrice, request.pickupWindow)
+
+/**
+ * Checks the shape of a PUT /api/v1/products/{id} body (US-03), with the same rules as POST:
+ * both bodies carry the same product fields, apart from category.
+ */
+fun validateUpdateProductRequest(request: UpdateProductRequest): ValidationResult =
+    validateProductFields(request.name, request.barcode, request.originalPrice, request.pickupWindow)
+
+// The shape rules of the product fields, shared by POST and PUT so each rule exists once.
+private fun validateProductFields(
+    name: String,
+    barcode: String?,
+    originalPrice: Double,
+    pickupWindow: PickupWindowRequest?,
+): ValidationResult {
+    requireText(name, field = "name")
+    barcode?.let { requireText(it, field = "barcode") }
 
     // Money and PickupWindow refuse these values with IllegalArgumentException, which would give a 500.
-    if (request.originalPrice < 0) {
+    if (originalPrice < 0) {
         throw ValidationException("originalPrice must not be negative", field = "originalPrice")
     }
-    val window = request.pickupWindow
-    if (window != null && window.from >= window.until) {
+    if (pickupWindow != null && pickupWindow.from >= pickupWindow.until) {
         throw ValidationException("pickupWindow.from must be before pickupWindow.until", field = "pickupWindow")
     }
 
