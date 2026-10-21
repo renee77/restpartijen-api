@@ -1,4 +1,4 @@
-### F1 - Get existing product: expect 200 with JSON
+### F1 - Get existing product: expect 200 with JSON, including discountPercentage and currentPrice (null when expired)
 GET http://localhost:8080/api/v1/products/1
 Accept: application/json
 

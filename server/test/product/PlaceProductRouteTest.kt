@@ -20,6 +20,7 @@ import com.restpartijen.api.security.TestTokens
 import com.restpartijen.api.security.service.JwtConfig
 import com.restpartijen.api.security.service.configureSecurity
 import com.restpartijen.api.shared.Allergen
+import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
@@ -69,6 +70,7 @@ class PlaceProductRouteTest {
             provide<SupplierRepository> { suppliers }
             // The listing rules use a fixed "now"; the token below uses the real clock, because the JWT verifier does.
             provide<Clock> { FixedClock(testNow) }
+            provide<PriceProvider> { FixedPriceProvider(aBreakdown) }
             provide(::ProductService)
         }
         configureProductRouting()
@@ -106,6 +108,20 @@ class PlaceProductRouteTest {
         assertEquals("LISTED", product.status)
         assertEquals(aSupplier.id, product.supplierId)
         assertEquals(3.49, product.originalPrice)
+    }
+
+    @Test
+    fun `the answer to placing a product includes the price breakdown`() = testApplication {
+        // Arrange: §10.1, every answer with a product has the three price fields
+        application { testApp() }
+
+        // Act
+        val response = place(token = tokenFor(Role.SUPPLIER))
+
+        // Assert: the values of aBreakdown, in euros (B-25)
+        val product = Json.decodeFromString<ProductResponse>(response.bodyAsText())
+        assertEquals(40, product.discountPercentage)
+        assertEquals(2.10, product.currentPrice)
     }
 
     @Test

@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.days
 
 class ProductServiceTest {
@@ -23,17 +24,19 @@ class ProductServiceTest {
         val repository = fakeProductRepository(
             aProduct(id = 1, name = "Volkoren brood"),
         )
-        val service = ProductService(repository, fakeSupplierRepository(), FixedClock(testNow))
+        val service = ProductService(repository, fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow))
         // Act
-        val product = service.getProduct(1)
+        val detail = service.getProduct(1)
         // Assert
-        assertEquals("Volkoren brood", product.name)
+        assertEquals("Volkoren brood", detail.product.name)
     }
 
     @Test
     fun `getProduct throws NotFoundException when the id does not exist`() = runTest {
         // Arrange
-        val service = ProductService(fakeProductRepository(), fakeSupplierRepository(), FixedClock(testNow))
+        val service = ProductService(
+            fakeProductRepository(), fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow),
+        )
 
         // Act + Assert
         assertFailsWith<NotFoundException> {
@@ -42,25 +45,91 @@ class ProductServiceTest {
     }
 
     @Test
+    fun `getProduct includes the price breakdown from the PriceProvider`() = runTest {
+        // Arrange: SD-3, F1 asks F3 for the price instead of knowing the discount rules
+        val repository = fakeProductRepository(aProduct(id = 1))
+        val service = ProductService(
+            repository, fakeSupplierRepository(), FixedPriceProvider(aBreakdown), FixedClock(testNow),
+        )
+
+        // Act
+        val detail = service.getProduct(1)
+
+        // Assert
+        assertEquals(aBreakdown, detail.price)
+        assertEquals(ProductStatus.LISTED, detail.status)
+    }
+
+    @Test
+    fun `getProduct shows an expired LISTED product as EXPIRED without a price`() = runTest {
+        // Arrange: no price means expired (B-18); the status updater may not have run yet (SD-3)
+        val repository = fakeProductRepository(aProduct(id = 1, status = ProductStatus.LISTED))
+        val service = ProductService(
+            repository, fakeSupplierRepository(), FixedPriceProvider(breakdown = null), FixedClock(testNow),
+        )
+
+        // Act
+        val detail = service.getProduct(1)
+
+        // Assert
+        assertNull(detail.price)
+        assertEquals(ProductStatus.EXPIRED, detail.status)
+    }
+
+    @Test
+    fun `getProduct keeps the status of an expired product that is not LISTED`() = runTest {
+        // Arrange: only a LISTED product turns EXPIRED (§9.5); a reservation is handled by F2
+        val repository = fakeProductRepository(aProduct(id = 1, status = ProductStatus.RESERVED))
+        val service = ProductService(
+            repository, fakeSupplierRepository(), FixedPriceProvider(breakdown = null), FixedClock(testNow),
+        )
+
+        // Act
+        val detail = service.getProduct(1)
+
+        // Assert
+        assertNull(detail.price)
+        assertEquals(ProductStatus.RESERVED, detail.status)
+    }
+
+    @Test
     fun `createProduct stores a listed product of the supplier of the user`() = runTest {
         // Arrange
         val repository = fakeProductRepository()
-        val service = ProductService(repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedClock(testNow))
+        val service = ProductService(
+            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+        )
 
         // Act
-        val product = service.createProduct(userId = 7, command = aCommand())
+        val detail = service.createProduct(userId = 7, command = aCommand())
 
         // Assert: stored, with the supplier from the token and status LISTED (TC-01)
-        assertEquals(aSupplier, product.supplier)
-        assertEquals(ProductStatus.LISTED, product.status)
-        assertEquals(listOf(product.id), repository.findAll().map { it.id })
+        assertEquals(aSupplier, detail.product.supplier)
+        assertEquals(ProductStatus.LISTED, detail.status)
+        assertEquals(listOf(detail.product.id), repository.findAll().map { it.id })
+    }
+
+    @Test
+    fun `createProduct includes the price breakdown, like every product answer`() = runTest {
+        // Arrange: §10.1, the price belongs to the product and is in every answer with a product
+        val service = ProductService(
+            fakeProductRepository(), fakeSupplierRepository(), FixedPriceProvider(aBreakdown), FixedClock(testNow),
+        )
+
+        // Act
+        val detail = service.createProduct(userId = 7, command = aCommand())
+
+        // Assert
+        assertEquals(aBreakdown, detail.price)
     }
 
     @Test
     fun `createProduct refuses a user without a supplier`() = runTest {
         // Arrange: user 8 has a SUPPLIER token but no supplier row
         val repository = fakeProductRepository()
-        val service = ProductService(repository, fakeSupplierRepository(ownerUserId = 7), FixedClock(testNow))
+        val service = ProductService(
+            repository, fakeSupplierRepository(ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+        )
 
         // Act + Assert
         assertFailsWith<ForbiddenException> { service.createProduct(userId = 8, command = aCommand()) }
@@ -70,7 +139,9 @@ class ProductServiceTest {
     @Test
     fun `createProduct refuses a product without a pickup window`() = runTest {
         // Arrange: there are no opening hours yet (US-10), so the window cannot be derived
-        val service = ProductService(fakeProductRepository(), fakeSupplierRepository(), FixedClock(testNow))
+        val service = ProductService(
+            fakeProductRepository(), fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow),
+        )
 
         // Act
         val error = assertFailsWith<DomainRuleException> {
@@ -85,7 +156,7 @@ class ProductServiceTest {
     fun `createProduct checks the listing rules and stores nothing when one is broken`() = runTest {
         // Arrange: a best-before moment in the past breaks validateForListing (422)
         val repository = fakeProductRepository()
-        val service = ProductService(repository, fakeSupplierRepository(), FixedClock(testNow))
+        val service = ProductService(repository, fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow))
         val command = aCommand(
             bestBeforeAt = testNow - 1.days,
             pickupWindow = PickupWindow(from = testNow - 2.days, until = testNow - 1.days),

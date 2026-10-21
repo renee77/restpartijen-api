@@ -12,6 +12,9 @@ import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
+import com.restpartijen.api.shared.PriceBreakdown
+import com.restpartijen.api.shared.PriceProvider
+import com.restpartijen.api.shared.PricedProduct
 import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.shared.Role
@@ -52,6 +55,20 @@ fun fakeSupplierRepository(supplier: SupplierSummary? = aSupplier, ownerUserId: 
         override suspend fun findByUserId(userId: Long): SupplierSummary? = supplier.takeIf { userId == ownerUserId }
         override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
     }
+
+/** A price breakdown with a real discount: 3.50 with 40% off is 2.10 (§5.7). */
+val aBreakdown = PriceBreakdown(
+    originalPrice = Money.fromCents(350), discountPercentage = 40, currentPrice = Money.fromCents(210),
+)
+
+/**
+ * A PriceProvider for tests that gives every product the same [breakdown].
+ * Null means "expired", as in the real contract (B-18); the pricing rules themselves are F3's to test.
+ */
+class FixedPriceProvider(private val breakdown: PriceBreakdown? = aBreakdown) : PriceProvider {
+    override fun currentPrice(product: PricedProduct): Money? = breakdown?.currentPrice
+    override fun priceBreakdown(product: PricedProduct): PriceBreakdown? = breakdown
+}
 
 /** The moment the default dates of [aProduct] are based on; tests use it for their FixedClock. */
 val testNow: Instant = Instant.parse("2026-10-01T00:00:00Z")
