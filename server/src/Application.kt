@@ -45,6 +45,9 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
+    // The order of the tables below does not matter: SchemaUtils.create sorts them by their foreign keys,
+    // so a table is always created after the table it references.
+    // They are still listed in that order to make the dependencies easy to read.
     DatabaseFactory.init(
         environment.config.databaseSettings(),
         UsersTable,
@@ -76,12 +79,11 @@ fun Application.module() {
     )
 
     // 4. ROUTES
-    // F1 routes
+    // F1 routes, owner Eva
     configureProductRouting()
-    // F2 routes
+    // F2 routes, owner Stefan
     configureReservationRouting()
-    // TODO: F3 routes
+    // F3 routes, owner Lonneke: admin overview and status monitoring (US-08, US-09).
     configureAuthRouting()
-    // F3 routes
     configurePricingRouting()
 }
