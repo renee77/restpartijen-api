@@ -6,7 +6,9 @@ import com.restpartijen.api.reservation.service.ReservationMaintenanceService
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ProductStatus
+import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import kotlinx.coroutines.test.runTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -17,6 +19,9 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 class ReservationMaintenanceServiceTest {
+
+    @BeforeTest
+    fun setup() = createEmptyTestDatabase()
 
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
@@ -37,9 +42,11 @@ class ReservationMaintenanceServiceTest {
     @Test
     fun `a reservation older than 24 hours lapses even inside the pickup window`() = runTest {
         // Arrange: window still open for two days, but expiresAt (reservedAt + 24h) has passed
-        val reservations = FakeReservationRepository(listOf(reservation(1, productId = 10, expiresAt = now - 1.minutes)))
+        val reservations =
+            FakeReservationRepository(listOf(reservation(1, productId = 10, expiresAt = now - 1.minutes)))
         val updater = FakeProductStatusUpdater()
-        val service = ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10))), updater, reservations)
+        val service =
+            ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10))), updater, reservations)
 
         // Act
         val lapsed = service.lapseOverdue(now)
@@ -58,7 +65,8 @@ class ReservationMaintenanceServiceTest {
             listOf(reservation(1, productId = 10, expiresAt = window.until, reservedAt = now - 5.hours))
         )
         val updater = FakeProductStatusUpdater()
-        val service = ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10, window))), updater, reservations)
+        val service =
+            ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10, window))), updater, reservations)
 
         // Act
         val lapsed = service.lapseOverdue(now)
@@ -74,7 +82,8 @@ class ReservationMaintenanceServiceTest {
         // Arrange: still valid for another hour
         val reservations = FakeReservationRepository(listOf(reservation(1, productId = 10, expiresAt = now + 1.hours)))
         val updater = FakeProductStatusUpdater()
-        val service = ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10))), updater, reservations)
+        val service =
+            ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10))), updater, reservations)
 
         // Act
         val lapsed = service.lapseOverdue(now)
@@ -90,7 +99,8 @@ class ReservationMaintenanceServiceTest {
         // Arrange: the boundary; 24 hours old counts as overdue (<=, not <)
         val reservations = FakeReservationRepository(listOf(reservation(1, productId = 10, expiresAt = now)))
         val updater = FakeProductStatusUpdater()
-        val service = ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10))), updater, reservations)
+        val service =
+            ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10))), updater, reservations)
 
         // Act
         val lapsed = service.lapseOverdue(now)
@@ -105,7 +115,8 @@ class ReservationMaintenanceServiceTest {
         // Arrange: not overdue; the admin lapses it anyway before removing the product (US-09)
         val reservations = FakeReservationRepository(listOf(reservation(1, productId = 10, expiresAt = now + 1.hours)))
         val updater = FakeProductStatusUpdater()
-        val service = ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10))), updater, reservations)
+        val service =
+            ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10))), updater, reservations)
 
         // Act
         val result = service.lapseActiveFor(10)
@@ -123,7 +134,8 @@ class ReservationMaintenanceServiceTest {
             listOf(reservation(1, productId = 10, expiresAt = now + 1.hours, status = ReservationStatus.CANCELLED))
         )
         val updater = FakeProductStatusUpdater()
-        val service = ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10))), updater, reservations)
+        val service =
+            ReservationMaintenanceService(FakeProductReader(listOf(reservedProduct(10))), updater, reservations)
 
         // Act
         val result = service.lapseActiveFor(10)

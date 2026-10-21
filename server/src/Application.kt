@@ -20,6 +20,7 @@ import com.restpartijen.api.security.routes.configureAuthRouting
 import com.restpartijen.api.security.configureSecurityModule
 import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.reservation.repository.ReservationsTable
+import com.restpartijen.api.reservation.routes.configureReservationRouting
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.seed.SeedData
 import io.ktor.server.application.*
@@ -44,7 +45,9 @@ fun Application.module() {
     val jwtProperties = environment.config.jwtProperties()
     log.info("JWT config: $jwtProperties")
 
-    //Zet een tabel na de tabel waar hij naar verwijst.
+    // The order of the tables below does not matter: SchemaUtils.create sorts them by their foreign keys,
+    // so a table is always created after the table it references.
+    // They are still listed in that order to make the dependencies easy to read.
     DatabaseFactory.init(
         environment.config.databaseSettings(),
         UsersTable,
@@ -76,11 +79,12 @@ fun Application.module() {
     )
 
     // 4. ROUTES
+    // F1 routes, owner Eva
     configureProductRouting()
-    // TODO: F2 routes
-//    configureReservationRouting()
-    // TODO: F3 routes
-    configureAuthRouting()
-    // F3, owner Lonneke: admin overview and status monitoring (US-08, US-09).
+    // F2 routes, owner Stefan
+    configureReservationRouting()
+    // F3 routes, owner Lonneke: admin overview and status monitoring (US-08, US-09).
     configurePricingRouting()
+    // GI-3 auth routes, owner Lonneke
+    configureAuthRouting()
 }

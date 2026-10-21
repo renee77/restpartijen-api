@@ -20,6 +20,7 @@ import com.restpartijen.api.shared.ReservationMaintenance
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationRepository
 import com.restpartijen.api.reservation.service.ReservationMaintenanceService
+import com.restpartijen.api.reservation.service.ReservationService
 import kotlin.time.Clock
 
 
@@ -42,6 +43,7 @@ fun Application.configureDependencies() {
         // F2 (Stefan)
         provide<ReservationRepository>(::ExposedReservationRepository)
         provide<ReservationMaintenance>(::ReservationMaintenanceService)
+        provide(::ReservationService)
 
         // F3: Pricing
         provide<PriceProvider>(::PricingService)
