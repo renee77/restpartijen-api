@@ -8,6 +8,7 @@ import com.restpartijen.api.shared.DomainRuleException
 import com.restpartijen.api.shared.ForbiddenException
 import com.restpartijen.api.shared.IllegalStateTransitionException
 import com.restpartijen.api.shared.NotFoundException
+import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.ProductStatus
 import kotlin.time.Clock
@@ -52,13 +53,7 @@ class ProductService(
         val supplier = suppliers.findByUserId(userId)
             ?: throw ForbiddenException("This account has no supplier")
 
-        // Without a window, the API would derive one from the opening hours (US-10). Those do not exist yet,
-        // so "no window and no opening hours" always applies (§5.1).
-        val pickupWindow = command.pickupWindow
-            ?: throw DomainRuleException(
-                "pickupWindow is required: the supplier has no opening hours",
-                field = "pickupWindow"
-            )
+        val pickupWindow = requirePickupWindow(command.pickupWindow)
 
         // Id 0: the database chooses the real id. A new product is always LISTED.
         val product = ProductFactory.create(
@@ -119,6 +114,64 @@ class ProductService(
             throw IllegalStateTransitionException("Only a LISTED product can be deleted")
         }
     }
+
+    /**
+     * Replaces the changeable fields of an own product of the supplier of [userId] (US-03, A13).
+     * Id, supplier, category and status stay as stored; every other field comes from [command].
+     *
+     * @throws NotFoundException when the product does not exist or is REMOVED (404)
+     * @throws ForbiddenException when the product belongs to another supplier, or the user has none (403)
+     * @throws IllegalStateTransitionException when the product is not LISTED (409)
+     * @throws DomainRuleException when there is no pickup window, or a listing rule is broken (422)
+     */
+    suspend fun updateProduct(userId: Long, productId: Long, command: UpdateProductCommand): ProductDetail {
+        // The same order as deleteProduct: first 404, then 403.
+        val product = repository.findById(productId) ?: throw NotFoundException("Product not found")
+
+        ownershipGuard.requireOwner(userId, product)
+
+        // Before the listing rules (409 before 422): a product that may not change at all should not get a
+        // message about its dates.
+        if (product.status != ProductStatus.LISTED) {
+            throw IllegalStateTransitionException("Only a LISTED product can be updated")
+        }
+
+        // The window of the request, not the stored one: PUT replaces it.
+        val pickupWindow = requirePickupWindow(command.pickupWindow)
+
+        // A13: id, supplier, category and status stay as stored; every other field comes from the command.
+        val updatedProduct = ProductFactory.create(
+            category = product.category,
+            id = product.id,
+            name = command.name,
+            barcode = command.barcode,
+            originalPrice = command.originalPrice,
+            supplier = product.supplier,
+            bestBeforeAt = command.bestBeforeAt,
+            quantity = command.quantity,
+            status = product.status,
+            pickupWindow = pickupWindow,
+            allergens = command.allergens,
+        )
+
+        // Before storing, so a product that breaks a rule never reaches the database (422).
+        updatedProduct.validateForListing(clock)
+
+        // The repository changes only a LISTED product, in the same statement. False means the product was
+        // reserved after the check above (race).
+        if (!repository.update(updatedProduct)) {
+            throw IllegalStateTransitionException("Only a LISTED product can be updated")
+        }
+        return toDetail(updatedProduct)
+    }
+
+    // Shared by createProduct and updateProduct. Without a window, the API would derive one from the opening
+    // hours (US-10). Those do not exist yet, so "no window and no opening hours" always applies (§5.1).
+    private fun requirePickupWindow(window: PickupWindow?): PickupWindow =
+        window ?: throw DomainRuleException(
+            "pickupWindow is required: the supplier has no opening hours",
+            field = "pickupWindow"
+        )
 
     // Shared by every function that returns products, so the EXPIRED rule lives in one place.
     private fun toDetail(product: SurplusProduct): ProductDetail {

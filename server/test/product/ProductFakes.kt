@@ -56,6 +56,10 @@ fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository {
         // Removing it from the list matches what callers see of the soft delete: findById no longer finds it.
         override suspend fun delete(id: Long): Boolean =
             store.findById(id)?.status == ProductStatus.LISTED && store.delete(id)
+
+        // The same rule as the real update (A13): only a LISTED product changes, otherwise false.
+        override suspend fun update(item: SurplusProduct): Boolean =
+            store.findById(item.id)?.status == ProductStatus.LISTED && store.update(item)
     }
 }
 
