@@ -19,7 +19,13 @@ internal class TableStatusUpdater : ProductStatusUpdater {
         } > 0
     }
 
-    override suspend fun markListed(productId: Long): Boolean = TODO("not needed here")
+    override suspend fun markListed(productId: Long): Boolean = dbQuery {
+        ProductsTable.update({ (ProductsTable.id eq productId) and (ProductsTable.status eq ProductStatus.RESERVED) }) {
+            it[ProductsTable.status] = ProductStatus.LISTED
+        } > 0
+    }
+
+
     override suspend fun markCollected(productId: Long): Boolean = TODO("not needed here")
     override suspend fun markExpired(productIds: List<Long>): Int = TODO("not needed here")
     override suspend fun markRemoved(productId: Long): Boolean = TODO("not needed here")
