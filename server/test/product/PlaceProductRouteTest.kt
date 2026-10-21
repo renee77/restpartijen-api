@@ -14,6 +14,7 @@ import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.product.routes.configureProductRouting
+import com.restpartijen.api.product.service.OwnershipGuard
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.security.TestJwtSettings
 import com.restpartijen.api.security.TestTokens
@@ -75,6 +76,7 @@ class PlaceProductRouteTest {
             // The listing rules use their own fixed "now", apart from tokenClock: the dates in the bodies build on it.
             provide<Clock> { FixedClock(testNow) }
             provide<PriceProvider> { FixedPriceProvider(aBreakdown) }
+            provide(::OwnershipGuard)
             provide(::ProductService)
         }
         configureProductRouting()

@@ -6,6 +6,8 @@ import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
+import com.restpartijen.api.product.service.OwnershipGuard
+import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
@@ -27,6 +29,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
@@ -36,18 +39,36 @@ import kotlin.time.Instant
  * Delegation (`by`) passes every Repository call on to the fake, so no repository logic is repeated here.
  * The product-specific queries of ProductRepository are implemented here on top of findAll.
  */
-fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository =
-    object : ProductRepository, Repository<SurplusProduct> by FakeRepository(
+fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository {
+    val store = FakeRepository(
         idOf = { it.id },
         withId = { product, id -> product.withId(id) },
         initialItems = products.toList()
-    ) {
+    )
+    return object : ProductRepository, Repository<SurplusProduct> by store {
         // The same rule as the real query (A4): only the current offer of this supplier.
         override suspend fun findBySupplier(supplierId: Long): List<SurplusProduct> =
             findAll().filter {
                 it.supplier.id == supplierId && it.status in setOf(ProductStatus.LISTED, ProductStatus.RESERVED)
             }
+
+        // The same rule as the real delete (§5.3): only a LISTED product can be deleted, otherwise false.
+        // Removing it from the list matches what callers see of the soft delete: findById no longer finds it.
+        override suspend fun delete(id: Long): Boolean =
+            store.findById(id)?.status == ProductStatus.LISTED && store.delete(id)
     }
+}
+
+/**
+ * Builds a ProductService the way Dependencies.kt wires it: the OwnershipGuard uses the same
+ * supplier repository as the service, so one fake decides both who the supplier is and who owns what.
+ */
+fun productService(
+    repository: ProductRepository,
+    suppliers: SupplierRepository,
+    priceProvider: PriceProvider,
+    clock: Clock,
+): ProductService = ProductService(repository, suppliers, priceProvider, OwnershipGuard(suppliers), clock)
 
 /** The supplier the product fakes use by default; the same values as the default supplier of [aProduct]. */
 val aSupplier = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0, longitude = 5.0)

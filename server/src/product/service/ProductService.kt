@@ -6,24 +6,28 @@ import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.shared.DomainRuleException
 import com.restpartijen.api.shared.ForbiddenException
+import com.restpartijen.api.shared.IllegalStateTransitionException
 import com.restpartijen.api.shared.NotFoundException
 import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.ProductStatus
 import kotlin.time.Clock
 
 /**
- * The domain logic of F1: reading and placing surplus products, each returned with its price breakdown.
+ * The domain logic of F1: reading, placing and deleting surplus products; products are returned with their
+ * price breakdown.
  *
  * @param repository stores and finds products
  * @param suppliers finds the supplier that belongs to the user in the token (US-01),
  *   and whether a supplier exists (US-03)
  * @param priceProvider gives the price breakdown of a product; F3 calculates it, F1 only asks (K-4, SD-3)
+ * @param ownershipGuard checks that a supplier only changes or deletes an own product (US-03, §16.2)
  * @param clock decides what "now" is for the listing rules (GI-6, decision 6.5)
  */
 class ProductService(
     private val repository: ProductRepository,
     private val suppliers: SupplierRepository,
     private val priceProvider: PriceProvider,
+    private val ownershipGuard: OwnershipGuard,
     private val clock: Clock,
 ) {
     /**
@@ -93,6 +97,27 @@ class ProductService(
         // The repository already left out the stored end states. A LISTED product past its best-before
         // shows as EXPIRED until the status updater runs (SD-3), so that one is left out here.
         return productList.map { toDetail(it) }.filter { it.status != ProductStatus.EXPIRED }
+    }
+
+    /**
+     * Deletes an own product of the supplier of [userId] (US-03). It is a soft delete: the product gets
+     * status REMOVED and stays in the database (§9.5, B-19).
+     *
+     * @throws NotFoundException when the product does not exist or is already REMOVED (404, issue #45)
+     * @throws ForbiddenException when the product belongs to another supplier, or the user has none (403)
+     * @throws IllegalStateTransitionException when the product is not LISTED (409, §5.3)
+     */
+    suspend fun deleteProduct(userId: Long, productId: Long) {
+        // First 404, then 403: without a product there is no owner to check.
+        val product = repository.findById(productId) ?: throw NotFoundException("Product not found")
+
+        ownershipGuard.requireOwner(userId, product)
+
+        // The repository deletes only a LISTED product and checks that in the same statement, so a product
+        // reserved after findById is not deleted after all (race). False means it is not LISTED.
+        if (!repository.delete(product.id)) {
+            throw IllegalStateTransitionException("Only a LISTED product can be deleted")
+        }
     }
 
     // Shared by every function that returns products, so the EXPIRED rule lives in one place.
