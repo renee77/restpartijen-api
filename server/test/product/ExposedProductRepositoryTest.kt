@@ -314,4 +314,38 @@ class ExposedProductRepositoryTest {
         // Assert
         assertFalse(updateSucceeded)
     }
+
+    // A13: a supplier may only change a LISTED product. The status is checked in the WHERE, so a product
+    // reserved between the check in the service and this update is not changed after all (race).
+    @Test
+    fun `update refuses a RESERVED product and leaves it unchanged`() = runTest {
+        assertUpdateRefused(ProductStatus.RESERVED)
+    }
+
+    @Test
+    fun `update refuses a COLLECTED product and leaves it unchanged`() = runTest {
+        assertUpdateRefused(ProductStatus.COLLECTED)
+    }
+
+    @Test
+    fun `update refuses an EXPIRED product and leaves it unchanged`() = runTest {
+        assertUpdateRefused(ProductStatus.EXPIRED)
+    }
+
+    private suspend fun assertUpdateRefused(status: ProductStatus) {
+        // Arrange: create always stores LISTED, so the status is set in the table directly
+        val supplier = emptyDatabaseWithSupplier()
+        val bread = repository.create(aProduct(supplier = supplier))
+        transaction { ProductsTable.update({ ProductsTable.id eq bread.id }) { it[ProductsTable.status] = status } }
+
+        // Act
+        val updateSucceeded = repository.update(aProduct(id = bread.id, supplier = supplier, name = "Wit brood"))
+
+        // Assert
+        assertFalse(updateSucceeded)
+        val nameAfter = transaction {
+            ProductsTable.selectAll().where { ProductsTable.id eq bread.id }.single()[ProductsTable.name]
+        }
+        assertEquals(bread.name, nameAfter)
+    }
 }

@@ -51,12 +51,15 @@ class ExposedProductRepository(private val clock: Clock) : ProductRepository {
     }
 
     override suspend fun update(item: SurplusProduct): Boolean = dbQuery {
-        // update() returns how many rows changed: 0 means no product with this id, or it was REMOVED.
-        // Supplier, created_at and status stay as they are; status changes go through ProductStatusUpdater.
-        val updated = ProductsTable.update({ (ProductsTable.id eq item.id) and notRemoved() }) {
-            writeChangeableColumns(it, item)
-        } > 0
-        // Only for an existing, non-removed product. Replace the whole set:
+        // update() returns how many rows changed: 0 means no product with this id, or it is not LISTED (A13).
+        // The status check sits in the WHERE, so a product reserved after the check in the service stays
+        // unchanged (race). Supplier, created_at and status stay as they are; status changes go through
+        // ProductStatusUpdater.
+        val updated =
+            ProductsTable.update({ (ProductsTable.id eq item.id) and (ProductsTable.status eq ProductStatus.LISTED) }) {
+                writeChangeableColumns(it, item)
+            } > 0
+        // Only for an existing, LISTED product. Replace the whole set:
         // simpler than working out which allergens were added or removed.
         if (updated) {
             ProductAllergensTable.deleteWhere { productId eq item.id }
