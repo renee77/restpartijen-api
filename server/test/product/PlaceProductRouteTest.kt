@@ -4,24 +4,13 @@ import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.plugins.ErrorResponse
-import com.restpartijen.api.plugins.configureRequestValidation
-import com.restpartijen.api.plugins.configureSerialization
-import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.product.dto.ProductResponse
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
-import com.restpartijen.api.product.routes.configureProductRouting
-import com.restpartijen.api.product.service.OwnershipGuard
-import com.restpartijen.api.product.service.ProductService
-import com.restpartijen.api.security.TestJwtSettings
-import com.restpartijen.api.security.TestTokens
-import com.restpartijen.api.security.service.JwtConfig
-import com.restpartijen.api.security.service.configureSecurity
 import com.restpartijen.api.shared.Allergen
-import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
@@ -36,8 +25,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.application.Application
-import io.ktor.server.plugins.di.dependencies
-import io.ktor.server.plugins.di.provide
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
@@ -54,36 +41,16 @@ import kotlin.time.Clock
  */
 class PlaceProductRouteTest {
 
-    // The user id in every token; the fake supplier repository knows a supplier for this user.
-    private val supplierUserId = 7L
-
-    // Fixed during the test (GI-6, decision 6.5), but at the real "now": the JWT verifier checks expiry against
-    // the real time, so a token from a hard-coded date would expire a day later (#62).
+    // Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp.
     private val tokenClock = FixedClock(Clock.System.now())
 
     // Fakes by default; the database test passes the Exposed repositories instead.
     private fun Application.testApp(
         products: ProductRepository = fakeProductRepository(),
         suppliers: SupplierRepository = fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId),
-    ) {
-        configureSerialization()
-        configureStatusPages()
-        configureRequestValidation()
-        configureSecurity(JwtConfig(TestJwtSettings.default, tokenClock))
-        dependencies {
-            provide<ProductRepository> { products }
-            provide<SupplierRepository> { suppliers }
-            // The listing rules use their own fixed "now", apart from tokenClock: the dates in the bodies build on it.
-            provide<Clock> { FixedClock(testNow) }
-            provide<PriceProvider> { FixedPriceProvider(aBreakdown) }
-            provide(::OwnershipGuard)
-            provide(::ProductService)
-        }
-        configureProductRouting()
-    }
+    ) = productRoutesTestApp(tokenClock, products, suppliers)
 
-    private fun tokenFor(role: Role, userId: Long = supplierUserId) =
-        TestTokens().createTestToken(userId = userId, role = role, clock = tokenClock)
+    private fun tokenFor(role: Role, userId: Long = supplierUserId) = productToken(role, tokenClock, userId)
 
     // A valid body: best-before three days after testNow, pickup window inside it.
     private val validBody = """
