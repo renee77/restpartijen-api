@@ -7,6 +7,9 @@ import com.restpartijen.api.shared.ForbiddenException
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.NotFoundException
 import com.restpartijen.api.shared.PickupWindow
+import com.restpartijen.api.shared.PriceBreakdown
+import com.restpartijen.api.shared.PriceProvider
+import com.restpartijen.api.shared.PricedProduct
 import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.testsupport.FixedClock
@@ -15,6 +18,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
+import kotlin.time.Clock
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 
 class ProductServiceTest {
@@ -168,6 +173,82 @@ class ProductServiceTest {
         // Assert
         assertEquals("bestBeforeAt", error.field)
         assertEquals(emptyList(), repository.findAll())
+    }
+
+    @Test
+    fun `getSupplierProducts returns the current offer of the supplier with its price breakdown`() = runTest {
+        // Arrange: the fake repository applies the same filter as the real query (A4)
+        val otherSupplier = aSupplier.copy(id = 2)
+        val repository = fakeProductRepository(
+            aProduct(id = 1, supplier = aSupplier),
+            aProduct(id = 2, supplier = aSupplier, status = ProductStatus.RESERVED),
+            aProduct(id = 3, supplier = otherSupplier),
+        )
+        val service = ProductService(
+            repository, fakeSupplierRepository(aSupplier), FixedPriceProvider(aBreakdown), FixedClock(testNow),
+        )
+
+        // Act
+        val details = service.getSupplierProducts(aSupplier.id)
+
+        // Assert
+        assertEquals(listOf(1L, 2L), details.map { it.product.id })
+        assertEquals(listOf(ProductStatus.LISTED, ProductStatus.RESERVED), details.map { it.status })
+        assertEquals(listOf(aBreakdown, aBreakdown), details.map { it.price })
+    }
+
+    @Test
+    fun `getSupplierProducts throws NotFoundException for an unknown supplier`() = runTest {
+        // Arrange
+        val service = ProductService(
+            fakeProductRepository(), fakeSupplierRepository(aSupplier), FixedPriceProvider(), FixedClock(testNow),
+        )
+
+        // Act + Assert
+        assertFailsWith<NotFoundException> {
+            service.getSupplierProducts(999)
+        }
+    }
+
+    // A LISTED product past its best-before shows as EXPIRED (SD-3) until the status updater runs (US-08).
+    // "Mijn aanbod" shows only LISTED and RESERVED (A4), so the service leaves it out.
+    @Test
+    fun `getSupplierProducts leaves out a LISTED product that has just expired`() = runTest {
+        // Arrange
+        val clock = FixedClock(testNow)
+        val repository = fakeProductRepository(
+            aProduct(id = 1, bestBeforeAt = testNow + 3.days),
+            aProduct(id = 2, bestBeforeAt = testNow - 1.days),
+        )
+        val service = ProductService(repository, fakeSupplierRepository(aSupplier), ExpiryPriceProvider(clock), clock)
+
+        // Act
+        val details = service.getSupplierProducts(aSupplier.id)
+
+        // Assert
+        assertEquals(listOf(1L), details.map { it.product.id })
+    }
+
+    @Test
+    fun `getSupplierProducts returns an empty list for a supplier without products`() = runTest {
+        // Arrange
+        val service = ProductService(
+            fakeProductRepository(), fakeSupplierRepository(aSupplier), FixedPriceProvider(), FixedClock(testNow),
+        )
+
+        // Act
+        val details = service.getSupplierProducts(aSupplier.id)
+
+        // Assert
+        assertEquals(emptyList(), details)
+    }
+
+    // FixedPriceProvider gives every product the same answer; this one gives no price (expired, B-18)
+    // only to a product whose shelf life has run out, so one list can hold both kinds.
+    private class ExpiryPriceProvider(private val clock: Clock) : PriceProvider {
+        override fun currentPrice(product: PricedProduct): Money? = priceBreakdown(product)?.currentPrice
+        override fun priceBreakdown(product: PricedProduct): PriceBreakdown? =
+            aBreakdown.takeIf { product.shelfLifeRemaining(clock) > Duration.ZERO }
     }
 
     private fun aCommand(

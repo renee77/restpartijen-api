@@ -15,7 +15,8 @@ import kotlin.time.Clock
  * The domain logic of F1: reading and placing surplus products, each returned with its price breakdown.
  *
  * @param repository stores and finds products
- * @param suppliers finds the supplier that belongs to the user in the token (US-01)
+ * @param suppliers finds the supplier that belongs to the user in the token (US-01),
+ *   and whether a supplier exists (US-03)
  * @param priceProvider gives the price breakdown of a product; F3 calculates it, F1 only asks (K-4, SD-3)
  * @param clock decides what "now" is for the listing rules (GI-6, decision 6.5)
  */
@@ -77,7 +78,24 @@ class ProductService(
         return toDetail(storedProduct)
     }
 
-    // Shared by getProduct and createProduct, so the EXPIRED rule lives in one place.
+    /**
+     * The current offer of [supplierId] for "Mijn aanbod": its LISTED and RESERVED products, each with its
+     * price breakdown (US-03, A4). A supplier without products gets an empty list.
+     *
+     * @throws NotFoundException when no supplier with this id exists (404)
+     */
+    suspend fun getSupplierProducts(supplierId: Long): List<ProductDetail> {
+        // Checked separately, so an unknown supplier (404) differs from one without products (empty list).
+        if (!suppliers.exists(supplierId)) throw NotFoundException("Supplier not found")
+
+        val productList = repository.findBySupplier(supplierId)
+
+        // The repository already left out the stored end states. A LISTED product past its best-before
+        // shows as EXPIRED until the status updater runs (SD-3), so that one is left out here.
+        return productList.map { toDetail(it) }.filter { it.status != ProductStatus.EXPIRED }
+    }
+
+    // Shared by every function that returns products, so the EXPIRED rule lives in one place.
     private fun toDetail(product: SurplusProduct): ProductDetail {
         val price = priceProvider.priceBreakdown(product)
         val status =

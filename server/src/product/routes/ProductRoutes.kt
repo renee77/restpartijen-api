@@ -38,6 +38,17 @@ fun Application.configureProductRouting() {
             // ContentNegotiation (configureSerialization) turns the @Serializable DTO into JSON.
             call.respond(detail.toResponse())
         }
+
+        // Public, like GET /products/{id}: the offer of a supplier is visible to everyone (A4, US-03).
+        get("/api/v1/suppliers/{id}/products") {
+            val supplierId =
+                call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Supplier id must be a number")
+
+            // Unknown supplier: the service throws NotFoundException (404). No products gives an empty list.
+            val productList = service.getSupplierProducts(supplierId)
+
+            call.respond(productList.map { it.toResponse() })
+        }
         // Only a supplier may place a product: no token gives 401, another role 403 (decision 3.6).
         requireRole(Role.SUPPLIER) {
             post("/api/v1/products") {
