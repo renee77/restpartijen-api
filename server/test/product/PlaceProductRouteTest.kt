@@ -56,6 +56,10 @@ class PlaceProductRouteTest {
     // The user id in every token; the fake supplier repository knows a supplier for this user.
     private val supplierUserId = 7L
 
+    // Fixed during the test (GI-6, decision 6.5), but at the real "now": the JWT verifier checks expiry against
+    // the real time, so a token from a hard-coded date would expire a day later (#62).
+    private val tokenClock = FixedClock(Clock.System.now())
+
     // Fakes by default; the database test passes the Exposed repositories instead.
     private fun Application.testApp(
         products: ProductRepository = fakeProductRepository(),
@@ -64,11 +68,11 @@ class PlaceProductRouteTest {
         configureSerialization()
         configureStatusPages()
         configureRequestValidation()
-        configureSecurity(JwtConfig(TestJwtSettings.default, Clock.System))
+        configureSecurity(JwtConfig(TestJwtSettings.default, tokenClock))
         dependencies {
             provide<ProductRepository> { products }
             provide<SupplierRepository> { suppliers }
-            // The listing rules use a fixed "now"; the token below uses the real clock, because the JWT verifier does.
+            // The listing rules use their own fixed "now", apart from tokenClock: the dates in the bodies build on it.
             provide<Clock> { FixedClock(testNow) }
             provide<PriceProvider> { FixedPriceProvider(aBreakdown) }
             provide(::ProductService)
@@ -77,7 +81,7 @@ class PlaceProductRouteTest {
     }
 
     private fun tokenFor(role: Role, userId: Long = supplierUserId) =
-        TestTokens().createTestToken(userId = userId, role = role, clock = Clock.System)
+        TestTokens().createTestToken(userId = userId, role = role, clock = tokenClock)
 
     // A valid body: best-before three days after testNow, pickup window inside it.
     private val validBody = """
