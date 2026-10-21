@@ -1,6 +1,7 @@
 package com.restpartijen.api.product.routes
 
 import com.restpartijen.api.product.dto.PlaceProductRequest
+import com.restpartijen.api.product.dto.UpdateProductRequest
 import com.restpartijen.api.product.dto.toCommand
 import com.restpartijen.api.product.dto.toResponse
 import com.restpartijen.api.product.service.ProductService
@@ -16,6 +17,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.routing.routing
 
 /**
@@ -67,6 +69,22 @@ fun Application.configureProductRouting() {
                 // 201: a new resource was made; the body is the stored product, with the id the database chose
                 // and its price breakdown (§10.1).
                 call.respond(HttpStatusCode.Created, detail.toResponse())
+            }
+
+            // Only a supplier may update, and only an own LISTED product; every field but category (US-03, A13).
+            put("/api/v1/products/{id}") {
+                val productId =
+                    call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Product id must be a number")
+
+                // The JSON body becomes the request DTO; a category or a missing field gives a 400.
+                // RequestValidation then checks its shape (validateUpdateProductRequest, 400 with the field).
+                val command = call.receive<UpdateProductRequest>().toCommand()
+
+                // The service checks 404, 403, 409 and 422 in that order and stores the product.
+                val detail = service.updateProduct(call.currentUser().id, productId, command)
+
+                // 200: the product as it is now stored, with its new price breakdown (TC-03).
+                call.respond(detail.toResponse())
             }
 
             // Only a supplier may delete, and only an own LISTED product (US-03, §5.3).
