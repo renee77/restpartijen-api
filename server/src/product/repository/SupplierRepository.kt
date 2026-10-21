@@ -13,4 +13,7 @@ interface SupplierRepository : SupplierIdLookup {
 
     /** The supplier of [userId] as a summary, or null if this user has no supplier. Used by US-01. */
     suspend fun findByUserId(userId: Long): SupplierSummary?
+
+    /** Whether a supplier with [supplierId] is stored. Used by US-03 to give a 404 for an unknown supplier (A4). */
+    suspend fun exists(supplierId: Long): Boolean
 }

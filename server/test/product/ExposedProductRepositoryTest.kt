@@ -10,7 +10,10 @@ import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ProductStatus
+import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
+import com.restpartijen.api.testsupport.insertSupplier
+import com.restpartijen.api.testsupport.insertUser
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -347,5 +350,56 @@ class ExposedProductRepositoryTest {
             ProductsTable.selectAll().where { ProductsTable.id eq bread.id }.single()[ProductsTable.name]
         }
         assertEquals(bread.name, nameAfter)
+    }
+
+    @Test
+    fun `findBySupplier returns only the products of that supplier, ordered by id`() = runTest {
+        // Arrange
+        val supplier = emptyDatabaseWithSupplier()
+        val otherSupplier = supplier.copy(id = insertSupplier(insertUser(Role.SUPPLIER)))
+        val bread = repository.create(aProduct(supplier = supplier))
+        repository.create(aProduct(supplier = otherSupplier, name = "Croissant"))
+        val spinach = repository.create(
+            aProduct(supplier = supplier, category = ProductCategory.FROZEN, name = "Diepvries spinazie")
+        )
+
+        // Act
+        val products = repository.findBySupplier(supplier.id)
+
+        // Assert
+        assertEquals(listOf(bread.fields(), spinach.fields()), products.map { it.fields() })
+    }
+
+    // A4: "Mijn aanbod" shows the current offer only: what is for sale and what still has to be collected.
+    @Test
+    fun `findBySupplier returns LISTED and RESERVED products and leaves out the other statuses`() = runTest {
+        // Arrange: create always stores LISTED, so the other statuses are set in the table directly
+        val supplier = emptyDatabaseWithSupplier()
+        val listed = repository.create(aProduct(supplier = supplier, name = "Listed"))
+        val reserved = repository.create(aProduct(supplier = supplier, name = "Reserved"))
+        setStatus(reserved.id, ProductStatus.RESERVED)
+        for (status in listOf(ProductStatus.COLLECTED, ProductStatus.EXPIRED, ProductStatus.REMOVED)) {
+            val product = repository.create(aProduct(supplier = supplier, name = status.name))
+            setStatus(product.id, status)
+        }
+
+        // Act
+        val products = repository.findBySupplier(supplier.id)
+
+        // Assert
+        assertEquals(listOf(listed.id, reserved.id), products.map { it.id })
+        assertEquals(listOf(ProductStatus.LISTED, ProductStatus.RESERVED), products.map { it.status })
+    }
+
+    @Test
+    fun `findBySupplier returns an empty list when the supplier has no products`() = runTest {
+        // Arrange
+        val supplier = emptyDatabaseWithSupplier()
+
+        // Act
+        val products = repository.findBySupplier(supplier.id)
+
+        // Assert
+        assertEquals(emptyList(), products)
     }
 }

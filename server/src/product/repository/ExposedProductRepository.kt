@@ -8,6 +8,7 @@ import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.ProductStatus
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.batchInsert
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -74,6 +75,16 @@ class ExposedProductRepository(private val clock: Clock) : ProductRepository {
         ProductsTable.update({ (ProductsTable.id eq id) and (ProductsTable.status eq ProductStatus.LISTED) }) {
             it[ProductsTable.status] = ProductStatus.REMOVED
         } > 0
+    }
+
+    override suspend fun findBySupplier(supplierId: Long): List<SurplusProduct> = dbQuery {
+        (ProductsTable innerJoin SuppliersTable).selectAll()
+            .where {
+                (ProductsTable.supplierId eq supplierId) and
+                    ((ProductsTable.status eq ProductStatus.LISTED) or (ProductsTable.status eq ProductStatus.RESERVED))
+            }
+            .orderBy(ProductsTable.id)
+            .map { it.toProduct(allergensOfProduct(it[ProductsTable.id])) }
     }
 }
 

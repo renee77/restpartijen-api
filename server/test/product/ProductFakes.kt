@@ -34,14 +34,20 @@ import kotlin.time.Instant
  * A ProductRepository for tests, backed by the generic FakeRepository (decision 6.4).
  *
  * Delegation (`by`) passes every Repository call on to the fake, so no repository logic is repeated here.
- * Once ProductRepository gets product-specific queries, this object has to implement those itself.
+ * The product-specific queries of ProductRepository are implemented here on top of findAll.
  */
 fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository =
     object : ProductRepository, Repository<SurplusProduct> by FakeRepository(
         idOf = { it.id },
         withId = { product, id -> product.withId(id) },
         initialItems = products.toList()
-    ) {}
+    ) {
+        // The same rule as the real query (A4): only the current offer of this supplier.
+        override suspend fun findBySupplier(supplierId: Long): List<SurplusProduct> =
+            findAll().filter {
+                it.supplier.id == supplierId && it.status in setOf(ProductStatus.LISTED, ProductStatus.RESERVED)
+            }
+    }
 
 /** The supplier the product fakes use by default; the same values as the default supplier of [aProduct]. */
 val aSupplier = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0, longitude = 5.0)
@@ -53,6 +59,7 @@ val aSupplier = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0,
 fun fakeSupplierRepository(supplier: SupplierSummary? = aSupplier, ownerUserId: Long = 7): SupplierRepository =
     object : SupplierRepository {
         override suspend fun findByUserId(userId: Long): SupplierSummary? = supplier.takeIf { userId == ownerUserId }
+        override suspend fun exists(supplierId: Long): Boolean = supplier?.id == supplierId
         override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
     }
 
