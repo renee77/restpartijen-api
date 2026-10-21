@@ -109,6 +109,23 @@ class ExposedReservationRepositoryTest {
         assertFalse(updated)
     }
 
+    @Test
+    fun `findByCollectorId returns only that collector's reservations, newest first`() = runTest {
+        // Arrange: two reservations of the collector, one of someone else
+        emptyDatabaseWithCollector()
+        val repository = ExposedReservationRepository()
+        val older = repository.create(reservation(productId = insertProduct(), expiresAt = now))
+        val newer = repository.create(reservation(productId = insertProduct(), expiresAt = now + 2.hours))
+        val otherCollectorId = insertUser()
+        repository.create(reservation(productId = insertProduct(), expiresAt = now + 1.hours).copy(collectorId = otherCollectorId))
+
+        // Act
+        val found = repository.findByCollectorId(collectorId)
+
+        // Assert: reservedAt = expiresAt − 24h in the helper, so 'newer' was reserved last
+        assertEquals(listOf(newer, older), found)
+    }
+
     // A reservation must point to an existing product and collector (issue #36),
     // so every test starts with one stored collector; products are stored per test.
     private fun emptyDatabaseWithCollector() {

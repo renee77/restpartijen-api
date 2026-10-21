@@ -5,6 +5,7 @@ import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.shared.Money
 import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lessEq
@@ -76,6 +77,14 @@ class ExposedReservationRepository : ReservationRepository {
             }
             .singleOrNull()
             ?.toReservation()
+    }
+
+    override suspend fun findByCollectorId(collectorId: Long): List<Reservation> = dbQuery {
+        ReservationsTable
+            .selectAll()
+            .where(ReservationsTable.collectorId eq collectorId)
+            .orderBy(ReservationsTable.reservedAt, SortOrder.DESC)
+            .map { it.toReservation() }
     }
 }
 
