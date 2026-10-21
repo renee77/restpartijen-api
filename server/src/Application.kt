@@ -84,6 +84,7 @@ fun Application.module() {
     // F2 routes, owner Stefan
     configureReservationRouting()
     // F3 routes, owner Lonneke: admin overview and status monitoring (US-08, US-09).
-    configureAuthRouting()
     configurePricingRouting()
+    // GI-3 auth routes, owner Lonneke
+    configureAuthRouting()
 }
