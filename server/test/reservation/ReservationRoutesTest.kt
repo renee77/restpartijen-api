@@ -55,7 +55,7 @@ class ReservationRoutesTest {
     private val statusUpdater = FakeProductStatusUpdater()
 
     private fun Application.testApp(products: List<ProductView>, reservations: List<Reservation> = emptyList(), price: Money? = Money.fromCents(299)) {
-        createEmptyTestDatabase()
+        createEmptyTestDatabase()     // The service opens its own transaction (GI-1, decision 1.4), so even with fakes it needs a database.
         configureSerialization()
         configureStatusPages()
         configureSecurity(JwtConfig(TestJwtSettings.default, Clock.System))
