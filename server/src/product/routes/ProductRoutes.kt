@@ -13,6 +13,7 @@ import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
@@ -66,6 +67,18 @@ fun Application.configureProductRouting() {
                 // 201: a new resource was made; the body is the stored product, with the id the database chose
                 // and its price breakdown (§10.1).
                 call.respond(HttpStatusCode.Created, detail.toResponse())
+            }
+
+            // Only a supplier may delete, and only an own LISTED product (US-03, §5.3).
+            delete("/api/v1/products/{id}") {
+                val productId =
+                    call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Product id must be a number")
+
+                // The user comes from the token; the service checks 404, 403 and 409 in that order.
+                service.deleteProduct(call.currentUser().id, productId)
+
+                // 204: done, and there is nothing to send back (§5.3).
+                call.respond(HttpStatusCode.NoContent)
             }
         }
     }
