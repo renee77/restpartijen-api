@@ -61,6 +61,26 @@ class OpenFoodFactsClientTest {
     }
 
     @Test
+    fun `fetchProduct keeps a strange barcode inside one path segment`() = runTest {
+        // Arrange
+        // The route allows only digits, but the client must not rely on that: a slash or question mark
+        // in the barcode may never add a path segment or a query parameter.
+        val requests = mutableListOf<HttpRequestData>()
+        val client = OpenFoodFactsClient(MockEngine { request ->
+            requests += request
+            respondJson(HttpStatusCode.NotFound, NOT_FOUND_BODY)
+        })
+
+        // Act
+        client.fetchProduct("1234567/../admin?x=1")
+
+        // Assert
+        val url = requests.single().url
+        assertEquals("/api/v3/product/1234567%2F..%2Fadmin%3Fx=1", url.encodedPath)
+        assertEquals(null, url.parameters["x"])
+    }
+
+    @Test
     fun `fetchProduct returns NotFound when Open Food Facts answers 404`() = runTest {
         // Arrange
         val client = clientResponding(HttpStatusCode.NotFound, NOT_FOUND_BODY)

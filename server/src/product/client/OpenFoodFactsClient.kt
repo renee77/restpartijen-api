@@ -44,8 +44,9 @@ class OpenFoodFactsClient(engine: HttpClientEngine) : AutoCloseable {
     suspend fun fetchProduct(barcode: String): LookupResult {
         return try {
             val response = httpClient.get("https://world.openfoodfacts.org/api/v3/product") {
-                // Encodes the barcode as one path segment, so it can never change the path or the query.
-                url { appendPathSegments(barcode) }
+                // Encodes the barcode as one path segment, so it can never change the path or the query;
+                // encodeSlash, because by default a "/" would split it into more segments.
+                url { appendPathSegments(barcode, encodeSlash = true) }
                 // Only the fields we use, so the answer stays small (§10.3).
                 parameter("fields", "product_name,allergens_tags")
             }
