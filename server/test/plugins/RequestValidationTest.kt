@@ -125,7 +125,6 @@ class RequestValidationTest {
         assertEquals(ErrorResponse(ErrorCode.VALIDATION_ERROR, "Name is required", "name"), response.errorBody())
     }
 
-    // TODO (yours): validator returning Invalid gives 400 via the safety net
     @Test
     fun `validator returning Invalid gives 400`() = testApplication {
         // Arrange

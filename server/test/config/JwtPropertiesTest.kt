@@ -79,7 +79,6 @@ class JwtPropertiesTest {
         assertTrue("secret=***" in text)
     }
 
-    //Made by Stefan
     @Test
     fun `missing issuer, audience or validityHours stops with a message that names the key`() {
         for (key in listOf("jwt.issuer", "jwt.audience", "jwt.validityHours")) {

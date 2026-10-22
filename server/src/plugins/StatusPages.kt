@@ -1,5 +1,6 @@
 package com.restpartijen.api.plugins
 
+import com.restpartijen.api.shared.ConflictException
 import com.restpartijen.api.shared.DomainRuleException
 import com.restpartijen.api.shared.ForbiddenException
 import com.restpartijen.api.shared.IllegalStateTransitionException
@@ -64,6 +65,11 @@ fun Application.configureStatusPages() {
         exception<IllegalStateTransitionException> { call, cause ->
             call.respondError(HttpStatusCode.Conflict, ErrorCode.CONFLICT, cause.message)
         }
+        // 409
+        exception<ConflictException> { call, cause ->
+            call.respondError(HttpStatusCode.Conflict, ErrorCode.CONFLICT, cause.message)
+        }
+
         // 422
         exception<DomainRuleException> { call, cause ->
             call.respondError(HttpStatusCode.UnprocessableEntity, ErrorCode.DOMAIN_RULE_VIOLATION, cause.message, cause.field)

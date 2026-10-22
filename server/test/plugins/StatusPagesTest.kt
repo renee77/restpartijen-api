@@ -1,5 +1,6 @@
 package com.restpartijen.api.plugins
 
+import com.restpartijen.api.shared.ConflictException
 import com.restpartijen.api.shared.DomainRuleException
 import com.restpartijen.api.shared.ForbiddenException
 import com.restpartijen.api.shared.IllegalStateTransitionException
@@ -35,6 +36,7 @@ class StatusPagesTest {
             get("/test/403") { throw ForbiddenException("Not your product") }
             get("/test/404") { throw NotFoundException("Product 42 not found") }
             get("/test/409") { throw IllegalStateTransitionException("Cannot reserve a reserved product") }
+            get("/test/409-conflict") { throw ConflictException("E-mail address is already registered") }
             get("/test/422") { throw DomainRuleException("Best-before date is in the past") }
             get("/test/500") { throw IllegalStateException("db password is hunter2") }
         }
@@ -90,7 +92,7 @@ class StatusPagesTest {
     }
 
     @Test
-    fun `IllegalStateException gives 409`() = testApplication {
+    fun `IllegalStateTransitionException gives 409`() = testApplication {
         // Arrange
         setUp()
         // Act
@@ -98,6 +100,17 @@ class StatusPagesTest {
         // Assert
         assertEquals(HttpStatusCode.Conflict, response.status)
         assertEquals(ErrorResponse(ErrorCode.CONFLICT, "Cannot reserve a reserved product"), response.errorBody())
+    }
+
+    @Test
+    fun `ConflictException gives 409`() = testApplication {
+        // Arrange
+        setUp()
+        // Act
+        val response = client.get("/test/409-conflict")
+        // Assert
+        assertEquals(HttpStatusCode.Conflict, response.status)
+        assertEquals(ErrorResponse(ErrorCode.CONFLICT, "E-mail address is already registered"), response.errorBody())
     }
 
     @Test

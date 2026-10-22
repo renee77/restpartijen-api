@@ -9,7 +9,6 @@ import org.jetbrains.exposed.v1.core.SortOrder
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.lessEq
-import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
@@ -55,10 +54,13 @@ class ExposedReservationRepository : ReservationRepository {
         } > 0
     }
 
-    override suspend fun delete(id: Long): Boolean = dbQuery {
-        // Not used by F2 (history is kept through the status), but required by Repository<T>.
-        ReservationsTable.deleteWhere { ReservationsTable.id eq id } > 0
-    }
+    // Required by Repository<T>, but reservations are never deleted: the history is kept through the status (§9.5).
+    // This deliberately does not honour the interface's contract. No code should call it; ending a reservation
+    // goes through ReservationService and the state machine. Throwing makes a mistaken call fail at once.
+    override suspend fun delete(id: Long): Boolean =
+        throw UnsupportedOperationException(
+            "Reservations are never deleted; history is kept through the status. Cancel through ReservationService (§9.5)."
+        )
 
     override suspend fun findOverdue(now: Instant): List<Reservation> = dbQuery {
         ReservationsTable.selectAll().where {

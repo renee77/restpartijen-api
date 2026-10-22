@@ -11,7 +11,6 @@ import kotlin.test.assertFailsWith
 
 class ReservationStateMachineTest {
 
-    // TODO (yours): RESERVE on a LISTED product is allowed and gives RESERVED + ACTIVE
     @Test
     fun `RESERVE on a LISTED product is allowed and gives RESERVED + ACTIVE`() {
         // Arrange
