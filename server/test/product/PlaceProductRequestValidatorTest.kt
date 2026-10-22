@@ -14,7 +14,8 @@ import kotlin.time.Duration.Companion.days
 /**
  * The shape check of POST /api/v1/products, registered in RequestValidation (§10.2, ADR-05, issue #46).
  * A shape error throws a ValidationException with the field, so StatusPages answers 400 instead of 500.
- * Limits: name and barcode fit the varchar(255) columns; a blank text counts as empty.
+ * Limits: the name fits the varchar(255) column and a blank text counts as empty;
+ * a barcode is 7 to 14 digits, the same rule as the lookup (US-02).
  */
 class PlaceProductRequestValidatorTest {
 
@@ -96,12 +97,25 @@ class PlaceProductRequestValidatorTest {
     }
 
     @Test
-    fun `a barcode longer than 255 characters is refused`() {
-        assertEquals("barcode", fieldOfError(aRequest(barcode = "1".repeat(256))))
+    fun `a barcode with letters is refused`() {
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "871040000000A")))
     }
 
     @Test
-    fun `a barcode of exactly 255 characters passes`() {
-        assertEquals(ValidationResult.Valid, validatePlaceProductRequest(aRequest(barcode = "1".repeat(255))))
+    fun `a barcode of 6 digits is refused`() {
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "123456")))
+    }
+
+    @Test
+    fun `a barcode of 15 digits is refused`() {
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "1".repeat(15))))
+    }
+
+    @Test
+    fun `barcodes of 7, 13 and 14 digits pass`() {
+        // UPC-E, EAN-13 and GTIN-14: the same rule as the lookup, so a stored barcode can always be looked up
+        for (barcode in listOf("1234567", "8710400000001", "1".repeat(14))) {
+            assertEquals(ValidationResult.Valid, validatePlaceProductRequest(aRequest(barcode = barcode)))
+        }
     }
 }

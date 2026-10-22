@@ -4,7 +4,8 @@ import com.restpartijen.api.shared.ValidationException
 import io.ktor.server.plugins.requestvalidation.ValidationResult
 
 // Matches the varchar(255) columns in ProductsTable; a longer text would fail on INSERT with a 500.
-private const val MAX_TEXT_LENGTH = 255
+// Internal, because the barcode lookup only suggests a name that POST and PUT would accept (US-02).
+internal const val MAX_TEXT_LENGTH = 255
 
 /**
  * Checks the shape of a POST /api/v1/products body before the route uses it (§10.2, ADR-05).
@@ -31,7 +32,8 @@ private fun validateProductFields(
     pickupWindow: PickupWindowRequest?,
 ): ValidationResult {
     requireText(name, field = "name")
-    barcode?.let { requireText(it, field = "barcode") }
+    // No barcode is fine (bread from a bakery); a barcode follows the same rule as the lookup.
+    barcode?.let { requireBarcode(it) }
 
     // Money and PickupWindow refuse these values with IllegalArgumentException, which would give a 500.
     if (originalPrice < 0) {
@@ -42,6 +44,21 @@ private fun validateProductFields(
     }
 
     return ValidationResult.Valid
+}
+
+// UPC-E (7) up to GTIN-14 (14), only the digits 0-9; [0-9] instead of \d, which could also match other scripts.
+private val BARCODE = Regex("[0-9]{7,14}")
+
+/**
+ * The one barcode rule, for the lookup and for POST and PUT (US-02, decision Eva 22 Oct).
+ * In the lookup the barcode becomes part of the URL to Open Food Facts, so this is a trust boundary.
+ *
+ * @throws ValidationException when [barcode] is not 7 to 14 digits; StatusPages turns it into a 400.
+ */
+internal fun requireBarcode(barcode: String) {
+    if (!BARCODE.matches(barcode)) {
+        throw ValidationException("barcode must be 7 to 14 digits", field = "barcode")
+    }
 }
 
 // A blank text counts as empty: a name of only spaces is no name.

@@ -176,7 +176,8 @@ class PlaceProductRouteTest {
 
     @Test
     fun `a barcode longer than 255 characters gives 400 and names the field`() = testApplication {
-        // Arrange: validBody plus a barcode that does not fit varchar(255) (E-03: was a 500 on INSERT)
+        // Arrange: validBody plus a barcode that does not fit varchar(255) (E-03: was a 500 on INSERT);
+        // since US-02 the barcode rule (7 to 14 digits) refuses it first
         application { testApp() }
         val body = validBody.replace("\"quantity\": 2,", "\"quantity\": 2, \"barcode\": \"${"1".repeat(256)}\",")
 
