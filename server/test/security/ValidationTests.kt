@@ -12,13 +12,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import io.ktor.client.statement.bodyAsText
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Instant
 
 class ValidationTests {
-    // Arrange: use a fixed clock for predictable token timestamps
-    val testClock = FixedClock(
-        Instant.parse("2026-10-20T12:00:00Z")
-    )
     // Happy path
     @Test
     fun `valid token gets access`() = testApplication {
@@ -27,7 +22,7 @@ class ValidationTests {
 
         // Act: make a GET request to the protected route with a valid token
         val response = client.get("/test/protected") {
-            bearerAuth(TestTokens().createTestToken(userId = 1L, role = Role.COLLECTOR, clock = testClock))
+            bearerAuth(TestTokens().createTestToken(userId = 1L, role = Role.COLLECTOR))
         }
 
         // Assert: the response status should be 200 OK, indicating successful access
@@ -61,15 +56,20 @@ class ValidationTests {
     }
 
     // Sad path: expired token
+    private val testClock = TestClock.fixedNow()
     @Test
     fun `expired token gets 401`() = testApplication {
+        // Arrange: a token that was issued 48 hours ago, so it expired 24 hours ago
         application { setUpTestApp() }
         val twoDaysAgo = FixedClock(testClock.now() - 48.hours)
 
+        // Act
         val response = client.get("/test/protected") {
             bearerAuth(TestTokens().createTestToken(userId = 1L, role = Role.COLLECTOR, clock = twoDaysAgo))
         }
 
+        // Assert: the status, and the message that says why
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
         val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
         assertEquals("Authentication required", error.message)
     }

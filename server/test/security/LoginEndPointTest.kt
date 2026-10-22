@@ -36,9 +36,7 @@ import kotlin.time.Instant
 
 class LoginEndpointTest {
     // Arrange: use a fixed clock for predictable token timestamps
-    val testClock = FixedClock(
-        Instant.parse("2026-10-20T12:00:00Z")
-    )
+    val testClock = TestClock.fixedNow()
     private suspend fun HttpResponse.errorBody(): ErrorResponse =
         Json.decodeFromString<ErrorResponse>(bodyAsText())
 

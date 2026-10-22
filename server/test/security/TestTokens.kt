@@ -25,7 +25,15 @@ object TestJwtSettings {
 
 /** One fixed moment, shared by the token helper and the JwtConfig in tests. */
 object TestClock {
+    /** One fixed moment, for tests that do not go through the JWT verifier (for example ExpirySchedulerTest). */
     val fixed = FixedClock(Instant.parse("2026-09-26T12:00:00Z"))
+
+    /**
+     * For tests whose tokens go through the JWT verifier. It stands still during the test
+     * (GI-6, decision 6.5), but starts at the real "now", because the verifier checks expiry
+     * against the real time (#62).
+     */
+    fun fixedNow(): FixedClock = FixedClock(Clock.System.now())
 }
 
 /**
@@ -39,7 +47,7 @@ class TestTokens {
         userId: Long,
         role: Role,
         settings: JwtSettings = TestJwtSettings.default,
-        clock: Clock = TestClock.fixed
+        clock: Clock = TestClock.fixedNow()
     ): String = createTestTokenWithRoleName(userId, role.name, settings, clock)
 
     /**
@@ -50,7 +58,7 @@ class TestTokens {
         userId: Long,
         roleName: String,
         settings: JwtSettings = TestJwtSettings.default,
-        clock: Clock = TestClock.fixed
+        clock: Clock = TestClock.fixedNow()
     ): String {
         val now = clock.now()
 

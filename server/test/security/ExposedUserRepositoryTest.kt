@@ -1,16 +1,13 @@
 package com.restpartijen.api.security
 
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
-import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.security.model.User
 import com.restpartijen.api.security.repository.ExposedUserRepository
 import com.restpartijen.api.persistence.UsersTable
+import com.restpartijen.api.shared.ConflictException
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.test.Test
@@ -98,7 +95,7 @@ class ExposedUserRepositoryTest {
         val secondUser = newUser
 
         // Assert
-        assertFailsWith<ExposedSQLException> {
+        assertFailsWith<ConflictException> {
             repository.create(secondUser)
         }
     }
@@ -172,6 +169,6 @@ class ExposedUserRepositoryTest {
         val repository = ExposedUserRepository()
         repository.create(newUser)
 
-        assertFailsWith<ExposedSQLException> { repository.create(newUser) }
+        assertFailsWith<ConflictException> { repository.create(newUser) }
     }
 }

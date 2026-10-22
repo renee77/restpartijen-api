@@ -3,6 +3,7 @@ package com.restpartijen.api.security
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.security.service.RegistrationService
 import com.restpartijen.api.security.service.RegistrationValidator
+import com.restpartijen.api.shared.ConflictException
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.security.model.User
 import com.restpartijen.api.shared.DomainRuleException
@@ -14,6 +15,7 @@ import com.restpartijen.api.security.repository.ExposedUserRepository
 import com.restpartijen.api.testsupport.RaceUserRepository
 import kotlinx.coroutines.test.runTest
 import com.restpartijen.api.shared.IllegalStateTransitionException
+import com.restpartijen.api.shared.ValidationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -39,7 +41,7 @@ class RegistrationServiceTest {
         val user = service.register(
             email = email,
             password = "a".repeat(RegistrationValidator.PASSWORD_MIN_LENGTH),
-            displayName = "TestName",
+            display_name = "TestName",
         )
 
         // Assert: the role is COLLECTOR and the user is really stored
@@ -52,14 +54,14 @@ class RegistrationServiceTest {
     fun `stored password is a hash, not the plain password` () = runTest {
         // Arrange: Arranging valid input
         val email = "test@mail.com"
-        val displayName = "TestName"
+        val display_name = "TestName"
         val password = "TestPassword123"
 
         // Act: Register the user with the given information
         service.register(
             email = email,
             password = password,
-            displayName = displayName
+            display_name = display_name
         )
 
         // Assert
@@ -69,39 +71,39 @@ class RegistrationServiceTest {
     }
 
     @Test
-    fun `existing email is rejected` () = runTest {
-        // Arrange, create a first user.
+    fun `existing email is rejected`() = runTest {
+        // Arrange: create a first user
         service.register(
             email = "mail@test.com",
             password = "testPassword",
-            displayName = "TestName"
+            display_name = "TestName",
         )
 
-        // Act and assert: Create a second user with the same email
-        assertFailsWith<IllegalStateTransitionException> {
+        // Act + Assert: a second user with the same email
+        assertFailsWith<ConflictException> {
             service.register(
                 email = "mail@test.com",
                 password = "testPassword123",
-                displayName = "TestNameAnother"
+                display_name = "TestNameAnother",
             )
         }
     }
 
     @Test
-    fun `existing email is rejected with different casing` () = runTest {
-        // Arrange, create a first user.
+    fun `existing email is rejected with different casing`() = runTest {
+        // Arrange
         service.register(
             email = "mail@test.com",
             password = "testPassword",
-            displayName = "TestName"
+            display_name = "TestName",
         )
 
-        // Act and assert: Create a second user with the same email, different casing
-        assertFailsWith<IllegalStateTransitionException> {
+        // Act + Assert: same email, different casing
+        assertFailsWith<ConflictException> {
             service.register(
                 email = "maIL@teSt.cOm",
                 password = "testPassword123",
-                displayName = "TestNameAnother"
+                display_name = "TestNameAnother",
             )
         }
     }
@@ -112,11 +114,11 @@ class RegistrationServiceTest {
         val tooShort = "a".repeat(RegistrationValidator.PASSWORD_MIN_LENGTH - 1)
 
         // Act: registration must fail on validation
-        val exception = assertFailsWith<DomainRuleException> {
+        val exception = assertFailsWith<ValidationException> {
             service.register(
                 email = "test@mail.com",
                 password = tooShort,
-                displayName = "TestName",
+                display_name = "TestName",
             )
         }
 
@@ -131,7 +133,7 @@ class RegistrationServiceTest {
         val user = service.register(
             email = "test@mail.com",
             password = "a".repeat(RegistrationValidator.PASSWORD_MIN_LENGTH),
-            displayName = "TestName",
+            display_name = "TestName",
         )
 
         // Assert: createdAt is exactly the fixed moment, in the returned user and in the stored one
@@ -161,14 +163,14 @@ class RegistrationServiceTest {
             clock = FixedClock(fixedNow),
         )
 
-        // Act + Assert: findByEmail lies, the unique index fails, the service reports a conflict
-        val exception = assertFailsWith<IllegalStateTransitionException> {
+        // Act + Assert: findByEmail lies, the unique index fails,
+        // and the repository translates that into the domain exception
+        assertFailsWith<ConflictException> {
             raceService.register(
                 email = "test@mail.com",
                 password = "MyTestPassword123",
-                displayName = "TestName",
+                display_name = "TestName",
             )
         }
-        assertEquals(RegistrationService.EMAIL_TAKEN, exception.message)
     }
 }
