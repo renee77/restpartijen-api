@@ -1,33 +1,33 @@
 package com.restpartijen.api.plugins
 
 import com.restpartijen.api.pricing.service.AdminProductService
+import com.restpartijen.api.pricing.service.ExpiryScheduler
 import com.restpartijen.api.pricing.service.PricingService
-import io.ktor.server.application.Application
-import io.ktor.server.plugins.di.dependencies
-import io.ktor.server.plugins.di.provide
+import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.repository.ExposedProductReader
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedProductStatusUpdater
+import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.product.repository.ProductRepository
-import com.restpartijen.api.product.client.OpenFoodFactsClient
-import com.restpartijen.api.product.service.OwnershipGuard
+import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.product.service.NotFoundCache
 import com.restpartijen.api.product.service.OpenFoodFactsRateLimiter
+import com.restpartijen.api.product.service.OwnershipGuard
 import com.restpartijen.api.product.service.ProductLookupCache
-import io.ktor.client.engine.HttpClientEngine
-import io.ktor.client.engine.cio.CIO
 import com.restpartijen.api.product.service.ProductService
-import com.restpartijen.api.shared.PriceProvider
-import com.restpartijen.api.shared.ProductStatusUpdater
-import com.restpartijen.api.pricing.service.ExpiryScheduler
-import com.restpartijen.api.product.repository.ExposedSupplierRepository
-import com.restpartijen.api.product.repository.SupplierRepository
-import com.restpartijen.api.shared.ProductReader
-import com.restpartijen.api.shared.ReservationMaintenance
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationRepository
 import com.restpartijen.api.reservation.service.ReservationMaintenanceService
 import com.restpartijen.api.reservation.service.ReservationService
+import com.restpartijen.api.shared.PriceProvider
+import com.restpartijen.api.shared.ProductReader
+import com.restpartijen.api.shared.ProductStatusUpdater
+import com.restpartijen.api.shared.ReservationMaintenance
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.cio.CIO
+import io.ktor.server.application.Application
+import io.ktor.server.plugins.di.dependencies
+import io.ktor.server.plugins.di.provide
 import kotlin.time.Clock
 
 

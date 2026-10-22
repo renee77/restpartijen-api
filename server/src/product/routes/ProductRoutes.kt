@@ -20,6 +20,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.routing
+import io.ktor.server.util.getOrFail
 
 /**
  * Registers the F1 product routes.
@@ -58,7 +59,8 @@ fun Application.configureProductRouting() {
             // A suggestion from Open Food Facts before placing; it stores nothing (US-02, W-14).
             get("/api/v1/products/lookup/{barcode}") {
                 // Checked here, before the barcode becomes part of the URL to Open Food Facts.
-                val barcode = call.parameters["barcode"] ?: throw ValidationException("barcode is missing", field = "barcode")
+                // getOrFail gives a String; the route only matches with a barcode, so it never fails here.
+                val barcode = call.parameters.getOrFail("barcode")
                 requireBarcode(barcode)
 
                 // Unknown barcode: the service throws NotFoundException (404). No answer from Open Food Facts

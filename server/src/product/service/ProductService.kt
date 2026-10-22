@@ -2,7 +2,7 @@ package com.restpartijen.api.product.service
 
 import com.restpartijen.api.product.client.LookupResult
 import com.restpartijen.api.product.client.OpenFoodFactsClient
-import com.restpartijen.api.product.dto.MAX_TEXT_LENGTH
+import com.restpartijen.api.product.model.MAX_TEXT_LENGTH
 import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductRepository

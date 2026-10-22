@@ -1,11 +1,8 @@
 package com.restpartijen.api.product.dto
 
+import com.restpartijen.api.product.model.MAX_TEXT_LENGTH
 import com.restpartijen.api.shared.ValidationException
 import io.ktor.server.plugins.requestvalidation.ValidationResult
-
-// Matches the varchar(255) columns in ProductsTable; a longer text would fail on INSERT with a 500.
-// Internal, because the barcode lookup only suggests a name that POST and PUT would accept (US-02).
-internal const val MAX_TEXT_LENGTH = 255
 
 /**
  * Checks the shape of a POST /api/v1/products body before the route uses it (§10.2, ADR-05).
@@ -46,7 +43,7 @@ private fun validateProductFields(
     return ValidationResult.Valid
 }
 
-// UPC-E (7) up to GTIN-14 (14), only the digits 0-9; [0-9] instead of \d, which could also match other scripts.
+// UPC-E (7) up to GTIN-14 (14), only the digits 0-9.
 private val BARCODE = Regex("[0-9]{7,14}")
 
 /**
