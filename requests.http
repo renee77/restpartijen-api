@@ -130,6 +130,22 @@ Authorization: Bearer {{supplierToken}}
 ### F1 - Delete without a token: expect 401
 DELETE http://localhost:8080/api/v1/products/1
 
+### F1 - Look up a barcode (US-02, TC-02): expect 200 with name Nutella, allergens MILK, NUTS, SOYBEANS and manualEntryRequired false
+# Calls the real Open Food Facts API; a second call within 24 hours comes from the cache.
+GET http://localhost:8080/api/v1/products/lookup/3017620422003
+Authorization: Bearer {{supplierToken}}
+
+### F1 - Look up an unknown barcode: expect 404
+GET http://localhost:8080/api/v1/products/lookup/8712345678906
+Authorization: Bearer {{supplierToken}}
+
+### F1 - Look up a barcode with letters: expect 400, field barcode; Open Food Facts is not called
+GET http://localhost:8080/api/v1/products/lookup/abc1234
+Authorization: Bearer {{supplierToken}}
+
+### F1 - Look up without a token: expect 401
+GET http://localhost:8080/api/v1/products/lookup/3017620422003
+
 ### F3 - Register: expect 201 Created
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
