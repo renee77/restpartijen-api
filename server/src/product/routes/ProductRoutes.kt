@@ -2,6 +2,7 @@ package com.restpartijen.api.product.routes
 
 import com.restpartijen.api.product.dto.PlaceProductRequest
 import com.restpartijen.api.product.dto.UpdateProductRequest
+import com.restpartijen.api.product.dto.requireBarcode
 import com.restpartijen.api.product.dto.toCommand
 import com.restpartijen.api.product.dto.toResponse
 import com.restpartijen.api.product.service.ProductService
@@ -54,6 +55,19 @@ fun Application.configureProductRouting() {
         }
         // Only a supplier may place a product: no token gives 401, another role 403 (decision 3.6).
         requireRole(Role.SUPPLIER) {
+            // A suggestion from Open Food Facts before placing; it stores nothing (US-02, W-14).
+            get("/api/v1/products/lookup/{barcode}") {
+                // Checked here, before the barcode becomes part of the URL to Open Food Facts.
+                val barcode = call.parameters["barcode"] ?: throw ValidationException("barcode is missing", field = "barcode")
+                requireBarcode(barcode)
+
+                // Unknown barcode: the service throws NotFoundException (404). No answer from Open Food Facts
+                // still gives 200, with manualEntryRequired (§5.2).
+                val lookup = service.lookupProduct(barcode)
+
+                call.respond(lookup.toResponse())
+            }
+
             post("/api/v1/products") {
                 // The JSON body becomes the request DTO; a missing field or unknown allergen gives a 400.
                 // RequestValidation then checks its shape (validatePlaceProductRequest, 400 with the field).
