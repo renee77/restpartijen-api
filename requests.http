@@ -19,7 +19,9 @@ Content-Type: application/json
   "password": "Demo-Restpartij-2026"
 }
 
-> {% client.global.set("supplierToken", response.body.token); %}
+> {%
+    client.global.set("supplierToken", response.body.token);
+%}
 
 ### F1 - Place product as supplier: expect 201 with the stored product
 POST http://localhost:8080/api/v1/products
@@ -36,10 +38,15 @@ Authorization: Bearer {{supplierToken}}
     "from": "2027-06-29T08:00:00Z",
     "until": "2027-06-29T16:00:00Z"
   },
-  "allergens": ["MILK"]
+  "allergens": [
+    "MILK"
+  ]
 }
 
-> {% client.global.set("productId", response.body.id); client.global.set("supplierId", response.body.supplierId); %}
+> {%
+    client.global.set("productId", response.body.id);
+    client.global.set("supplierId", response.body.supplierId);
+%}
 
 ### F1 - Place product with an empty name: expect 400, field name
 POST http://localhost:8080/api/v1/products
@@ -56,11 +63,14 @@ Authorization: Bearer {{supplierToken}}
     "from": "2027-06-29T08:00:00Z",
     "until": "2027-06-29T16:00:00Z"
   },
-  "allergens": ["MILK"]
+  "allergens": [
+    "MILK"
+  ]
 }
 
 
 # Feature 3 - Registeren
+
 ### F1 - My offer (US-03): expect 200 with the LISTED and RESERVED products of the supplier; no token needed
 GET http://localhost:8080/api/v1/suppliers/{{supplierId}}/products
 Accept: application/json
@@ -83,7 +93,9 @@ Authorization: Bearer {{supplierToken}}
     "from": "2027-06-29T08:00:00Z",
     "until": "2027-06-29T16:00:00Z"
   },
-  "allergens": ["MILK"]
+  "allergens": [
+    "MILK"
+  ]
 }
 
 ### F1 - Update with a category: expect 400, the category cannot change (A13)
@@ -129,6 +141,21 @@ Authorization: Bearer {{supplierToken}}
 
 ### F1 - Delete without a token: expect 401
 DELETE http://localhost:8080/api/v1/products/1
+
+### F2 - Search without filters (US-04): expect 200 with all LISTED products, soonest best-before first; no token needed
+GET http://localhost:8080/api/v1/products
+
+### F2 - Search FRESH products of at most 2.50 euros with at least 12 hours of shelf life (US-04): expect 200 with only products that match all three
+GET http://localhost:8080/api/v1/products?category=FRESH&maxPrice=2.50&minShelfLifeHours=12
+
+### F2 - Search for unknown category: category=BEER gives a 400 with field: category
+GET http://localhost:8080/api/v1/products?category=BEER
+
+### F2 - Search for negative maxPrice: maxPrice=-10 gives a 400 with field: maxPrice
+GET http://localhost:8080/api/v1/products?maxPrice=-10
+
+### F2 - Search for negative minShelfLifeHours: minShelfLifeHours=-1 gives a 400 with field: minShelfLifeHours
+GET http://localhost:8080/api/v1/products?minShelfLifeHours=-1
 
 ### F3 - Register: expect 201 Created
 POST http://localhost:8080/api/v1/auth/register
@@ -276,7 +303,9 @@ Content-Type: application/json
   "password": "Demo-Restpartij-2026"
 }
 
-> {% client.global.set("adminToken", response.body.token); %}
+> {%
+    client.global.set("adminToken", response.body.token);
+%}
 
 ### F3 - Login as collector: expect 200 with token and role COLLECTOR
 POST http://localhost:8080/api/v1/auth/login
@@ -287,7 +316,9 @@ Content-Type: application/json
   "password": "MyTestPassword123"
 }
 
-> {% client.global.set("collectorToken", response.body.token); %}
+> {%
+    client.global.set("collectorToken", response.body.token);
+%}
 
 ### Feature 3 - Status monitoring (US-08)
 ### F3 - Run maintenance without a token: expect 401
