@@ -2,17 +2,20 @@ package com.restpartijen.api.security.repository
 
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.persistence.dbQuery
+import com.restpartijen.api.security.EmailAlreadyExistsException
 import com.restpartijen.api.security.model.User
 import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.isNull
+import org.jetbrains.exposed.v1.exceptions.ExposedSQLException
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.time.Clock
 
+private const val UNIQUE_VIOLATION = "23505"  // H2 SQL state for a unique index violation
 class ExposedUserRepository(
     private val clock: Clock = Clock.System,
 ) : UserRepository {
@@ -38,16 +41,22 @@ class ExposedUserRepository(
     }
 
     override suspend fun create(item: User): User = dbQuery {
-        val email = normalizeEmail(item.email)
-        val newId = UsersTable.insert {
-            it[UsersTable.email] = email
-            it[passwordHash] = item.passwordHash
-            it[displayName] = item.display_name
-            it[role] = item.role
-            it[createdAt] = item.createdAt
-        }[UsersTable.id]
-        // Return what is really stored: the generated id and the normalized email.
-        item.copy(id = newId, email = email)
+        try {
+            val email = normalizeEmail(item.email)
+            val newId = UsersTable.insert {
+                it[UsersTable.email] = email
+                it[passwordHash] = item.passwordHash
+                it[displayName] = item.display_name
+                it[role] = item.role
+                it[createdAt] = item.createdAt
+            }[UsersTable.id]
+            // Return what is really stored: the generated id and the normalized email.
+            item.copy(id = newId, email = email)
+        } catch (e: ExposedSQLException) {
+            if (e.sqlState == UNIQUE_VIOLATION) throw EmailAlreadyExistsException(item.email)
+            throw e   // any other database error stays visible
+        }
+
     }
 
     override suspend fun update(item: User): Boolean = dbQuery {

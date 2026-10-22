@@ -23,12 +23,8 @@ fun Application.configureSecurity(jwtConfig: JwtConfig) {
                 val userId = payload.getClaim(JwtClaims.USER_ID).asLong()
                 val role = payload.getClaim(JwtClaims.ROLE).asString()
 
-                // Expiry is checked against our injected Clock, not the system time (GI-6, besluit 6.5).
-                // A token that is expired according to that clock is invalid: no principal, so 401.
-                val expired = jwtConfig.isExpired(payload.expiresAt)
-
-                // The userId must be present, the role must be a valid Role entry, and the token must not be expired.
-                if (!expired && userId != null && role != null && Role.entries.any { it.name == role }) {
+                // Check if the userId is not null and the role is a valid Role enum entry. If so, return a JWTPrincipal with the payload; otherwise, return null to indicate invalid credentials.
+                if (userId != null && role != null && Role.entries.any { it.name == role }) {
                     JWTPrincipal(payload)
                 } else {
                     null

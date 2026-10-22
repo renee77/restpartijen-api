@@ -18,6 +18,7 @@ import io.ktor.server.response.respond
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.MissingFieldException
 
+import com.restpartijen.api.security.EmailAlreadyExistsException
 /**
  * Turns every exception that escapes a route into one HTTP response with an ErrorResponse body
  * (GI-4, decision 4.1). One rule per exception, no `when` over all subclasses (B-22).
@@ -64,6 +65,12 @@ fun Application.configureStatusPages() {
         exception<IllegalStateTransitionException> { call, cause ->
             call.respondError(HttpStatusCode.Conflict, ErrorCode.CONFLICT, cause.message)
         }
+
+        // TODO: temporary, replace by ConflictException once #47 is on main (remove before merge, B-27)
+        exception<EmailAlreadyExistsException> { call, cause ->
+            call.respondError(HttpStatusCode.Conflict, ErrorCode.CONFLICT, cause.message)
+        }
+
         // 422
         exception<DomainRuleException> { call, cause ->
             call.respondError(HttpStatusCode.UnprocessableEntity, ErrorCode.DOMAIN_RULE_VIOLATION, cause.message, cause.field)

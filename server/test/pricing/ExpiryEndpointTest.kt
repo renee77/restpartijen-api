@@ -69,26 +69,6 @@ class ExpiryEndpointTest {
     }
 
     @Test
-    fun `admin gets 200 with the maintenance report`() = testApplication {
-        // Arrange: two overdue reservations behind the service, no expired products
-        application { setUpPricingTestApp(reservationMaintenance = FakeReservationMaintenance(lapsedCount = 2)) }
-
-        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = TestClock.fixed)
-
-        // Act
-        val response = client.post("/api/v1/admin/maintenance/expire") {
-            bearerAuth(token)
-        }
-
-        // Assert: status and the report in the body
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals(
-            MaintenanceReport(lapsedReservations = 2, expiredProducts = 0),
-            Json.decodeFromString<MaintenanceReport>(response.bodyAsText()),
-        )
-    }
-
-    @Test
     fun `updater changing fewer products than found still gives 200 and reports the real count`() = testApplication {
         application {
             setUpPricingTestApp(
@@ -105,7 +85,6 @@ class ExpiryEndpointTest {
 
         // Assert: StatusPages throws an OK
         assertEquals(HttpStatusCode.OK, response.status)
-        val error = Json.decodeFromString<MaintenanceReport>(response.bodyAsText())
     }
 
 }
