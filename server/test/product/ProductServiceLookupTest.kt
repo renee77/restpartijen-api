@@ -102,6 +102,19 @@ class ProductServiceLookupTest {
     }
 
     @Test
+    fun `lookupProduct does not ask for manual entry when a found product has no name and no allergens`() = runTest {
+        // Arrange
+        // Open Food Facts answered, so the flag stays false; the app sees the empty fields itself (§5.2).
+        val service = serviceAnswering(HttpStatusCode.OK, """{"product":{}}""")
+
+        // Act
+        val lookup = service.lookupProduct(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals(ProductLookup(null, emptySet(), manualEntryRequired = false), lookup)
+    }
+
+    @Test
     fun `lookupProduct leaves the name empty when Open Food Facts has a blank name`() = runTest {
         // Arrange
         val service = serviceAnswering(HttpStatusCode.OK, """{"product":{"product_name":"   ","allergens_tags":["en:milk"]}}""")
