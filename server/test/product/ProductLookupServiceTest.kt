@@ -18,6 +18,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -71,6 +73,40 @@ class ProductLookupServiceTest {
 
         // Assert
         assertEquals(first, second)
+        assertEquals(1, calls.count)
+    }
+
+    @Test
+    fun `lookup keeps a found product for 24 hours`() = runTest {
+        // Arrange
+        val clock = MovableClock(testNow)
+        val calls = CallCounter(HttpStatusCode.OK, NUTELLA_BODY)
+        val service = serviceWith(calls.client, clock)
+        service.lookup(NUTELLA_BARCODE, USER)
+
+        // Act: one minute before the 24 hours, and then exactly at them
+        clock.now = testNow + 24.hours - 1.minutes
+        service.lookup(NUTELLA_BARCODE, USER)
+        val callsJustBefore = calls.count
+        clock.now = testNow + 24.hours
+        service.lookup(NUTELLA_BARCODE, USER)
+
+        // Assert: still from the cache just before, from Open Food Facts again at 24 hours
+        assertEquals(1, callsJustBefore)
+        assertEquals(2, calls.count)
+    }
+
+    @Test
+    fun `lookup still remembers an unknown barcode after 59 seconds`() = runTest {
+        // Arrange
+        val clock = MovableClock(testNow)
+        val calls = CallCounter(HttpStatusCode.NotFound, NOT_FOUND_BODY)
+        val service = serviceWith(calls.client, clock)
+        assertFailsWith<NotFoundException> { service.lookup(NUTELLA_BARCODE, USER) }
+        clock.now = testNow + 59.seconds
+
+        // Act + Assert
+        assertFailsWith<NotFoundException> { service.lookup(NUTELLA_BARCODE, USER) }
         assertEquals(1, calls.count)
     }
 

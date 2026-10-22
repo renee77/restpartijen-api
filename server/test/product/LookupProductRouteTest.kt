@@ -114,6 +114,22 @@ class LookupProductRouteTest {
     }
 
     @Test
+    fun `the limit per supplier follows the user in the token`() = testApplication {
+        // Arrange
+        // Supplier 7 uses its 5 lookups with 5 different barcodes, so no cache can answer.
+        appWithOpenFoodFacts(HttpStatusCode.OK, NUTELLA_BODY)
+        for (number in 1..5) lookup("100000000000$number", token = productToken(Role.SUPPLIER, tokenClock, userId = 7))
+
+        // Act
+        val sameSupplier = lookup("2000000000000", token = productToken(Role.SUPPLIER, tokenClock, userId = 7))
+        val otherSupplier = lookup("3000000000000", token = productToken(Role.SUPPLIER, tokenClock, userId = 8))
+
+        // Assert: only supplier 7 reached its limit, so the route passes on the user of each token
+        assertEquals(true, Json.decodeFromString<ProductLookupResponse>(sameSupplier.bodyAsText()).manualEntryRequired)
+        assertEquals(false, Json.decodeFromString<ProductLookupResponse>(otherSupplier.bodyAsText()).manualEntryRequired)
+    }
+
+    @Test
     fun `a lookup without a token gives 401`() = testApplication {
         // Arrange
         application { productRoutesTestApp(tokenClock) }

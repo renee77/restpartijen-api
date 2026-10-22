@@ -11,7 +11,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.utils.io.ByteChannel
-import io.ktor.utils.io.ClosedWriteChannelException
+import io.ktor.utils.io.ClosedByteChannelException
 import io.ktor.utils.io.writeFully
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -132,8 +132,9 @@ class OpenFoodFactsClientTest {
                     written += chunk.size
                 }
                 body.close()
-            } catch (e: ClosedWriteChannelException) {
-                // Expected: the client hung up after 64 KiB, which is what this test wants to see.
+            } catch (e: ClosedByteChannelException) {
+                // Expected: the client hung up after 64 KiB, which is what this test wants to see. The parent class,
+                // because the hang-up can land in writeFully (ClosedWriteChannelException) or in flush (review round 3).
             }
         }
         val client = openFoodFactsClient(MockEngine {
