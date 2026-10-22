@@ -6,7 +6,9 @@ import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.product.routes.configureProductRouting
+import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.service.OwnershipGuard
+import com.restpartijen.api.product.service.ProductLookupCache
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.security.TestJwtSettings
 import com.restpartijen.api.security.TestTokens
@@ -36,6 +38,7 @@ fun Application.productRoutesTestApp(
     tokenClock: Clock,
     products: ProductRepository = fakeProductRepository(),
     suppliers: SupplierRepository = fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId),
+    openFoodFacts: OpenFoodFactsClient = openFoodFactsNotCalled(),
 ) {
     configureSerialization()
     configureStatusPages()
@@ -48,6 +51,8 @@ fun Application.productRoutesTestApp(
         provide<Clock> { FixedClock(testNow) }
         provide<PriceProvider> { FixedPriceProvider(aBreakdown) }
         provide(::OwnershipGuard)
+        provide<OpenFoodFactsClient> { openFoodFacts }
+        provide(::ProductLookupCache)
         provide(::ProductService)
     }
     configureProductRouting()

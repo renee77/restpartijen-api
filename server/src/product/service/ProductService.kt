@@ -1,5 +1,8 @@
 package com.restpartijen.api.product.service
 
+import com.restpartijen.api.product.client.LookupResult
+import com.restpartijen.api.product.client.OpenFoodFactsClient
+import com.restpartijen.api.product.dto.MAX_TEXT_LENGTH
 import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductRepository
@@ -23,6 +26,8 @@ import kotlin.time.Clock
  * @param priceProvider gives the price breakdown of a product; F3 calculates it, F1 only asks (K-4, SD-3)
  * @param ownershipGuard checks that a supplier only changes or deletes an own product (US-03, §16.2)
  * @param clock decides what "now" is for the listing rules (GI-6, decision 6.5)
+ * @param openFoodFacts fetches the name and allergen tags for a barcode (US-02, §10.3)
+ * @param lookupCache remembers found products, so the lookup stays under the rate limit (US-02, §10.3)
  */
 class ProductService(
     private val repository: ProductRepository,
@@ -30,7 +35,37 @@ class ProductService(
     private val priceProvider: PriceProvider,
     private val ownershipGuard: OwnershipGuard,
     private val clock: Clock,
+    private val openFoodFacts: OpenFoodFactsClient,
+    private val lookupCache: ProductLookupCache,
 ) {
+    /**
+     * The suggestion for a product with this [barcode], from the cache or from Open Food Facts (§5.2, SD-1).
+     * Only a found product goes into the cache.
+     *
+     * @return the name and allergens; manualEntryRequired is true when Open Food Facts gave no answer
+     * @throws NotFoundException when Open Food Facts does not know the barcode (404)
+     */
+    suspend fun lookupProduct(barcode: String): ProductLookup {
+        lookupCache.get(barcode)?.let { return it }
+
+        return when (val result = openFoodFacts.fetchProduct(barcode)) {
+            is LookupResult.Found -> {
+                val lookup = ProductLookup(
+                    // A blank or too long name becomes null: cutting it off would look usable but be half a name.
+                    name = result.name?.takeIf { it.isNotBlank() && it.length <= MAX_TEXT_LENGTH },
+                    allergens = mapAllergenTags(result.allergenTags),
+                    manualEntryRequired = false,
+                )
+                lookupCache.put(barcode, lookup)
+                lookup
+            }
+            // Not cached: someone may add the product to Open Food Facts later.
+            LookupResult.NotFound -> throw NotFoundException("No product found for this barcode")
+            // Not cached either, or a time-out or rate limit would stick for 24 hours.
+            LookupResult.Unavailable -> ProductLookup(name = null, allergens = emptySet(), manualEntryRequired = true)
+        }
+    }
+
     /**
      * The product with this [id] and its price breakdown (§5.7, SD-3).
      *

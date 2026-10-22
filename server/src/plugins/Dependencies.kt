@@ -9,7 +9,11 @@ import com.restpartijen.api.product.repository.ExposedProductReader
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedProductStatusUpdater
 import com.restpartijen.api.product.repository.ProductRepository
+import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.service.OwnershipGuard
+import com.restpartijen.api.product.service.ProductLookupCache
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.cio.CIO
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.ProductStatusUpdater
@@ -41,6 +45,11 @@ fun Application.configureDependencies() {
         provide<ProductReader>(::ExposedProductReader)
         provide<ProductStatusUpdater>(::ExposedProductStatusUpdater)
         provide<SupplierRepository>(::ExposedSupplierRepository)
+        // The real HTTP engine; tests give the client a MockEngine instead (US-02, A5).
+        // Registered on its own, so the DI closes it when the application stops; HttpClient leaves it open.
+        provide<HttpClientEngine> { CIO.create() }
+        provide(::OpenFoodFactsClient)
+        provide(::ProductLookupCache)
 
         // F2 (Stefan)
         provide<ReservationRepository>(::ExposedReservationRepository)

@@ -6,8 +6,11 @@ import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
+import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.service.OwnershipGuard
+import com.restpartijen.api.product.service.ProductLookupCache
 import com.restpartijen.api.product.service.ProductService
+import io.ktor.client.engine.mock.MockEngine
 import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
@@ -72,7 +75,17 @@ fun productService(
     suppliers: SupplierRepository,
     priceProvider: PriceProvider,
     clock: Clock,
-): ProductService = ProductService(repository, suppliers, priceProvider, OwnershipGuard(suppliers), clock)
+    openFoodFacts: OpenFoodFactsClient = openFoodFactsNotCalled(),
+): ProductService = ProductService(
+    repository, suppliers, priceProvider, OwnershipGuard(suppliers), clock, openFoodFacts, ProductLookupCache(clock),
+)
+
+/**
+ * An OpenFoodFactsClient for tests that do not look up a barcode.
+ * A call fails loudly with an IllegalStateException, which the client does not turn into Unavailable.
+ */
+fun openFoodFactsNotCalled(): OpenFoodFactsClient =
+    OpenFoodFactsClient(MockEngine { error("This test does not expect a call to Open Food Facts") })
 
 /** The supplier the product fakes use by default; the same values as the default supplier of [aProduct]. */
 val aSupplier = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0, longitude = 5.0)
