@@ -37,7 +37,7 @@ fun Application.setUpPricingTestApp(
 
     // The route requires a DI binding for ExpiryScheduler, which is the service that runs the maintenance. We provide a fake implementation for testing.
     dependencies.provide<ExpiryScheduler> {
-        ExpiryScheduler(reservationMaintenance, productReader, productStatusUpdater, TestClock.fixed)
+        ExpiryScheduler(reservationMaintenance, productReader, productStatusUpdater, TestClock.fixedNow())
     }
 
     // The route also needs AdminProductService. It uses the same three fakes as ExpiryScheduler.

@@ -18,7 +18,7 @@ class RoleAuthTests {
         // Arrange: set up the test application with security and a protected route
         application { setUpTestApp() }
 
-        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "TESTER", clock = TestClock.fixed)
+        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "TESTER")
 
         // Act: create a token with a role that is not in the Role enum and make a GET request to the protected route
         val response = client.get("/test/protected") {
@@ -40,7 +40,6 @@ class RoleAuthTests {
         val token = TestTokens().createTestToken(
             userId = 1L,
             role = Role.COLLECTOR,
-            clock = TestClock.fixed
         )
 
         // Act: Make a GET request to the role-protected route with a valid token that has the required role
@@ -61,7 +60,6 @@ class RoleAuthTests {
         val token = TestTokens().createTestToken(
             userId = 1L,
             role = Role.ADMIN,
-            clock = TestClock.fixed
         )
 
         // Act: Make a GET request to the role-protected route with a valid token that has the required role
@@ -84,7 +82,6 @@ class RoleAuthTests {
         val token = TestTokens().createTestToken(
             userId = 42L,
             role = Role.SUPPLIER,
-            clock = TestClock.fixed
         )
 
         // Act: Make a GET request to the user information route with a valid token

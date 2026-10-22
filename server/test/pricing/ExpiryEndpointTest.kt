@@ -37,7 +37,7 @@ class ExpiryEndpointTest {
         // Arrange
         application { setUpPricingTestApp() }
 
-        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "COLLECTOR", clock = TestClock.fixed)
+        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "COLLECTOR")
 
         // Act: Make a post request to the protected route with the role that is not allowed to enter this route
         val response = client.post("/api/v1/admin/maintenance/expire") {
@@ -54,7 +54,7 @@ class ExpiryEndpointTest {
         // Arrange: two overdue reservations behind the service
         application { setUpPricingTestApp(reservationMaintenance = FakeReservationMaintenance(lapsedCount = 2)) }
 
-        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = TestClock.fixed)
+        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN")
 
         // Act: Make a post request to the protected route with the role that is not allowed to enter this route
         val response = client.post("/api/v1/admin/maintenance/expire") {
@@ -76,7 +76,7 @@ class ExpiryEndpointTest {
                 productStatusUpdater = FakeProductStatusUpdater(expiredCount = 1),
             )
         }
-        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = TestClock.fixed)
+        val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN")
 
         // Act
         val response = client.post("/api/v1/admin/maintenance/expire") {

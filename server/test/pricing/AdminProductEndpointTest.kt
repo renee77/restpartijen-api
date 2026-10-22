@@ -19,10 +19,10 @@ import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import io.ktor.client.request.delete
 
 class AdminProductEndpointTest {
-    val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN", clock = TestClock.fixed)
+    val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN")
 
     private fun tokenFor(role: String) =
-        TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = role, clock = TestClock.fixed)
+        TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = role)
 
     @Test
     fun `No token gives a 401`() = testApplication {
@@ -44,7 +44,7 @@ class AdminProductEndpointTest {
             setUpPricingTestApp(productReader = FakeProductReader(emptyList()))
         }
 
-        val collectorToken = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "COLLECTOR", clock = TestClock.fixed)
+        val collectorToken = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "COLLECTOR")
 
         // Act
         val response = client.get("/api/v1/admin/products") {

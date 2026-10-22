@@ -58,7 +58,7 @@ class TestTokens {
         userId: Long,
         roleName: String,
         settings: JwtSettings = TestJwtSettings.default,
-        clock: Clock = TestClock.fixed
+        clock: Clock = TestClock.fixedNow()
     ): String {
         val now = clock.now()
 
