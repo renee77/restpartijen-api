@@ -3,13 +3,12 @@ package com.restpartijen.api.product
 import com.restpartijen.api.product.service.ProductLookup
 import com.restpartijen.api.product.service.ProductLookupCache
 import com.restpartijen.api.shared.Allergen
+import com.restpartijen.api.testsupport.MovableClock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
-import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
-import kotlin.time.Instant
 
 /**
  * Unit test: ProductLookupCache keeps a found product for 24 hours and at most 1,000 barcodes (§10.3, decision Eva 22 Oct).
@@ -79,11 +78,6 @@ class ProductLookupCacheTest {
         assertNull(cache.get("1"))
         assertEquals(nutella, cache.get("2"))
         assertEquals(nutella, cache.get("1001"))
-    }
-
-    // A clock the test can move forward, to pass the 24 hour limit without waiting.
-    private class MovableClock(var now: Instant) : Clock {
-        override fun now() = now
     }
 
     private companion object {

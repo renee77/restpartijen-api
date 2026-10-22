@@ -7,6 +7,8 @@ import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.product.client.OpenFoodFactsClient
+import com.restpartijen.api.product.service.NotFoundCache
+import com.restpartijen.api.product.service.OpenFoodFactsRateLimiter
 import com.restpartijen.api.product.service.OwnershipGuard
 import com.restpartijen.api.product.service.ProductLookupCache
 import com.restpartijen.api.product.service.ProductService
@@ -77,7 +79,8 @@ fun productService(
     clock: Clock,
     openFoodFacts: OpenFoodFactsClient = openFoodFactsNotCalled(),
 ): ProductService = ProductService(
-    repository, suppliers, priceProvider, OwnershipGuard(suppliers), clock, openFoodFacts, ProductLookupCache(clock),
+    repository, suppliers, priceProvider, OwnershipGuard(suppliers), clock, openFoodFacts,
+    ProductLookupCache(clock), NotFoundCache(clock), OpenFoodFactsRateLimiter(clock),
 )
 
 /**

@@ -7,6 +7,8 @@ import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.product.routes.configureProductRouting
 import com.restpartijen.api.product.client.OpenFoodFactsClient
+import com.restpartijen.api.product.service.NotFoundCache
+import com.restpartijen.api.product.service.OpenFoodFactsRateLimiter
 import com.restpartijen.api.product.service.OwnershipGuard
 import com.restpartijen.api.product.service.ProductLookupCache
 import com.restpartijen.api.product.service.ProductService
@@ -53,6 +55,8 @@ fun Application.productRoutesTestApp(
         provide(::OwnershipGuard)
         provide<OpenFoodFactsClient> { openFoodFacts }
         provide(::ProductLookupCache)
+        provide(::NotFoundCache)
+        provide(::OpenFoodFactsRateLimiter)
         provide(::ProductService)
     }
     configureProductRouting()

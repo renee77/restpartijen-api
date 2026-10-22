@@ -28,6 +28,8 @@ import kotlin.time.Clock
  * @param clock decides what "now" is for the listing rules (GI-6, decision 6.5)
  * @param openFoodFacts fetches the name and allergen tags for a barcode (US-02, §10.3)
  * @param lookupCache remembers found products, so the lookup stays under the rate limit (US-02, §10.3)
+ * @param notFoundCache remembers unknown barcodes for 60 seconds, so a retry does not call out again (US-02)
+ * @param rateLimiter allows at most 10 calls to Open Food Facts per minute, so its IP limit is never hit (US-02)
  */
 class ProductService(
     private val repository: ProductRepository,
@@ -37,16 +39,22 @@ class ProductService(
     private val clock: Clock,
     private val openFoodFacts: OpenFoodFactsClient,
     private val lookupCache: ProductLookupCache,
+    private val notFoundCache: NotFoundCache,
+    private val rateLimiter: OpenFoodFactsRateLimiter,
 ) {
     /**
-     * The suggestion for a product with this [barcode], from the cache or from Open Food Facts (§5.2, SD-1).
-     * Only a found product goes into the cache.
+     * The suggestion for a product with this [barcode], from the caches or from Open Food Facts (§5.2, SD-1).
+     * A found product is remembered for 24 hours, an unknown barcode for 60 seconds.
      *
      * @return the name and allergens; manualEntryRequired is true when Open Food Facts gave no answer
+     *   or when the limit of 10 calls per minute is reached
      * @throws NotFoundException when Open Food Facts does not know the barcode (404)
      */
     suspend fun lookupProduct(barcode: String): ProductLookup {
         lookupCache.get(barcode)?.let { return it }
+        if (notFoundCache.contains(barcode)) throw NotFoundException("No product found for this barcode")
+        // Over the limit counts as no answer: the supplier fills in the product, as during a time-out.
+        if (!rateLimiter.tryAcquire()) return ProductLookup(name = null, allergens = emptySet(), manualEntryRequired = true)
 
         return when (val result = openFoodFacts.fetchProduct(barcode)) {
             is LookupResult.Found -> {
@@ -59,8 +67,11 @@ class ProductService(
                 lookupCache.put(barcode, lookup)
                 lookup
             }
-            // Not cached: someone may add the product to Open Food Facts later.
-            LookupResult.NotFound -> throw NotFoundException("No product found for this barcode")
+            // Only briefly remembered: someone may add the product to Open Food Facts later.
+            LookupResult.NotFound -> {
+                notFoundCache.remember(barcode)
+                throw NotFoundException("No product found for this barcode")
+            }
             // Not cached either, or a time-out or rate limit would stick for 24 hours.
             LookupResult.Unavailable -> ProductLookup(name = null, allergens = emptySet(), manualEntryRequired = true)
         }

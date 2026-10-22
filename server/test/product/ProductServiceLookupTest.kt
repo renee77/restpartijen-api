@@ -6,6 +6,7 @@ import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.NotFoundException
 import com.restpartijen.api.testsupport.FixedClock
+import com.restpartijen.api.testsupport.MovableClock
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpHeaders
@@ -15,6 +16,8 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.time.Clock
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Unit test: ProductService.lookupProduct with a real client against a MockEngine (§5.2, SD-1).
@@ -89,16 +92,47 @@ class ProductServiceLookupTest {
     }
 
     @Test
-    fun `lookupProduct asks Open Food Facts again for an unknown barcode`() = runTest {
+    fun `lookupProduct remembers an unknown barcode for 60 seconds`() = runTest {
         // Arrange
-        // Someone may add the product to Open Food Facts later, so a 404 is not remembered either.
+        // A supplier who retries an unknown barcode should not use up the limit of Open Food Facts.
         val calls = CallCounter(HttpStatusCode.NotFound, """{"status":"failure"}""")
         val service = serviceWith(calls.client)
         assertFailsWith<NotFoundException> { service.lookupProduct(NUTELLA_BARCODE) }
 
         // Act + Assert
         assertFailsWith<NotFoundException> { service.lookupProduct(NUTELLA_BARCODE) }
+        assertEquals(1, calls.count)
+    }
+
+    @Test
+    fun `lookupProduct asks Open Food Facts again for an unknown barcode after 60 seconds`() = runTest {
+        // Arrange
+        // Someone may add the product to Open Food Facts, so a 404 is remembered only briefly.
+        val clock = MovableClock(testNow)
+        val calls = CallCounter(HttpStatusCode.NotFound, """{"status":"failure"}""")
+        val service = serviceWith(calls.client, clock)
+        assertFailsWith<NotFoundException> { service.lookupProduct(NUTELLA_BARCODE) }
+        clock.now = testNow + 60.seconds
+
+        // Act + Assert
+        assertFailsWith<NotFoundException> { service.lookupProduct(NUTELLA_BARCODE) }
         assertEquals(2, calls.count)
+    }
+
+    @Test
+    fun `lookupProduct asks for manual entry without calling Open Food Facts after 10 calls in a minute`() = runTest {
+        // Arrange
+        // 10 different barcodes, so the cache cannot answer; the 11th would pass our share of the limit.
+        val calls = CallCounter(HttpStatusCode.OK, NUTELLA_BODY)
+        val service = serviceWith(calls.client)
+        for (number in 1..10) service.lookupProduct("100000000000$number")
+
+        // Act
+        val lookup = service.lookupProduct("2000000000000")
+
+        // Assert
+        assertEquals(ProductLookup(null, emptySet(), manualEntryRequired = true), lookup)
+        assertEquals(10, calls.count)
     }
 
     @Test
@@ -155,10 +189,8 @@ class ProductServiceLookupTest {
 
     private fun serviceAnswering(status: HttpStatusCode, body: String) = serviceWith(CallCounter(status, body).client)
 
-    private fun serviceWith(client: OpenFoodFactsClient): ProductService =
-        productService(
-            fakeProductRepository(), fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow), client,
-        )
+    private fun serviceWith(client: OpenFoodFactsClient, clock: Clock = FixedClock(testNow)): ProductService =
+        productService(fakeProductRepository(), fakeSupplierRepository(), FixedPriceProvider(), clock, client)
 
     // Plays Open Food Facts with one fixed answer and counts how often it was asked.
     private class CallCounter(status: HttpStatusCode, body: String) {

@@ -11,6 +11,8 @@ import com.restpartijen.api.product.repository.ExposedProductStatusUpdater
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.service.OwnershipGuard
+import com.restpartijen.api.product.service.NotFoundCache
+import com.restpartijen.api.product.service.OpenFoodFactsRateLimiter
 import com.restpartijen.api.product.service.ProductLookupCache
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.cio.CIO
@@ -50,6 +52,8 @@ fun Application.configureDependencies() {
         provide<HttpClientEngine> { CIO.create() }
         provide(::OpenFoodFactsClient)
         provide(::ProductLookupCache)
+        provide(::NotFoundCache)
+        provide(::OpenFoodFactsRateLimiter)
 
         // F2 (Stefan)
         provide<ReservationRepository>(::ExposedReservationRepository)
