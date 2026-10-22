@@ -3,7 +3,9 @@ package com.restpartijen.api.product
 import com.restpartijen.api.module
 import com.restpartijen.api.product.dto.ProductResponse
 import com.restpartijen.api.product.repository.ProductRepository
+import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.shared.PriceProvider
+import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.testsupport.testConfig
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
@@ -94,6 +96,61 @@ class ProductRoutesTest {
         application { module() }
         // Act
         val response = client.get("/api/v1/products/abc")
+        // Assert: the route throws ValidationException; StatusPages turns it into a 400
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `GET supplier products returns 200 with the current offer as JSON, without a token`() = testApplication {
+        // Arrange: the route is public (A4), so the request below has no token.
+        // The fake repository applies the same filter as the real query: a COLLECTED product stays out.
+        environment { config = testConfig() }
+        application {
+            dependencies.provide<ProductRepository> {
+                fakeProductRepository(
+                    aProduct(id = 1, supplier = aSupplier, name = "Volkoren brood"),
+                    aProduct(id = 2, supplier = aSupplier, name = "Croissant", status = ProductStatus.RESERVED),
+                    aProduct(id = 3, supplier = aSupplier, status = ProductStatus.COLLECTED),
+                )
+            }
+            dependencies.provide<SupplierRepository> { fakeSupplierRepository(aSupplier) }
+            dependencies.provide<PriceProvider> { FixedPriceProvider(aBreakdown) }
+            module()
+        }
+
+        // Act
+        val response = client.get("/api/v1/suppliers/${aSupplier.id}/products")
+
+        // Assert
+        assertEquals(HttpStatusCode.OK, response.status)
+        val body = Json.decodeFromString<List<ProductResponse>>(response.bodyAsText())
+        assertEquals(listOf("Volkoren brood", "Croissant"), body.map { it.name })
+        assertEquals(listOf("LISTED", "RESERVED"), body.map { it.status })
+        assertEquals(listOf(2.10, 2.10), body.map { it.currentPrice })
+    }
+
+    @Test
+    fun `GET supplier products of an unknown supplier returns 404`() = testApplication {
+        // Arrange: the real repositories on an empty in-memory database, so no supplier exists
+        environment { config = testConfig() }
+        application { module() }
+
+        // Act
+        val response = client.get("/api/v1/suppliers/999/products")
+
+        // Assert: the service throws NotFoundException; StatusPages turns it into a 404
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `GET supplier products with a non-numeric id returns 400`() = testApplication {
+        // Arrange
+        environment { config = testConfig() }
+        application { module() }
+
+        // Act
+        val response = client.get("/api/v1/suppliers/abc/products")
+
         // Assert: the route throws ValidationException; StatusPages turns it into a 400
         assertEquals(HttpStatusCode.BadRequest, response.status)
     }

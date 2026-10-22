@@ -9,6 +9,7 @@ import com.restpartijen.api.product.repository.ExposedProductReader
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedProductStatusUpdater
 import com.restpartijen.api.product.repository.ProductRepository
+import com.restpartijen.api.product.service.OwnershipGuard
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.ProductStatusUpdater
@@ -35,6 +36,7 @@ fun Application.configureDependencies() {
 
         // F1
         provide<ProductRepository>(::ExposedProductRepository)
+        provide(::OwnershipGuard)
         provide(::ProductService)
         provide<ProductReader>(::ExposedProductReader)
         provide<ProductStatusUpdater>(::ExposedProductStatusUpdater)

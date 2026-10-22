@@ -10,7 +10,10 @@ import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ProductStatus
+import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
+import com.restpartijen.api.testsupport.insertSupplier
+import com.restpartijen.api.testsupport.insertUser
 import kotlinx.coroutines.test.runTest
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -313,5 +316,90 @@ class ExposedProductRepositoryTest {
 
         // Assert
         assertFalse(updateSucceeded)
+    }
+
+    // A13: a supplier may only change a LISTED product. The status is checked in the WHERE, so a product
+    // reserved between the check in the service and this update is not changed after all (race).
+    @Test
+    fun `update refuses a RESERVED product and leaves it unchanged`() = runTest {
+        assertUpdateRefused(ProductStatus.RESERVED)
+    }
+
+    @Test
+    fun `update refuses a COLLECTED product and leaves it unchanged`() = runTest {
+        assertUpdateRefused(ProductStatus.COLLECTED)
+    }
+
+    @Test
+    fun `update refuses an EXPIRED product and leaves it unchanged`() = runTest {
+        assertUpdateRefused(ProductStatus.EXPIRED)
+    }
+
+    private suspend fun assertUpdateRefused(status: ProductStatus) {
+        // Arrange: create always stores LISTED, so the status is set in the table directly
+        val supplier = emptyDatabaseWithSupplier()
+        val bread = repository.create(aProduct(supplier = supplier))
+        transaction { ProductsTable.update({ ProductsTable.id eq bread.id }) { it[ProductsTable.status] = status } }
+
+        // Act
+        val updateSucceeded = repository.update(aProduct(id = bread.id, supplier = supplier, name = "Wit brood"))
+
+        // Assert
+        assertFalse(updateSucceeded)
+        val nameAfter = transaction {
+            ProductsTable.selectAll().where { ProductsTable.id eq bread.id }.single()[ProductsTable.name]
+        }
+        assertEquals(bread.name, nameAfter)
+    }
+
+    @Test
+    fun `findBySupplier returns only the products of that supplier, ordered by id`() = runTest {
+        // Arrange
+        val supplier = emptyDatabaseWithSupplier()
+        val otherSupplier = supplier.copy(id = insertSupplier(insertUser(Role.SUPPLIER)))
+        val bread = repository.create(aProduct(supplier = supplier))
+        repository.create(aProduct(supplier = otherSupplier, name = "Croissant"))
+        val spinach = repository.create(
+            aProduct(supplier = supplier, category = ProductCategory.FROZEN, name = "Diepvries spinazie")
+        )
+
+        // Act
+        val products = repository.findBySupplier(supplier.id)
+
+        // Assert
+        assertEquals(listOf(bread.fields(), spinach.fields()), products.map { it.fields() })
+    }
+
+    // A4: "Mijn aanbod" shows the current offer only: what is for sale and what still has to be collected.
+    @Test
+    fun `findBySupplier returns LISTED and RESERVED products and leaves out the other statuses`() = runTest {
+        // Arrange: create always stores LISTED, so the other statuses are set in the table directly
+        val supplier = emptyDatabaseWithSupplier()
+        val listed = repository.create(aProduct(supplier = supplier, name = "Listed"))
+        val reserved = repository.create(aProduct(supplier = supplier, name = "Reserved"))
+        setStatus(reserved.id, ProductStatus.RESERVED)
+        for (status in listOf(ProductStatus.COLLECTED, ProductStatus.EXPIRED, ProductStatus.REMOVED)) {
+            val product = repository.create(aProduct(supplier = supplier, name = status.name))
+            setStatus(product.id, status)
+        }
+
+        // Act
+        val products = repository.findBySupplier(supplier.id)
+
+        // Assert
+        assertEquals(listOf(listed.id, reserved.id), products.map { it.id })
+        assertEquals(listOf(ProductStatus.LISTED, ProductStatus.RESERVED), products.map { it.status })
+    }
+
+    @Test
+    fun `findBySupplier returns an empty list when the supplier has no products`() = runTest {
+        // Arrange
+        val supplier = emptyDatabaseWithSupplier()
+
+        // Act
+        val products = repository.findBySupplier(supplier.id)
+
+        // Assert
+        assertEquals(emptyList(), products)
     }
 }
