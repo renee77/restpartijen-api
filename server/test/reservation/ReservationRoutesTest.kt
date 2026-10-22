@@ -8,6 +8,7 @@ import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.repository.ReservationRepository
 import com.restpartijen.api.reservation.routes.configureReservationRouting
 import com.restpartijen.api.reservation.service.ReservationService
+import com.restpartijen.api.security.TestClock
 import com.restpartijen.api.security.TestJwtSettings
 import com.restpartijen.api.security.TestTokens
 import com.restpartijen.api.security.service.JwtConfig
@@ -20,7 +21,6 @@ import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.shared.ProductStatusUpdater
 import com.restpartijen.api.shared.ProductView
 import com.restpartijen.api.shared.Role
-import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
@@ -42,7 +42,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.Instant
 
 /**
  * Blok 5: POST /api/v1/reservations through all layers, with fakes behind the service.
@@ -50,10 +49,9 @@ import kotlin.time.Instant
  */
 class ReservationRoutesTest {
 
-    // Arrange: use a fixed clock for predictable token timestamps
-    private val testClock = FixedClock(
-        Instant.parse("2026-10-20T12:00:00Z")
-    )
+    // Arrange: a clock that stands still during the test but starts at the real "now",
+    // because the JWT verifier checks token expiry against the real time (#62)
+    private val testClock = TestClock.fixedNow()
     private val now = testClock.now()
     private val openWindow = PickupWindow(now - 1.hours, now + 5.hours)
     private val statusUpdater = FakeProductStatusUpdater()
