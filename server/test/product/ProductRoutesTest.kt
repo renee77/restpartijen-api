@@ -1,36 +1,36 @@
 package com.restpartijen.api.product
 
-import com.restpartijen.api.module
+import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.product.dto.ProductResponse
-import com.restpartijen.api.product.repository.ProductRepository
-import com.restpartijen.api.product.repository.SupplierRepository
-import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.ProductStatus
-import com.restpartijen.api.testsupport.testConfig
+import com.restpartijen.api.testsupport.FixedClock
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.time.Clock
 
+/**
+ * The two public GET routes of F1, with fakes behind the service (§5.7, A4).
+ * Only the F1 routes start, without the seed data of module(), so each test sees only its own products (E-09).
+ */
 class ProductRoutesTest {
+
+    // The GET routes need no token, but productRoutesTestApp also starts the security plugin.
+    private val tokenClock = FixedClock(Clock.System.now())
+
     @Test
     fun `GET existing product returns 200 with the product as JSON`() = testApplication {
-        // Arrange: testApplication does not load application.yaml, so the config comes from testConfig().
-        // There is no seed data yet, so the product comes from a fake repository.
-        environment { config = testConfig() }
-        application {
-            dependencies.provide<ProductRepository> {
-                fakeProductRepository(aProduct(id = 1, name = "Volkoren brood"))
-            }
-            module()
-        }
+        // Arrange
+        application { productRoutesTestApp(tokenClock, fakeProductRepository(aProduct(id = 1, name = "Volkoren brood"))) }
+
         // Act
         val response = client.get("/api/v1/products/1")
+
         // Assert
         assertEquals(HttpStatusCode.OK, response.status)
         val body = Json.decodeFromString<ProductResponse>(response.bodyAsText())
@@ -40,12 +40,7 @@ class ProductRoutesTest {
     @Test
     fun `GET product shows the price breakdown`() = testApplication {
         // Arrange: §5.7 and §10.1, original price, discount and current price in the detail
-        environment { config = testConfig() }
-        application {
-            dependencies.provide<ProductRepository> { fakeProductRepository(aProduct(id = 1)) }
-            dependencies.provide<PriceProvider> { FixedPriceProvider(aBreakdown) }
-            module()
-        }
+        application { productRoutesTestApp(tokenClock, fakeProductRepository(aProduct(id = 1))) }
 
         // Act
         val response = client.get("/api/v1/products/1")
@@ -60,11 +55,10 @@ class ProductRoutesTest {
     @Test
     fun `GET expired product returns 200 with status EXPIRED and no price`() = testApplication {
         // Arrange: SD-3, no price means expired; the product is still LISTED in storage
-        environment { config = testConfig() }
         application {
-            dependencies.provide<ProductRepository> { fakeProductRepository(aProduct(id = 1)) }
-            dependencies.provide<PriceProvider> { FixedPriceProvider(breakdown = null) }
-            module()
+            productRoutesTestApp(
+                tokenClock, fakeProductRepository(aProduct(id = 1)), priceProvider = FixedPriceProvider(breakdown = null),
+            )
         }
 
         // Act
@@ -80,43 +74,39 @@ class ProductRoutesTest {
 
     @Test
     fun `GET unknown product returns 404`() = testApplication {
-        // Arrange: the real repository on an empty in-memory database
-        environment { config = testConfig() }
-        application { module() }
+        // Arrange: a repository without products
+        application { productRoutesTestApp(tokenClock) }
+
         // Act
         val response = client.get("/api/v1/products/999")
+
         // Assert
         assertEquals(HttpStatusCode.NotFound, response.status)
     }
 
     @Test
-    fun `GET product with a non-numeric id returns 400`() = testApplication {
+    fun `GET product with a non-numeric id returns 400 and names the field`() = testApplication {
         // Arrange
-        environment { config = testConfig() }
-        application { module() }
+        application { productRoutesTestApp(tokenClock) }
+
         // Act
         val response = client.get("/api/v1/products/abc")
-        // Assert: the route throws ValidationException; StatusPages turns it into a 400
+
+        // Assert: the route throws ValidationException with the field, like PricingRoutes does (E-05)
         assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals("id", Json.decodeFromString<ErrorResponse>(response.bodyAsText()).field)
     }
 
     @Test
     fun `GET supplier products returns 200 with the current offer as JSON, without a token`() = testApplication {
         // Arrange: the route is public (A4), so the request below has no token.
         // The fake repository applies the same filter as the real query: a COLLECTED product stays out.
-        environment { config = testConfig() }
-        application {
-            dependencies.provide<ProductRepository> {
-                fakeProductRepository(
-                    aProduct(id = 1, supplier = aSupplier, name = "Volkoren brood"),
-                    aProduct(id = 2, supplier = aSupplier, name = "Croissant", status = ProductStatus.RESERVED),
-                    aProduct(id = 3, supplier = aSupplier, status = ProductStatus.COLLECTED),
-                )
-            }
-            dependencies.provide<SupplierRepository> { fakeSupplierRepository(aSupplier) }
-            dependencies.provide<PriceProvider> { FixedPriceProvider(aBreakdown) }
-            module()
-        }
+        val products = fakeProductRepository(
+            aProduct(id = 1, supplier = aSupplier, name = "Volkoren brood"),
+            aProduct(id = 2, supplier = aSupplier, name = "Croissant", status = ProductStatus.RESERVED),
+            aProduct(id = 3, supplier = aSupplier, status = ProductStatus.COLLECTED),
+        )
+        application { productRoutesTestApp(tokenClock, products) }
 
         // Act
         val response = client.get("/api/v1/suppliers/${aSupplier.id}/products")
@@ -131,9 +121,8 @@ class ProductRoutesTest {
 
     @Test
     fun `GET supplier products of an unknown supplier returns 404`() = testApplication {
-        // Arrange: the real repositories on an empty in-memory database, so no supplier exists
-        environment { config = testConfig() }
-        application { module() }
+        // Arrange: the fake supplier repository knows only aSupplier
+        application { productRoutesTestApp(tokenClock) }
 
         // Act
         val response = client.get("/api/v1/suppliers/999/products")
@@ -143,15 +132,15 @@ class ProductRoutesTest {
     }
 
     @Test
-    fun `GET supplier products with a non-numeric id returns 400`() = testApplication {
+    fun `GET supplier products with a non-numeric id returns 400 and names the field`() = testApplication {
         // Arrange
-        environment { config = testConfig() }
-        application { module() }
+        application { productRoutesTestApp(tokenClock) }
 
         // Act
         val response = client.get("/api/v1/suppliers/abc/products")
 
-        // Assert: the route throws ValidationException; StatusPages turns it into a 400
+        // Assert
         assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals("id", Json.decodeFromString<ErrorResponse>(response.bodyAsText()).field)
     }
 }

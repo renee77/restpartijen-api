@@ -36,7 +36,8 @@ fun Application.configureProductRouting() {
     routing {
         get("/api/v1/products/{id}") {
             // Path parameters are always text; toLongOrNull avoids a 500 on input like "abc".
-            val id = call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Product id must be a number")
+            val id = call.parameters["id"]?.toLongOrNull()
+                ?: throw ValidationException("Product id must be a number", field = "id")
 
             // Unknown id: the service throws NotFoundException; StatusPages turns it into a 404.
             // The detail holds the product with its price breakdown (§5.7, SD-3).
@@ -48,8 +49,8 @@ fun Application.configureProductRouting() {
 
         // Public, like GET /products/{id}: the offer of a supplier is visible to everyone (A4, US-03).
         get("/api/v1/suppliers/{id}/products") {
-            val supplierId =
-                call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Supplier id must be a number")
+            val supplierId = call.parameters["id"]?.toLongOrNull()
+                ?: throw ValidationException("Supplier id must be a number", field = "id")
 
             // Unknown supplier: the service throws NotFoundException (404). No products gives an empty list.
             val productList = service.getSupplierProducts(supplierId)
@@ -92,8 +93,8 @@ fun Application.configureProductRouting() {
 
             // Only a supplier may update, and only an own LISTED product; every field but category (US-03, A13).
             put("/api/v1/products/{id}") {
-                val productId =
-                    call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Product id must be a number")
+                val productId = call.parameters["id"]?.toLongOrNull()
+                    ?: throw ValidationException("Product id must be a number", field = "id")
 
                 // The JSON body becomes the request DTO; a category or a missing field gives a 400.
                 // RequestValidation then checks its shape (validateUpdateProductRequest, 400 with the field).
@@ -108,8 +109,8 @@ fun Application.configureProductRouting() {
 
             // Only a supplier may delete, and only an own LISTED product (US-03, §5.3).
             delete("/api/v1/products/{id}") {
-                val productId =
-                    call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Product id must be a number")
+                val productId = call.parameters["id"]?.toLongOrNull()
+                    ?: throw ValidationException("Product id must be a number", field = "id")
 
                 // The user comes from the token; the service checks 404, 403 and 409 in that order.
                 service.deleteProduct(call.currentUser().id, productId)
