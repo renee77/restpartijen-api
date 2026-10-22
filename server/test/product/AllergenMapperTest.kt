@@ -75,17 +75,36 @@ class AllergenMapperTest {
     @Test
     fun `mapAllergenTags logs an unknown tag on one line and at most 64 characters of it`() {
         // Arrange
-        // The tag comes from Open Food Facts; a line break in it could forge a log line (CWE-117).
+        // The tag comes from Open Food Facts; a line break or another control character in it could forge
+        // or garble a log line (CWE-117). CR, LF, ESC, NEL (U+0085) and LINE SEPARATOR (U+2028) all appear.
         val events = captureLogEvents()
-        val tag = "en:x\nFAKE ERROR " + "y".repeat(100)
+        val tag = "en:x\r\nFAKE\u001B[31m\u0085\u2028" + "y".repeat(100)
 
         // Act
         mapAllergenTags(listOf(tag))
 
         // Assert
         val message = events.about("en:x").single().formattedMessage
-        assertFalse(message.contains('\n'), message)
-        assertTrue(message.endsWith("en:x_FAKE ERROR " + "y".repeat(48)), message)
+        assertFalse(Regex("[\\p{Cc}\\p{Cf}\\p{Zl}\\p{Zp}]").containsMatchIn(message), message)
+        // 17 characters before the y's, so 47 of them fit in the 64.
+        assertTrue(message.endsWith("en:x__FAKE_[31m__" + "y".repeat(47)), message)
+    }
+
+    @Test
+    fun `mapAllergenTags logs one line per call with the number of unknown tags and at most 5 of them`() {
+        // Arrange
+        // One answer with many odd tags must not become one log line per tag.
+        val events = captureLogEvents()
+        val tags = (1..12).map { "en:odd-$it" }
+
+        // Act
+        mapAllergenTags(tags)
+
+        // Assert
+        val message = events.about("en:odd-1").single().formattedMessage
+        assertTrue(message.contains("Skipped 12 unknown"), message)
+        assertTrue(message.contains("en:odd-5"), message)
+        assertFalse(message.contains("en:odd-6"), message)
     }
 
     @Test

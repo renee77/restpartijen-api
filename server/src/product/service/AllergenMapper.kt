@@ -9,12 +9,17 @@ private val log = LoggerFactory.getLogger("com.restpartijen.api.product.service.
 // it still maps to no allergens, just like a product where nobody filled them in.
 private const val NO_ALLERGENS_TAG = "en:none"
 
-// Real tags are short slugs; anything longer is cut off, so one odd tag cannot flood the log.
+// Real tags are short slugs; anything longer is cut off, and one line names at most 5, so an odd answer
+// cannot flood the log (security review F-03, M-3).
 private const val MAX_LOGGED_TAG_LENGTH = 64
-private val CONTROL_CHARACTERS = Regex("\\p{Cntrl}")
+private const val MAX_LOGGED_TAGS = 5
 
-// The tag comes from Open Food Facts: without line breaks it cannot forge a log line (CWE-117, security F-03).
-private fun String.forLog(): String = take(MAX_LOGGED_TAG_LENGTH).replace(CONTROL_CHARACTERS, "_")
+// Control and format characters, and the Unicode line and paragraph separators: \p{Cntrl} alone covers only
+// ASCII, so NEL (U+0085) or U+2028 could still break a line in some log viewers (security review M-3).
+private val UNSAFE_IN_LOG = Regex("[\\p{Cc}\\p{Cf}\\p{Zl}\\p{Zp}]")
+
+// The tag comes from Open Food Facts: without line breaks it cannot forge a log line (CWE-117).
+private fun String.forLog(): String = take(MAX_LOGGED_TAG_LENGTH).replace(UNSAFE_IN_LOG, "_")
 
 // Tag ids of the fourteen EU allergens in the Open Food Facts taxonomy (§9.8), checked against
 // https://world.openfoodfacts.org/data/taxonomies/allergens.json on 22 Oct 2026.
@@ -39,19 +44,27 @@ private val allergenByTag: Map<String, Allergen> = mapOf(
 /**
  * Translates the allergen tags of Open Food Facts into our [Allergen] values (§10.3).
  *
- * A tag outside the fourteen EU allergens, such as en:kiwi, is logged and skipped, so one odd tag
- * does not cost the supplier the other allergens. en:none is skipped without a warning.
+ * A tag outside the fourteen EU allergens, such as en:kiwi, is skipped, so one odd tag does not cost
+ * the supplier the other allergens; one warning per call names how many and the first few.
+ * en:none is skipped without a warning.
  *
  * @return each allergen once; empty when no tag is known, which does not prove the product has none.
  */
-fun mapAllergenTags(tags: List<String>): Set<Allergen> = buildSet {
-    for (tag in tags) {
-        if (tag == NO_ALLERGENS_TAG) continue
-        val allergen = allergenByTag[tag]
-        if (allergen == null) {
-            log.warn("Skipped unknown allergen tag from Open Food Facts: {}", tag.forLog())
-        } else {
-            add(allergen)
+fun mapAllergenTags(tags: List<String>): Set<Allergen> {
+    val unknown = mutableListOf<String>()
+    val allergens = buildSet {
+        for (tag in tags) {
+            if (tag == NO_ALLERGENS_TAG) continue
+            val allergen = allergenByTag[tag]
+            if (allergen == null) unknown += tag else add(allergen)
         }
     }
+    if (unknown.isNotEmpty()) {
+        log.warn(
+            "Skipped {} unknown allergen tags from Open Food Facts: {}",
+            unknown.size,
+            unknown.take(MAX_LOGGED_TAGS).joinToString(", ") { it.forLog() },
+        )
+    }
+    return allergens
 }
