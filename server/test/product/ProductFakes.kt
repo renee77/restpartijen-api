@@ -6,6 +6,8 @@ import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
+import com.restpartijen.api.product.service.OwnershipGuard
+import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
@@ -27,6 +29,7 @@ import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
+import kotlin.time.Clock
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
@@ -34,14 +37,42 @@ import kotlin.time.Instant
  * A ProductRepository for tests, backed by the generic FakeRepository (decision 6.4).
  *
  * Delegation (`by`) passes every Repository call on to the fake, so no repository logic is repeated here.
- * Once ProductRepository gets product-specific queries, this object has to implement those itself.
+ * The product-specific queries of ProductRepository are implemented here on top of findAll.
  */
-fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository =
-    object : ProductRepository, Repository<SurplusProduct> by FakeRepository(
+fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository {
+    val store = FakeRepository(
         idOf = { it.id },
         withId = { product, id -> product.withId(id) },
         initialItems = products.toList()
-    ) {}
+    )
+    return object : ProductRepository, Repository<SurplusProduct> by store {
+        // The same rule as the real query (A4): only the current offer of this supplier.
+        override suspend fun findBySupplier(supplierId: Long): List<SurplusProduct> =
+            findAll().filter {
+                it.supplier.id == supplierId && it.status in setOf(ProductStatus.LISTED, ProductStatus.RESERVED)
+            }
+
+        // The same rule as the real delete (§5.3): only a LISTED product can be deleted, otherwise false.
+        // Removing it from the list matches what callers see of the soft delete: findById no longer finds it.
+        override suspend fun delete(id: Long): Boolean =
+            store.findById(id)?.status == ProductStatus.LISTED && store.delete(id)
+
+        // The same rule as the real update (A13): only a LISTED product changes, otherwise false.
+        override suspend fun update(item: SurplusProduct): Boolean =
+            store.findById(item.id)?.status == ProductStatus.LISTED && store.update(item)
+    }
+}
+
+/**
+ * Builds a ProductService the way Dependencies.kt wires it: the OwnershipGuard uses the same
+ * supplier repository as the service, so one fake decides both who the supplier is and who owns what.
+ */
+fun productService(
+    repository: ProductRepository,
+    suppliers: SupplierRepository,
+    priceProvider: PriceProvider,
+    clock: Clock,
+): ProductService = ProductService(repository, suppliers, priceProvider, OwnershipGuard(suppliers), clock)
 
 /** The supplier the product fakes use by default; the same values as the default supplier of [aProduct]. */
 val aSupplier = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0, longitude = 5.0)
@@ -53,6 +84,7 @@ val aSupplier = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0,
 fun fakeSupplierRepository(supplier: SupplierSummary? = aSupplier, ownerUserId: Long = 7): SupplierRepository =
     object : SupplierRepository {
         override suspend fun findByUserId(userId: Long): SupplierSummary? = supplier.takeIf { userId == ownerUserId }
+        override suspend fun exists(supplierId: Long): Boolean = supplier?.id == supplierId
         override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
     }
 
