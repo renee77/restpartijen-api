@@ -11,4 +11,5 @@ fun testConfig(): MapApplicationConfig = MapApplicationConfig(
     "jwt.issuer" to "test-issuer",
     "jwt.audience" to "test-audience",
     "jwt.validityHours" to "1",
+    "openFoodFacts.contactEmail" to "test@example.org",
 )

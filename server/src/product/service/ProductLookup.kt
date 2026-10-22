@@ -13,4 +13,9 @@ data class ProductLookup(
     val name: String?,
     val allergens: Set<Allergen>,
     val manualEntryRequired: Boolean,
-)
+) {
+    companion object {
+        /** No usable answer from Open Food Facts, or a limit was reached: the supplier fills in everything. */
+        val MANUAL_ENTRY = ProductLookup(name = null, allergens = emptySet(), manualEntryRequired = true)
+    }
+}

@@ -1,5 +1,6 @@
 package com.restpartijen.api.product
 
+import com.restpartijen.api.plugins.ErrorCode
 import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.dto.ProductLookupResponse
@@ -21,6 +22,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.time.Clock
 
 /**
@@ -34,13 +36,16 @@ class LookupProductRouteTest {
 
     private fun tokenFor(role: Role) = productToken(role, tokenClock)
 
-    private suspend fun ApplicationTestBuilder.lookup(barcode: String, token: String? = tokenFor(Role.SUPPLIER)): HttpResponse =
+    private suspend fun ApplicationTestBuilder.lookup(
+        barcode: String,
+        token: String? = tokenFor(Role.SUPPLIER),
+    ): HttpResponse =
         client.get("/api/v1/products/lookup/$barcode") { token?.let { bearerAuth(it) } }
 
     private fun ApplicationTestBuilder.appWithOpenFoodFacts(status: HttpStatusCode, body: String) = application {
         productRoutesTestApp(
             tokenClock,
-            openFoodFacts = OpenFoodFactsClient(MockEngine {
+            openFoodFacts = openFoodFactsClient(MockEngine {
                 respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
             }),
         )
@@ -65,7 +70,7 @@ class LookupProductRouteTest {
     }
 
     @Test
-    fun `a supplier gets 200 with manual entry and an empty suggestion when Open Food Facts gives no answer`() = testApplication {
+    fun `a supplier gets 200 with manual entry when Open Food Facts gives no answer`() = testApplication {
         // Arrange
         appWithOpenFoodFacts(HttpStatusCode.ServiceUnavailable, "")
 
@@ -81,15 +86,31 @@ class LookupProductRouteTest {
     }
 
     @Test
-    fun `an unknown barcode gives 404`() = testApplication {
+    fun `an unknown barcode gives 404 with the error body`() = testApplication {
         // Arrange
         appWithOpenFoodFacts(HttpStatusCode.NotFound, """{"status":"failure"}""")
 
         // Act
         val response = lookup("8712345678906")
 
-        // Assert
+        // Assert: the error body is part of the contract with the app, like for every other 404 (§10.2)
         assertEquals(HttpStatusCode.NotFound, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals(ErrorCode.NOT_FOUND, error.code)
+        assertEquals("No product found for this barcode", error.message)
+        assertNull(error.field)
+    }
+
+    @Test
+    fun `a collector with a malformed barcode gets 403, not 400`() = testApplication {
+        // Arrange: the role is checked before the barcode, so a collector learns nothing about the barcode rule
+        application { productRoutesTestApp(tokenClock) }
+
+        // Act
+        val response = lookup("abc", token = tokenFor(Role.COLLECTOR))
+
+        // Assert
+        assertEquals(HttpStatusCode.Forbidden, response.status)
     }
 
     @Test

@@ -5,15 +5,13 @@ import com.restpartijen.api.persistence.Repository
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.product.client.OpenFoodFactsClient
+import com.restpartijen.api.product.client.OpenFoodFactsSettings
 import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
-import com.restpartijen.api.product.service.NotFoundCache
-import com.restpartijen.api.product.service.OpenFoodFactsRateLimiter
 import com.restpartijen.api.product.service.OwnershipGuard
-import com.restpartijen.api.product.service.ProductLookupCache
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
@@ -29,6 +27,7 @@ import com.restpartijen.api.testsupport.FakeRepository
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.insertSupplier
 import com.restpartijen.api.testsupport.insertUser
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.mock.MockEngine
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -77,18 +76,18 @@ fun productService(
     suppliers: SupplierRepository,
     priceProvider: PriceProvider,
     clock: Clock,
-    openFoodFacts: OpenFoodFactsClient = openFoodFactsNotCalled(),
-): ProductService = ProductService(
-    repository, suppliers, priceProvider, OwnershipGuard(suppliers), clock, openFoodFacts,
-    ProductLookupCache(clock), NotFoundCache(clock), OpenFoodFactsRateLimiter(clock),
-)
+): ProductService = ProductService(repository, suppliers, priceProvider, OwnershipGuard(suppliers), clock)
+
+/** An OpenFoodFactsClient on [engine], with a test contact address instead of a real one. */
+fun openFoodFactsClient(engine: HttpClientEngine): OpenFoodFactsClient =
+    OpenFoodFactsClient(engine, OpenFoodFactsSettings(contactEmail = "test@example.org"))
 
 /**
  * An OpenFoodFactsClient for tests that do not look up a barcode.
  * A call fails loudly with an IllegalStateException, which the client does not turn into Unavailable.
  */
 fun openFoodFactsNotCalled(): OpenFoodFactsClient =
-    OpenFoodFactsClient(MockEngine { error("This test does not expect a call to Open Food Facts") })
+    openFoodFactsClient(MockEngine { error("This test does not expect a call to Open Food Facts") })
 
 /** The supplier the product fakes use by default; the same values as the default supplier of [aProduct]. */
 val aSupplier = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0, longitude = 5.0)

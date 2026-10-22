@@ -10,7 +10,11 @@ import io.ktor.client.request.HttpResponseData
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
+import io.ktor.utils.io.ByteChannel
+import io.ktor.utils.io.ClosedWriteChannelException
+import io.ktor.utils.io.writeFully
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import java.io.IOException
 import java.nio.channels.UnresolvedAddressException
@@ -72,7 +76,8 @@ class OpenFoodFactsClientTest {
     fun `fetchProduct returns no tags when Open Food Facts sends null for the allergens`() = runTest {
         // Arrange
         // An explicit null must not cost the supplier the name, as a broken body would.
-        val client = clientResponding(HttpStatusCode.OK, """{"product":{"product_name":"Nutella","allergens_tags":null}}""")
+        val body = """{"product":{"product_name":"Nutella","allergens_tags":null}}"""
+        val client = clientResponding(HttpStatusCode.OK, body)
 
         // Act
         val result = client.fetchProduct(NUTELLA_BARCODE)
@@ -96,11 +101,84 @@ class OpenFoodFactsClientTest {
     }
 
     @Test
+    fun `fetchProduct reads a body of exactly 64 KiB`() = runTest {
+        // Arrange: a body of exactly the limit, which must still be read
+        val prefix = """{"product":{"product_name":""""
+        val suffix = """"}}"""
+        val name = "a".repeat(64 * 1024 - prefix.length - suffix.length)
+        val client = clientResponding(HttpStatusCode.OK, prefix + name + suffix)
+
+        // Act
+        val result = client.fetchProduct(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals(LookupResult.Found(name, emptyList()), result)
+    }
+
+    @Test
+    fun `fetchProduct stops reading a body after 64 KiB`() = runTest {
+        // Arrange
+        // A body of 10 MB, written as it is read. The client must stop after 64 KiB instead of first loading
+        // everything into memory, which is what a plain get() does (code and security review, round 2).
+        val chunk = ByteArray(8 * 1024) { 'a'.code.toByte() }
+        var written = 0L
+        val body = ByteChannel()
+        backgroundScope.launch {
+            try {
+                body.writeFully("""{"product":{"product_name":"""".encodeToByteArray())
+                repeat(1_280) {
+                    body.writeFully(chunk)
+                    body.flush()
+                    written += chunk.size
+                }
+                body.close()
+            } catch (e: ClosedWriteChannelException) {
+                // Expected: the client hung up after 64 KiB, which is what this test wants to see.
+            }
+        }
+        val client = openFoodFactsClient(MockEngine {
+            respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+        })
+
+        // Act
+        val result = client.fetchProduct(NUTELLA_BARCODE)
+
+        // Assert: Unavailable, and far less than the 10 MiB was produced. Measured on 22 Oct: a plain get() takes
+        // all 10 MiB; streaming stops at about 2 MiB, which the channels in between hold before the writer waits.
+        assertEquals(LookupResult.Unavailable, result)
+        assertTrue(written < 5_000_000, "written: $written bytes")
+    }
+
+    @Test
+    fun `fetchProduct reads a name with accents as UTF-8`() = runTest {
+        // Arrange: Dutch and French names, and a sign of three bytes in UTF-8
+        val client = clientResponding(HttpStatusCode.OK, """{"product":{"product_name":"Crème brûlée €"}}""")
+
+        // Act
+        val result = client.fetchProduct(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals(LookupResult.Found("Crème brûlée €", emptyList()), result)
+    }
+
+    @Test
+    fun `fetchProduct counts the limit in bytes, not in characters`() = runTest {
+        // Arrange: 40,000 times "é" is 40,000 characters but 80,000 bytes, so above the 64 KiB
+        val client = clientResponding(HttpStatusCode.OK, """{"product":{"product_name":"${"é".repeat(40_000)}"}}""")
+
+        // Act
+        val result = client.fetchProduct(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals(LookupResult.Unavailable, result)
+    }
+
+    @Test
     fun `fetchProduct returns Unavailable on a redirect instead of following it`() = runTest {
         // Arrange
         // The API answers directly; a redirect could send the call to another host.
         val requests = mutableListOf<HttpRequestData>()
-        val client = OpenFoodFactsClient(MockEngine { request ->
+        val client = openFoodFactsClient(MockEngine { request ->
             requests += request
             respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "https://example.org/elsewhere"))
         })
@@ -119,7 +197,7 @@ class OpenFoodFactsClientTest {
         // The route allows only digits, but the client must not rely on that: a slash or question mark
         // in the barcode may never add a path segment or a query parameter.
         val requests = mutableListOf<HttpRequestData>()
-        val client = OpenFoodFactsClient(MockEngine { request ->
+        val client = openFoodFactsClient(MockEngine { request ->
             requests += request
             respondJson(HttpStatusCode.NotFound, NOT_FOUND_BODY)
         })
@@ -220,7 +298,7 @@ class OpenFoodFactsClientTest {
     @Test
     fun `fetchProduct returns Unavailable when there is no connection`() = runTest {
         // Arrange
-        val client = OpenFoodFactsClient(MockEngine { throw IOException("Connection refused") })
+        val client = openFoodFactsClient(MockEngine { throw IOException("Connection refused") })
 
         // Act
         val result = client.fetchProduct(NUTELLA_BARCODE)
@@ -233,7 +311,7 @@ class OpenFoodFactsClientTest {
     fun `fetchProduct returns Unavailable when the host name cannot be resolved`() = runTest {
         // Arrange
         // What CIO throws without DNS, for example during an offline demo; it is no IOException.
-        val client = OpenFoodFactsClient(MockEngine { throw UnresolvedAddressException() })
+        val client = openFoodFactsClient(MockEngine { throw UnresolvedAddressException() })
 
         // Act
         val result = client.fetchProduct(NUTELLA_BARCODE)
@@ -246,7 +324,7 @@ class OpenFoodFactsClientTest {
     fun `fetchProduct returns Unavailable when Open Food Facts answers too late`() = runTest {
         // Arrange
         // Longer than the 3 second time-out of the client, so the client has to give up first.
-        val client = OpenFoodFactsClient(MockEngine {
+        val client = openFoodFactsClient(MockEngine {
             delay(10.seconds)
             respondJson(HttpStatusCode.OK, NUTELLA_BODY)
         })
@@ -259,12 +337,12 @@ class OpenFoodFactsClientTest {
     }
 
     private fun clientResponding(status: HttpStatusCode, body: String) =
-        OpenFoodFactsClient(MockEngine { respondJson(status, body) })
+        openFoodFactsClient(MockEngine { respondJson(status, body) })
 
     // The one request the client sends for [barcode], answered with the real Nutella body.
     private suspend fun requestSentFor(barcode: String): HttpRequestData {
         val requests = mutableListOf<HttpRequestData>()
-        val client = OpenFoodFactsClient(MockEngine { request ->
+        val client = openFoodFactsClient(MockEngine { request ->
             requests += request
             respondJson(HttpStatusCode.OK, NUTELLA_BODY)
         })

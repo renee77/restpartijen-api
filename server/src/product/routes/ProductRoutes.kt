@@ -5,6 +5,7 @@ import com.restpartijen.api.product.dto.UpdateProductRequest
 import com.restpartijen.api.product.dto.requireBarcode
 import com.restpartijen.api.product.dto.toCommand
 import com.restpartijen.api.product.dto.toResponse
+import com.restpartijen.api.product.service.ProductLookupService
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.security.service.currentUser
 import com.restpartijen.api.security.service.requireRole
@@ -31,6 +32,7 @@ import io.ktor.server.util.getOrFail
  */
 fun Application.configureProductRouting() {
     val service: ProductService by dependencies
+    val lookupService: ProductLookupService by dependencies
     routing {
         get("/api/v1/products/{id}") {
             // Path parameters are always text; toLongOrNull avoids a 500 on input like "abc".
@@ -63,9 +65,10 @@ fun Application.configureProductRouting() {
                 val barcode = call.parameters.getOrFail("barcode")
                 requireBarcode(barcode)
 
-                // Unknown barcode: the service throws NotFoundException (404). No answer from Open Food Facts
-                // still gives 200, with manualEntryRequired (§5.2).
-                val lookup = service.lookupProduct(barcode)
+                // Unknown barcode: the service throws NotFoundException (404). No answer from Open Food Facts,
+                // or a limit reached, still gives 200, with manualEntryRequired (§5.2). The user id counts
+                // towards the limit per supplier and shows in the log who reached it.
+                val lookup = lookupService.lookup(barcode, call.currentUser().id)
 
                 call.respond(lookup.toResponse())
             }

@@ -4,16 +4,16 @@ import com.restpartijen.api.pricing.service.AdminProductService
 import com.restpartijen.api.pricing.service.ExpiryScheduler
 import com.restpartijen.api.pricing.service.PricingService
 import com.restpartijen.api.product.client.OpenFoodFactsClient
+import com.restpartijen.api.product.client.OpenFoodFactsSettings
+import com.restpartijen.api.product.client.openFoodFactsSettings
 import com.restpartijen.api.product.repository.ExposedProductReader
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedProductStatusUpdater
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
-import com.restpartijen.api.product.service.NotFoundCache
-import com.restpartijen.api.product.service.OpenFoodFactsRateLimiter
 import com.restpartijen.api.product.service.OwnershipGuard
-import com.restpartijen.api.product.service.ProductLookupCache
+import com.restpartijen.api.product.service.ProductLookupService
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationRepository
@@ -36,6 +36,9 @@ import kotlin.time.Clock
  * Tests can register a fake before module() runs; the test engine then ignores this registration.
  */
 fun Application.configureDependencies() {
+    // Read before the registrations, so a missing OFF_CONTACT_EMAIL stops the application at startup (security M-4).
+    val openFoodFactsSettings = environment.config.openFoodFactsSettings()
+
     dependencies {
         // Shared
         provide<Clock> { Clock.System }
@@ -50,10 +53,9 @@ fun Application.configureDependencies() {
         // The real HTTP engine; tests give the client a MockEngine instead (US-02, A5).
         // Registered on its own, so the DI closes it when the application stops; HttpClient leaves it open.
         provide<HttpClientEngine> { CIO.create() }
+        provide<OpenFoodFactsSettings> { openFoodFactsSettings }
         provide(::OpenFoodFactsClient)
-        provide(::ProductLookupCache)
-        provide(::NotFoundCache)
-        provide(::OpenFoodFactsRateLimiter)
+        provide(::ProductLookupService)
 
         // F2 (Stefan)
         provide<ReservationRepository>(::ExposedReservationRepository)
