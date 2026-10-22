@@ -88,6 +88,16 @@ class UpdateProductRequestTest {
     }
 
     @Test
+    fun `a barcode of 6 digits is refused`() {
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "123456")))
+    }
+
+    @Test
+    fun `a barcode of 15 digits is refused`() {
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "1".repeat(15))))
+    }
+
+    @Test
     fun `a barcode of 13 digits passes`() {
         assertEquals(ValidationResult.Valid, validateUpdateProductRequest(aRequest(barcode = "8710400000001")))
     }

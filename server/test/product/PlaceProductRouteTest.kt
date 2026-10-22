@@ -175,11 +175,11 @@ class PlaceProductRouteTest {
     }
 
     @Test
-    fun `a barcode longer than 255 characters gives 400 and names the field`() = testApplication {
-        // Arrange: validBody plus a barcode that does not fit varchar(255) (E-03: was a 500 on INSERT);
-        // since US-02 the barcode rule (7 to 14 digits) refuses it first
+    fun `a barcode of more than 14 digits gives 400 and names the field`() = testApplication {
+        // Arrange: validBody plus a barcode of 15 digits; one more than GTIN-14 allows (US-02).
+        // Before US-02 this test used 256 characters for the varchar(255) limit (E-03).
         application { testApp() }
-        val body = validBody.replace("\"quantity\": 2,", "\"quantity\": 2, \"barcode\": \"${"1".repeat(256)}\",")
+        val body = validBody.replace("\"quantity\": 2,", "\"quantity\": 2, \"barcode\": \"${"1".repeat(15)}\",")
 
         // Act
         val response = place(body = body, token = tokenFor(Role.SUPPLIER))

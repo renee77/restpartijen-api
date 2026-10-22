@@ -1,12 +1,15 @@
 package com.restpartijen.api
 
 import com.restpartijen.api.product.aProduct
-import com.restpartijen.api.product.fakeProductRepository
+import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.dto.ProductResponse
+import com.restpartijen.api.product.fakeProductRepository
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.shared.SupplierIdLookup
 import com.restpartijen.api.testsupport.testConfig
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.cio.CIOEngineConfig
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -56,5 +59,21 @@ class DependencyInjectionTest {
 
         // Assert: F1's implementation, so login gets the real supplier id
         assertIs<ExposedSupplierRepository>(lookup)
+    }
+
+    @Test
+    fun `the application provides the Open Food Facts client with the CIO engine`() = testApplication {
+        // Arrange: the engine is registered on its own, so the DI closes it when the application stops (US-02)
+        environment { config = testConfig() }
+        application { module() }
+        startApplication()
+
+        // Act
+        val engine: HttpClientEngine = application.dependencies.resolve()
+        val client: OpenFoodFactsClient = application.dependencies.resolve()
+
+        // Assert
+        assertIs<CIOEngineConfig>(engine.config)
+        assertIs<OpenFoodFactsClient>(client)
     }
 }

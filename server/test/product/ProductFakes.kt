@@ -1,21 +1,20 @@
 package com.restpartijen.api.product
 
+import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.Repository
+import com.restpartijen.api.persistence.SuppliersTable
+import com.restpartijen.api.persistence.UsersTable
+import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
-import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.service.NotFoundCache
 import com.restpartijen.api.product.service.OpenFoodFactsRateLimiter
 import com.restpartijen.api.product.service.OwnershipGuard
 import com.restpartijen.api.product.service.ProductLookupCache
 import com.restpartijen.api.product.service.ProductService
-import io.ktor.client.engine.mock.MockEngine
-import com.restpartijen.api.persistence.ProductsTable
-import com.restpartijen.api.persistence.SuppliersTable
-import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
@@ -30,6 +29,7 @@ import com.restpartijen.api.testsupport.FakeRepository
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.insertSupplier
 import com.restpartijen.api.testsupport.insertUser
+import io.ktor.client.engine.mock.MockEngine
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction

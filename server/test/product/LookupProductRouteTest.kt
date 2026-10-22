@@ -2,6 +2,8 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.product.client.OpenFoodFactsClient
+import com.restpartijen.api.product.dto.ProductLookupResponse
+import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import io.ktor.client.engine.mock.MockEngine
@@ -16,9 +18,7 @@ import io.ktor.http.headersOf
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
@@ -54,12 +54,14 @@ class LookupProductRouteTest {
         // Act
         val response = lookup(NUTELLA_BARCODE)
 
-        // Assert: the JSON field names are the contract with the app
+        // Assert: the JSON field names are the contract with the app; the order of the allergens is not
         assertEquals(HttpStatusCode.OK, response.status)
-        val json = response.json()
-        assertEquals("\"Nutella\"", json["name"].toString())
-        assertEquals("""["MILK","NUTS","SOYBEANS"]""", json["allergens"].toString())
-        assertEquals("false", json["manualEntryRequired"].toString())
+        val body = response.bodyAsText()
+        assertEquals(setOf("name", "allergens", "manualEntryRequired"), Json.parseToJsonElement(body).jsonObject.keys)
+        assertEquals(
+            ProductLookupResponse("Nutella", setOf(Allergen.MILK, Allergen.NUTS, Allergen.SOYBEANS), false),
+            Json.decodeFromString<ProductLookupResponse>(body),
+        )
     }
 
     @Test
@@ -72,10 +74,10 @@ class LookupProductRouteTest {
 
         // Assert: placing a product stays possible, the supplier fills in everything (§5.2)
         assertEquals(HttpStatusCode.OK, response.status)
-        val json = response.json()
-        assertEquals("null", json["name"].toString())
-        assertEquals("[]", json["allergens"].toString())
-        assertEquals("true", json["manualEntryRequired"].toString())
+        assertEquals(
+            ProductLookupResponse(null, emptySet(), manualEntryRequired = true),
+            Json.decodeFromString<ProductLookupResponse>(response.bodyAsText()),
+        )
     }
 
     @Test
@@ -109,6 +111,18 @@ class LookupProductRouteTest {
 
         // Act
         val response = lookup(NUTELLA_BARCODE, token = tokenFor(Role.COLLECTOR))
+
+        // Assert
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+    }
+
+    @Test
+    fun `an admin gets 403`() = testApplication {
+        // Arrange: the lookup is for placing a product, which only a supplier does (§5.2)
+        application { productRoutesTestApp(tokenClock) }
+
+        // Act
+        val response = lookup(NUTELLA_BARCODE, token = tokenFor(Role.ADMIN))
 
         // Assert
         assertEquals(HttpStatusCode.Forbidden, response.status)
@@ -164,8 +178,6 @@ class LookupProductRouteTest {
         assertEquals(HttpStatusCode.OK, shortest.status)
         assertEquals(HttpStatusCode.OK, longest.status)
     }
-
-    private suspend fun HttpResponse.json(): JsonObject = Json.parseToJsonElement(bodyAsText()).jsonObject
 
     private companion object {
         const val NUTELLA_BARCODE = "3017620422003"

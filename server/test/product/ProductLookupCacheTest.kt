@@ -40,6 +40,46 @@ class ProductLookupCacheTest {
     }
 
     @Test
+    fun `get returns null for another barcode than the one put`() {
+        // Arrange
+        cache.put(NUTELLA_BARCODE, nutella)
+
+        // Act
+        val cached = cache.get("8712345678906")
+
+        // Assert
+        assertNull(cached)
+    }
+
+    @Test
+    fun `put again for the same barcode restarts its 24 hours`() {
+        // Arrange
+        cache.put(NUTELLA_BARCODE, nutella)
+        clock.now = testNow + 23.hours
+        cache.put(NUTELLA_BARCODE, nutella)
+        clock.now = testNow + 24.hours
+
+        // Act: 24 hours after the first put, but only 1 hour after the second
+        val cached = cache.get(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals(nutella, cached)
+    }
+
+    @Test
+    fun `put again for a stored barcode in a full cache drops nothing else`() {
+        // Arrange
+        for (number in 1..1_000) cache.put(number.toString(), nutella)
+
+        // Act: barcode 500 is already there, so the cache does not grow
+        cache.put("500", nutella)
+
+        // Assert
+        assertEquals(nutella, cache.get("1"))
+        assertEquals(nutella, cache.get("500"))
+    }
+
+    @Test
     fun `get still returns the product just before 24 hours`() {
         // Arrange
         cache.put(NUTELLA_BARCODE, nutella)

@@ -3,10 +3,10 @@ package com.restpartijen.api.product
 import com.restpartijen.api.plugins.configureRequestValidation
 import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
+import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.product.routes.configureProductRouting
-import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.service.NotFoundCache
 import com.restpartijen.api.product.service.OpenFoodFactsRateLimiter
 import com.restpartijen.api.product.service.OwnershipGuard

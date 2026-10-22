@@ -115,7 +115,7 @@ class PlaceProductRequestValidatorTest {
     fun `barcodes of 7, 13 and 14 digits pass`() {
         // UPC-E, EAN-13 and GTIN-14: the same rule as the lookup, so a stored barcode can always be looked up
         for (barcode in listOf("1234567", "8710400000001", "1".repeat(14))) {
-            assertEquals(ValidationResult.Valid, validatePlaceProductRequest(aRequest(barcode = barcode)))
+            assertEquals(ValidationResult.Valid, validatePlaceProductRequest(aRequest(barcode = barcode)), barcode)
         }
     }
 }

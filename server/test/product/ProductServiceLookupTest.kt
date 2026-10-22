@@ -16,6 +16,7 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.seconds
 
@@ -74,6 +75,21 @@ class ProductServiceLookupTest {
         // Assert
         assertEquals(first, second)
         assertEquals(1, calls.count)
+    }
+
+    @Test
+    fun `lookupProduct keeps the cache per barcode`() = runTest {
+        // Arrange
+        val calls = CallCounter(HttpStatusCode.OK, NUTELLA_BODY)
+        val service = serviceWith(calls.client)
+        service.lookupProduct(NUTELLA_BARCODE)
+
+        // Act: another barcode is not in the cache yet; the first one is
+        service.lookupProduct("8710400000001")
+        service.lookupProduct(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals(2, calls.count)
     }
 
     @Test
@@ -184,7 +200,7 @@ class ProductServiceLookupTest {
         val lookup = service.lookupProduct(NUTELLA_BARCODE)
 
         // Assert
-        assertEquals(null, lookup.name)
+        assertNull(lookup.name)
     }
 
     private fun serviceAnswering(status: HttpStatusCode, body: String) = serviceWith(CallCounter(status, body).client)
