@@ -14,6 +14,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import java.nio.channels.UnresolvedAddressException
 
 /**
  * Fetches the name and allergen tags for a barcode from the Open Food Facts API v3 (§10.3, A5).
@@ -61,6 +62,9 @@ class OpenFoodFactsClient(engine: HttpClientEngine) : AutoCloseable {
             }
         } catch (e: IOException) {
             // No connection or no answer within the time-out; HttpRequestTimeoutException is an IOException.
+            LookupResult.Unavailable
+        } catch (e: UnresolvedAddressException) {
+            // No DNS, for example offline; CIO throws this IllegalArgumentException instead of an IOException.
             LookupResult.Unavailable
         } catch (e: SerializationException) {
             // A 200 with a body that is not valid JSON or has no product.

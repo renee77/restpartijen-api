@@ -13,6 +13,7 @@ import io.ktor.http.headersOf
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import java.io.IOException
+import java.nio.channels.UnresolvedAddressException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
@@ -147,6 +148,19 @@ class OpenFoodFactsClientTest {
     fun `fetchProduct returns Unavailable when there is no connection`() = runTest {
         // Arrange
         val client = OpenFoodFactsClient(MockEngine { throw IOException("Connection refused") })
+
+        // Act
+        val result = client.fetchProduct(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals(LookupResult.Unavailable, result)
+    }
+
+    @Test
+    fun `fetchProduct returns Unavailable when the host name cannot be resolved`() = runTest {
+        // Arrange
+        // What CIO throws without DNS, for example during an offline demo; it is no IOException.
+        val client = OpenFoodFactsClient(MockEngine { throw UnresolvedAddressException() })
 
         // Act
         val result = client.fetchProduct(NUTELLA_BARCODE)
