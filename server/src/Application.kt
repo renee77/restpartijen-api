@@ -21,6 +21,7 @@ import com.restpartijen.api.security.configureSecurityModule
 import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.reservation.repository.ReservationsTable
 import com.restpartijen.api.reservation.routes.configureReservationRouting
+import com.restpartijen.api.reservation.routes.configureSearchRouting
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.seed.SeedData
 import io.ktor.server.application.*
@@ -83,6 +84,7 @@ fun Application.module() {
     configureProductRouting()
     // F2 routes, owner Stefan
     configureReservationRouting()
+    configureSearchRouting()
     // F3 routes, owner Lonneke: admin overview and status monitoring (US-08, US-09).
     configurePricingRouting()
     // GI-3 auth routes, owner Lonneke
