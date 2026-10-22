@@ -6,15 +6,25 @@ import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.UserAgent
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.appendPathSegments
+import io.ktor.utils.io.readBuffer
 import kotlinx.io.IOException
+import kotlinx.io.readByteArray
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 import java.nio.channels.UnresolvedAddressException
+
+// Open Food Facts asks every app to name itself as AppName/Version (ContactEmail) (A5); one place to change both.
+private const val USER_AGENT = "restpartijen-api/0.1 (etm.bouwman@student.avans.nl)"
+
+// The two fields we ask for are a few hundred bytes; a bigger body is no normal answer and is not read (security F-02).
+private const val MAX_BODY_BYTES = 64 * 1024
 
 /**
  * Fetches the name and allergen tags for a barcode from the Open Food Facts API v3 (§10.3, A5).
@@ -25,6 +35,8 @@ import java.nio.channels.UnresolvedAddressException
  * @param engine CIO in production, a MockEngine in tests
  */
 class OpenFoodFactsClient(engine: HttpClientEngine) : AutoCloseable {
+    private val log = LoggerFactory.getLogger(OpenFoodFactsClient::class.java)
+
     // expectSuccess keeps Ktor's default (false): a 404 or 5xx does not throw,
     // so fetchProduct reads the status itself and picks the LookupResult.
     private val httpClient = HttpClient(engine) {
@@ -33,14 +45,27 @@ class OpenFoodFactsClient(engine: HttpClientEngine) : AutoCloseable {
             requestTimeoutMillis = 3_000
         }
         install(UserAgent) {
-            // Open Food Facts asks every app to name itself as AppName/Version (ContactEmail) (A5).
-            agent = "restpartijen-api/0.1 (etm.bouwman@student.avans.nl)"
+            agent = USER_AGENT
         }
+        // The API answers directly; a redirect could send the call to another host (security F-02).
+        followRedirects = false
     }
-    private val json = Json { ignoreUnknownKeys = true }
+
+    // coerceInputValues: an explicit null for a field with a default takes the default, so
+    // "allergens_tags": null still gives the name instead of a broken body.
+    private val json = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+    }
 
     override fun close() = httpClient.close()
 
+    /**
+     * Asks Open Food Facts for the name and allergen tags of [barcode].
+     * Never throws for a failure of Open Food Facts or the network; every such failure is logged and is Unavailable.
+     *
+     * @return Found with the name and the tags as sent, NotFound for a 404, or Unavailable
+     */
     suspend fun fetchProduct(barcode: String): LookupResult {
         return try {
             val response = httpClient.get("https://world.openfoodfacts.org/api/v3/product") {
@@ -53,24 +78,41 @@ class OpenFoodFactsClient(engine: HttpClientEngine) : AutoCloseable {
 
             when (response.status) {
                 HttpStatusCode.OK -> {
-                    val body = json.decodeFromString<OpenFoodFactsResponse>(response.bodyAsText())
-                    LookupResult.Found(body.product.productName, body.product.allergensTags)
+                    val text = response.textWithin(MAX_BODY_BYTES)
+                    if (text == null) {
+                        log.warn("Open Food Facts sent a body larger than {} bytes", MAX_BODY_BYTES)
+                        LookupResult.Unavailable
+                    } else {
+                        val body = json.decodeFromString<OpenFoodFactsResponse>(text)
+                        LookupResult.Found(body.product.productName, body.product.allergensTags)
+                    }
                 }
-
                 HttpStatusCode.NotFound -> LookupResult.NotFound
-                // Rate limit (429), server errors (5xx) and every other status: Open Food Facts gave no usable answer.
-                else -> LookupResult.Unavailable
+                // Rate limit (429), server errors (5xx), redirects and every other status: no usable answer.
+                else -> {
+                    log.warn("Open Food Facts answered {}", response.status.value)
+                    LookupResult.Unavailable
+                }
             }
         } catch (e: IOException) {
             // No connection or no answer within the time-out; HttpRequestTimeoutException is an IOException.
+            log.warn("Open Food Facts could not be reached: {}", e.javaClass.simpleName)
             LookupResult.Unavailable
         } catch (e: UnresolvedAddressException) {
             // No DNS, for example offline; CIO throws this IllegalArgumentException instead of an IOException.
+            log.warn("The host of Open Food Facts could not be resolved")
             LookupResult.Unavailable
         } catch (e: SerializationException) {
             // A 200 with a body that is not valid JSON or has no product.
+            log.warn("Open Food Facts sent a body that could not be read")
             LookupResult.Unavailable
         }
+    }
+
+    // Reads at most one byte more than allowed, so a bigger body is noticed without reading it all.
+    private suspend fun HttpResponse.textWithin(maxBytes: Int): String? {
+        val bytes = bodyAsChannel().readBuffer(maxBytes + 1L).readByteArray()
+        return if (bytes.size > maxBytes) null else bytes.decodeToString()
     }
 }
 

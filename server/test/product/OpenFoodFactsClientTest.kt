@@ -16,6 +16,8 @@ import java.io.IOException
 import java.nio.channels.UnresolvedAddressException
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -37,27 +39,78 @@ class OpenFoodFactsClientTest {
     }
 
     @Test
-    fun `fetchProduct asks only for the needed fields and names our app in the User-Agent`() = runTest {
+    fun `fetchProduct calls the v3 product endpoint over https`() = runTest {
+        // Act
+        val request = requestSentFor(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals("https", request.url.protocol.name)
+        assertEquals("world.openfoodfacts.org", request.url.host)
+        assertEquals("/api/v3/product/$NUTELLA_BARCODE", request.url.encodedPath)
+    }
+
+    @Test
+    fun `fetchProduct asks only for the name and the allergen tags`() = runTest {
+        // Act
+        val request = requestSentFor(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals("product_name,allergens_tags", request.url.parameters["fields"])
+    }
+
+    @Test
+    fun `fetchProduct names the app, a version and a contact address in the User-Agent`() = runTest {
+        // Act
+        val request = requestSentFor(NUTELLA_BARCODE)
+
+        // Assert: the format Open Food Facts asks for, AppName/Version (ContactEmail) (A5)
+        val userAgent = request.headers[HttpHeaders.UserAgent].orEmpty()
+        assertTrue(Regex("""restpartijen-api/\d+\.\d+ \(\S+@\S+\)""").matches(userAgent), userAgent)
+    }
+
+    @Test
+    fun `fetchProduct returns no tags when Open Food Facts sends null for the allergens`() = runTest {
         // Arrange
+        // An explicit null must not cost the supplier the name, as a broken body would.
+        val client = clientResponding(HttpStatusCode.OK, """{"product":{"product_name":"Nutella","allergens_tags":null}}""")
+
+        // Act
+        val result = client.fetchProduct(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals(LookupResult.Found("Nutella", emptyList()), result)
+    }
+
+    @Test
+    fun `fetchProduct returns Unavailable when the body is larger than 64 KiB`() = runTest {
+        // Arrange
+        // The two fields we ask for are a few hundred bytes; anything this big is not a normal answer.
+        val name = "a".repeat(64 * 1024)
+        val client = clientResponding(HttpStatusCode.OK, """{"product":{"product_name":"$name"}}""")
+
+        // Act
+        val result = client.fetchProduct(NUTELLA_BARCODE)
+
+        // Assert
+        assertEquals(LookupResult.Unavailable, result)
+    }
+
+    @Test
+    fun `fetchProduct returns Unavailable on a redirect instead of following it`() = runTest {
+        // Arrange
+        // The API answers directly; a redirect could send the call to another host.
         val requests = mutableListOf<HttpRequestData>()
         val client = OpenFoodFactsClient(MockEngine { request ->
             requests += request
-            respondJson(HttpStatusCode.OK, NUTELLA_BODY)
+            respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "https://example.org/elsewhere"))
         })
 
         // Act
-        client.fetchProduct(NUTELLA_BARCODE)
+        val result = client.fetchProduct(NUTELLA_BARCODE)
 
         // Assert
-        val url = requests.single().url
-        assertEquals("https", url.protocol.name)
-        assertEquals("world.openfoodfacts.org", url.host)
-        assertEquals("/api/v3/product/$NUTELLA_BARCODE", url.encodedPath)
-        assertEquals("product_name,allergens_tags", url.parameters["fields"])
-        assertEquals(
-            "restpartijen-api/0.1 (etm.bouwman@student.avans.nl)",
-            requests.single().headers[HttpHeaders.UserAgent],
-        )
+        assertEquals(LookupResult.Unavailable, result)
+        assertEquals(1, requests.size)
     }
 
     @Test
@@ -77,7 +130,7 @@ class OpenFoodFactsClientTest {
         // Assert
         val url = requests.single().url
         assertEquals("/api/v3/product/1234567%2F..%2Fadmin%3Fx=1", url.encodedPath)
-        assertEquals(null, url.parameters["x"])
+        assertNull(url.parameters["x"])
     }
 
     @Test
@@ -207,6 +260,17 @@ class OpenFoodFactsClientTest {
 
     private fun clientResponding(status: HttpStatusCode, body: String) =
         OpenFoodFactsClient(MockEngine { respondJson(status, body) })
+
+    // The one request the client sends for [barcode], answered with the real Nutella body.
+    private suspend fun requestSentFor(barcode: String): HttpRequestData {
+        val requests = mutableListOf<HttpRequestData>()
+        val client = OpenFoodFactsClient(MockEngine { request ->
+            requests += request
+            respondJson(HttpStatusCode.OK, NUTELLA_BODY)
+        })
+        client.fetchProduct(barcode)
+        return requests.single()
+    }
 
     private fun MockRequestHandleScope.respondJson(status: HttpStatusCode, body: String): HttpResponseData =
         respond(
