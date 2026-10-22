@@ -2,8 +2,9 @@ package com.restpartijen.api.security.repository
 
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.persistence.dbQuery
-import com.restpartijen.api.security.EmailAlreadyExistsException
 import com.restpartijen.api.security.model.User
+import com.restpartijen.api.security.service.RegistrationService
+import com.restpartijen.api.shared.ConflictException
 import org.jetbrains.exposed.v1.core.Op
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
@@ -53,7 +54,7 @@ class ExposedUserRepository(
             // Return what is really stored: the generated id and the normalized email.
             item.copy(id = newId, email = email)
         } catch (e: ExposedSQLException) {
-            if (e.sqlState == UNIQUE_VIOLATION) throw EmailAlreadyExistsException(item.email)
+            if (e.sqlState == UNIQUE_VIOLATION) throw ConflictException(RegistrationService.EMAIL_TAKEN)
             throw e   // any other database error stays visible
         }
 

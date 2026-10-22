@@ -1,6 +1,7 @@
 package com.restpartijen.api.product.routes
 
 import com.restpartijen.api.product.dto.PlaceProductRequest
+import com.restpartijen.api.product.dto.UpdateProductRequest
 import com.restpartijen.api.product.dto.toCommand
 import com.restpartijen.api.product.dto.toResponse
 import com.restpartijen.api.product.service.ProductService
@@ -13,8 +14,10 @@ import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.routing.routing
 
 /**
@@ -38,6 +41,17 @@ fun Application.configureProductRouting() {
             // ContentNegotiation (configureSerialization) turns the @Serializable DTO into JSON.
             call.respond(detail.toResponse())
         }
+
+        // Public, like GET /products/{id}: the offer of a supplier is visible to everyone (A4, US-03).
+        get("/api/v1/suppliers/{id}/products") {
+            val supplierId =
+                call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Supplier id must be a number")
+
+            // Unknown supplier: the service throws NotFoundException (404). No products gives an empty list.
+            val productList = service.getSupplierProducts(supplierId)
+
+            call.respond(productList.map { it.toResponse() })
+        }
         // Only a supplier may place a product: no token gives 401, another role 403 (decision 3.6).
         requireRole(Role.SUPPLIER) {
             post("/api/v1/products") {
@@ -55,6 +69,34 @@ fun Application.configureProductRouting() {
                 // 201: a new resource was made; the body is the stored product, with the id the database chose
                 // and its price breakdown (§10.1).
                 call.respond(HttpStatusCode.Created, detail.toResponse())
+            }
+
+            // Only a supplier may update, and only an own LISTED product; every field but category (US-03, A13).
+            put("/api/v1/products/{id}") {
+                val productId =
+                    call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Product id must be a number")
+
+                // The JSON body becomes the request DTO; a category or a missing field gives a 400.
+                // RequestValidation then checks its shape (validateUpdateProductRequest, 400 with the field).
+                val command = call.receive<UpdateProductRequest>().toCommand()
+
+                // The service checks 404, 403, 409 and 422 in that order and stores the product.
+                val detail = service.updateProduct(call.currentUser().id, productId, command)
+
+                // 200: the product as it is now stored, with its new price breakdown (TC-03).
+                call.respond(detail.toResponse())
+            }
+
+            // Only a supplier may delete, and only an own LISTED product (US-03, §5.3).
+            delete("/api/v1/products/{id}") {
+                val productId =
+                    call.parameters["id"]?.toLongOrNull() ?: throw ValidationException("Product id must be a number")
+
+                // The user comes from the token; the service checks 404, 403 and 409 in that order.
+                service.deleteProduct(call.currentUser().id, productId)
+
+                // 204: done, and there is nothing to send back (§5.3).
+                call.respond(HttpStatusCode.NoContent)
             }
         }
     }

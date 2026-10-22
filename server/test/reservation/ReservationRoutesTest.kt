@@ -42,6 +42,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 /**
  * Blok 5: POST /api/v1/reservations through all layers, with fakes behind the service.
@@ -49,22 +50,25 @@ import kotlin.time.Duration.Companion.hours
  */
 class ReservationRoutesTest {
 
-    // Real "now", because the JWT verifier checks token expiry against the system clock.
-    private val now = Clock.System.now()
+    // Arrange: use a fixed clock for predictable token timestamps
+    private val testClock = FixedClock(
+        Instant.parse("2026-10-20T12:00:00Z")
+    )
+    private val now = testClock.now()
     private val openWindow = PickupWindow(now - 1.hours, now + 5.hours)
     private val statusUpdater = FakeProductStatusUpdater()
 
     private fun Application.testApp(products: List<ProductView>, reservations: List<Reservation> = emptyList(), price: Money? = Money.fromCents(299)) {
-        createEmptyTestDatabase()
+        createEmptyTestDatabase()     // The service opens its own transaction (GI-1, decision 1.4), so even with fakes it needs a database.
         configureSerialization()
         configureStatusPages()
-        configureSecurity(JwtConfig(TestJwtSettings.default, Clock.System))
+        configureSecurity(JwtConfig(TestJwtSettings.default, testClock))
         dependencies {
             provide<ProductReader> { FakeProductReader(products) }
             provide<ProductStatusUpdater> { statusUpdater }
             provide<PriceProvider> { FakePriceProvider(price) }
             provide<ReservationRepository> { FakeReservationRepository(reservations) }
-            provide<Clock> { FixedClock(now) }
+            provide<Clock> { testClock }
             provide(::ReservationService)
         }
         configureReservationRouting()
@@ -74,7 +78,7 @@ class ReservationRoutesTest {
         application { testApp(products.toList()) }
 
     private fun tokenFor(role: Role) =
-        TestTokens().createTestToken(userId = 7L, role = role, clock = Clock.System)
+        TestTokens().createTestToken(userId = 7L, role = role, clock = testClock)
 
     private suspend fun ApplicationTestBuilder.reserve(productId: Long, token: String? = null): HttpResponse =
         client.post("/api/v1/reservations") {

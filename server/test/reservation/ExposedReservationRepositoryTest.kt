@@ -13,6 +13,7 @@ import com.restpartijen.api.testsupport.insertUser
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
@@ -124,6 +125,20 @@ class ExposedReservationRepositoryTest {
 
         // Assert: reservedAt = expiresAt − 24h in the helper, so 'newer' was reserved last
         assertEquals(listOf(newer, older), found)
+    }
+
+    @Test
+    fun `delete refuses and the reservation stays stored`() = runTest {
+        // Arrange
+        emptyDatabaseWithCollector()
+        val repository = ExposedReservationRepository()
+        val stored = repository.create(reservation(productId = insertProduct(), expiresAt = now + 1.hours))
+
+        // Act
+        assertFailsWith<UnsupportedOperationException> { repository.delete(stored.id) }
+
+        // Assert: reservations are never deleted, so the row is untouched
+        assertEquals(stored, repository.findById(stored.id))
     }
 
     // A reservation must point to an existing product and collector (issue #36),

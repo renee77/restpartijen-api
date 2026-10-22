@@ -13,10 +13,14 @@ import org.jetbrains.exposed.v1.jdbc.update
  * ProductsTable lives in persistence, so F2 may use it (issue #36); F1's own class may not be imported (GI-5).
  */
 internal class TableStatusUpdater : ProductStatusUpdater {
+    val reserved = mutableListOf<Long>()
+
     override suspend fun markReserved(productId: Long): Boolean = dbQuery {
-        ProductsTable.update({ (ProductsTable.id eq productId) and (ProductsTable.status eq ProductStatus.LISTED) }) {
+        val changed = ProductsTable.update({ (ProductsTable.id eq productId) and (ProductsTable.status eq ProductStatus.LISTED) }) {
             it[ProductsTable.status] = ProductStatus.RESERVED
         } > 0
+        if (changed) reserved.add(productId)
+       changed
     }
 
     override suspend fun markListed(productId: Long): Boolean = dbQuery {

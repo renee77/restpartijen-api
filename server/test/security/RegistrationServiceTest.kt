@@ -3,6 +3,7 @@ package com.restpartijen.api.security
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.security.service.RegistrationService
 import com.restpartijen.api.security.service.RegistrationValidator
+import com.restpartijen.api.shared.ConflictException
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.security.model.User
 import com.restpartijen.api.shared.DomainRuleException
@@ -79,7 +80,7 @@ class RegistrationServiceTest {
         )
 
         // Act + Assert: a second user with the same email
-        assertFailsWith<EmailAlreadyExistsException> {
+        assertFailsWith<ConflictException> {
             service.register(
                 email = "mail@test.com",
                 password = "testPassword123",
@@ -98,7 +99,7 @@ class RegistrationServiceTest {
         )
 
         // Act + Assert: same email, different casing
-        assertFailsWith<EmailAlreadyExistsException> {
+        assertFailsWith<ConflictException> {
             service.register(
                 email = "maIL@teSt.cOm",
                 password = "testPassword123",
@@ -164,7 +165,7 @@ class RegistrationServiceTest {
 
         // Act + Assert: findByEmail lies, the unique index fails,
         // and the repository translates that into the domain exception
-        assertFailsWith<EmailAlreadyExistsException> {
+        assertFailsWith<ConflictException> {
             raceService.register(
                 email = "test@mail.com",
                 password = "MyTestPassword123",

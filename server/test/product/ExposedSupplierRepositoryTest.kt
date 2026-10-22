@@ -11,7 +11,9 @@ import com.restpartijen.api.testsupport.insertUser
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Integration test: the real SupplierIdLookup of F1 against a real, empty H2 database per test (A15).
@@ -91,5 +93,34 @@ class ExposedSupplierRepositoryTest {
 
         // Assert
         assertNull(found)
+    }
+
+    @Test
+    fun `exists returns true for the id of a stored supplier`() = runTest {
+        // Arrange: a collector first, so the supplier id (1) differs from its user id (2).
+        // User 1 has no supplier, so a query on the user id column would wrongly give false.
+        createEmptyTestDatabase(UsersTable, SuppliersTable)
+        insertUser(Role.COLLECTOR)
+        val supplierId = insertSupplier(insertUser(Role.SUPPLIER))
+
+        // Act
+        val found = repository.exists(supplierId)
+
+        // Assert
+        assertTrue(found)
+    }
+
+    @Test
+    fun `exists returns false for an unknown supplier id`() = runTest {
+        // Arrange: supplier 1 belongs to user 2, so a query on the user id column would wrongly find id 2
+        createEmptyTestDatabase(UsersTable, SuppliersTable)
+        insertUser(Role.COLLECTOR)
+        val supplierId = insertSupplier(insertUser(Role.SUPPLIER))
+
+        // Act
+        val found = repository.exists(supplierId + 1)
+
+        // Assert
+        assertFalse(found)
     }
 }

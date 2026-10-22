@@ -8,6 +8,7 @@ import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.ProductStatus
 import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.core.statements.UpdateBuilder
 import org.jetbrains.exposed.v1.jdbc.batchInsert
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -51,12 +52,15 @@ class ExposedProductRepository(private val clock: Clock) : ProductRepository {
     }
 
     override suspend fun update(item: SurplusProduct): Boolean = dbQuery {
-        // update() returns how many rows changed: 0 means no product with this id, or it was REMOVED.
-        // Supplier, created_at and status stay as they are; status changes go through ProductStatusUpdater.
-        val updated = ProductsTable.update({ (ProductsTable.id eq item.id) and notRemoved() }) {
-            writeChangeableColumns(it, item)
-        } > 0
-        // Only for an existing, non-removed product. Replace the whole set:
+        // update() returns how many rows changed: 0 means no product with this id, or it is not LISTED (A13).
+        // The status check sits in the WHERE, so a product reserved after the check in the service stays
+        // unchanged (race). Supplier, created_at and status stay as they are; status changes go through
+        // ProductStatusUpdater.
+        val updated =
+            ProductsTable.update({ (ProductsTable.id eq item.id) and (ProductsTable.status eq ProductStatus.LISTED) }) {
+                writeChangeableColumns(it, item)
+            } > 0
+        // Only for an existing, LISTED product. Replace the whole set:
         // simpler than working out which allergens were added or removed.
         if (updated) {
             ProductAllergensTable.deleteWhere { productId eq item.id }
@@ -71,6 +75,16 @@ class ExposedProductRepository(private val clock: Clock) : ProductRepository {
         ProductsTable.update({ (ProductsTable.id eq id) and (ProductsTable.status eq ProductStatus.LISTED) }) {
             it[ProductsTable.status] = ProductStatus.REMOVED
         } > 0
+    }
+
+    override suspend fun findBySupplier(supplierId: Long): List<SurplusProduct> = dbQuery {
+        (ProductsTable innerJoin SuppliersTable).selectAll()
+            .where {
+                (ProductsTable.supplierId eq supplierId) and
+                    ((ProductsTable.status eq ProductStatus.LISTED) or (ProductsTable.status eq ProductStatus.RESERVED))
+            }
+            .orderBy(ProductsTable.id)
+            .map { it.toProduct(allergensOfProduct(it[ProductsTable.id])) }
     }
 }
 

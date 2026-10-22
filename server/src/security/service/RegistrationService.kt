@@ -1,8 +1,8 @@
 package com.restpartijen.api.security.service
 
-import com.restpartijen.api.security.EmailAlreadyExistsException
 import com.restpartijen.api.security.model.User
 import com.restpartijen.api.security.repository.UserRepository
+import com.restpartijen.api.shared.ConflictException
 import com.restpartijen.api.shared.Role
 import kotlin.time.Clock
 
@@ -11,12 +11,17 @@ class RegistrationService(
     private val passwordHasher: PasswordHasher,
     private val clock: Clock,
 ) {
+    companion object {
+        // Same message for the fast path here and the unique index check in the repository.
+        const val EMAIL_TAKEN = "Email is already registered"
+    }
+
     suspend fun register(email: String, password: String, display_name: String): User {
         RegistrationValidator.validate(email, password, display_name)
 
         // Fast path: gives a clear conflict without touching the insert.
         if (userRepository.findByEmail(email) != null) {
-            throw EmailAlreadyExistsException(email)
+            throw ConflictException(EMAIL_TAKEN)
         }
 
         val user = User(

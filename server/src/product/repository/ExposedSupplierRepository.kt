@@ -21,6 +21,10 @@ class ExposedSupplierRepository : SupplierRepository {
             }
     }
 
+    override suspend fun exists(supplierId: Long): Boolean = dbQuery {
+        SuppliersTable.selectAll().where { SuppliersTable.id eq supplierId }.singleOrNull() != null
+    }
+
     // Passes on to findByUserId, so the query that finds a user's supplier exists only once.
     override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
 }

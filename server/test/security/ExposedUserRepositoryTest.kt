@@ -3,6 +3,7 @@ package com.restpartijen.api.security
 import com.restpartijen.api.security.model.User
 import com.restpartijen.api.security.repository.ExposedUserRepository
 import com.restpartijen.api.persistence.UsersTable
+import com.restpartijen.api.shared.ConflictException
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import kotlinx.coroutines.test.runTest
@@ -94,7 +95,7 @@ class ExposedUserRepositoryTest {
         val secondUser = newUser
 
         // Assert
-        assertFailsWith<EmailAlreadyExistsException> {
+        assertFailsWith<ConflictException> {
             repository.create(secondUser)
         }
     }
@@ -168,6 +169,6 @@ class ExposedUserRepositoryTest {
         val repository = ExposedUserRepository()
         repository.create(newUser)
 
-        assertFailsWith<EmailAlreadyExistsException> { repository.create(newUser) }
+        assertFailsWith<ConflictException> { repository.create(newUser) }
     }
 }

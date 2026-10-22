@@ -4,7 +4,6 @@ import io.mockk.mockk
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import com.restpartijen.api.product.repository.ProductRepository
-import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.testsupport.FixedClock
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -17,7 +16,7 @@ class ProductServiceMockkTest {
         val mockRepository = mockk<ProductRepository>()
         coEvery { mockRepository.findById(1) } returns
             aProduct(id = 1, name = "Volkoren Brood")
-        val service = ProductService(mockRepository, fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow))
+        val service = productService(mockRepository, fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow))
 
         // Act
         val detail = service.getProduct(1)

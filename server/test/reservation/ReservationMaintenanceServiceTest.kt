@@ -20,6 +20,7 @@ import kotlin.time.Instant
 
 class ReservationMaintenanceServiceTest {
 
+    // The service opens its own transaction (GI-1, decision 1.4), so even with fakes it needs a database.
     @BeforeTest
     fun setup() = createEmptyTestDatabase()
 

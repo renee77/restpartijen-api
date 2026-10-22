@@ -23,3 +23,6 @@ class ForbiddenException(message: String) : DomainException(message)
 
 /** 409 Conflict — status transition not allowed. */
 class IllegalStateTransitionException(message: String) : DomainException(message)
+
+/** 409 Conflict — the request clashes with existing data, e.g. registering an e-mail address that is taken (#47). */
+class ConflictException(message: String) : DomainException(message)

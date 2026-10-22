@@ -39,6 +39,8 @@ Authorization: Bearer {{supplierToken}}
   "allergens": ["MILK"]
 }
 
+> {% client.global.set("productId", response.body.id); client.global.set("supplierId", response.body.supplierId); %}
+
 ### F1 - Place product with an empty name: expect 400, field name
 POST http://localhost:8080/api/v1/products
 Content-Type: application/json
@@ -59,6 +61,75 @@ Authorization: Bearer {{supplierToken}}
 
 
 # Feature 3 - Registeren
+### F1 - My offer (US-03): expect 200 with the LISTED and RESERVED products of the supplier; no token needed
+GET http://localhost:8080/api/v1/suppliers/{{supplierId}}/products
+Accept: application/json
+
+### F1 - Offer of an unknown supplier: expect 404
+GET http://localhost:8080/api/v1/suppliers/999/products
+Accept: application/json
+
+### F1 - Update an own product (US-03, TC-03): expect 200 with the new name and price; category stays AMBIENT
+PUT http://localhost:8080/api/v1/products/{{productId}}
+Content-Type: application/json
+Authorization: Bearer {{supplierToken}}
+
+{
+  "name": "Houdbare volle melk 1L",
+  "originalPrice": 2.99,
+  "bestBeforeAt": "2027-06-30T12:00:00Z",
+  "quantity": 3,
+  "pickupWindow": {
+    "from": "2027-06-29T08:00:00Z",
+    "until": "2027-06-29T16:00:00Z"
+  },
+  "allergens": ["MILK"]
+}
+
+### F1 - Update with a category: expect 400, the category cannot change (A13)
+PUT http://localhost:8080/api/v1/products/{{productId}}
+Content-Type: application/json
+Authorization: Bearer {{supplierToken}}
+
+{
+  "category": "FRESH",
+  "name": "Houdbare volle melk 1L",
+  "originalPrice": 2.99,
+  "bestBeforeAt": "2027-06-30T12:00:00Z",
+  "quantity": 3,
+  "pickupWindow": {
+    "from": "2027-06-29T08:00:00Z",
+    "until": "2027-06-29T16:00:00Z"
+  }
+}
+
+### F1 - Update an unknown product: expect 404
+PUT http://localhost:8080/api/v1/products/999
+Content-Type: application/json
+Authorization: Bearer {{supplierToken}}
+
+{
+  "name": "Houdbare volle melk 1L",
+  "originalPrice": 2.99,
+  "bestBeforeAt": "2027-06-30T12:00:00Z",
+  "quantity": 3,
+  "pickupWindow": {
+    "from": "2027-06-29T08:00:00Z",
+    "until": "2027-06-29T16:00:00Z"
+  }
+}
+
+### F1 - Delete an own product (US-03): expect 204; the row stays with status REMOVED
+DELETE http://localhost:8080/api/v1/products/{{productId}}
+Authorization: Bearer {{supplierToken}}
+
+### F1 - Delete the same product again: expect 404, a REMOVED product counts as not existing (#45)
+DELETE http://localhost:8080/api/v1/products/{{productId}}
+Authorization: Bearer {{supplierToken}}
+
+### F1 - Delete without a token: expect 401
+DELETE http://localhost:8080/api/v1/products/1
+
 ### F3 - Register: expect 201 Created
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json
