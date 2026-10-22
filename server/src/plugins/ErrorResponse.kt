@@ -11,7 +11,7 @@ enum class ErrorCode {
     UNAUTHORIZED,           // 401 – UnauthorizedException
     FORBIDDEN,              // 403 – ForbiddenException
     NOT_FOUND,              // 404 – NotFoundException
-    CONFLICT,               // 409 – IllegalStateTransitionException
+    CONFLICT,               // 409 – IllegalStateTransitionException, ConflictException
     DOMAIN_RULE_VIOLATION,  // 422 – DomainRuleException
     INTERNAL_ERROR          // 500 – any other exception
 }
