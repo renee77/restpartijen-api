@@ -1,5 +1,6 @@
 package com.restpartijen.api.product
 
+import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
@@ -9,6 +10,8 @@ import org.slf4j.LoggerFactory
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * Unit test: mapAllergenTags against the tag ids of the Open Food Facts allergen taxonomy (§9.8, §10.3).
@@ -17,32 +20,16 @@ import kotlin.test.assertEquals
 class AllergenMapperTest {
 
     @Test
-    fun `mapAllergenTags maps every EU allergen tag to its Allergen`() {
-        // Arrange
-        val tags = listOf(
-            "en:gluten", "en:crustaceans", "en:eggs", "en:fish", "en:peanuts", "en:soybeans", "en:milk",
-            "en:nuts", "en:celery", "en:mustard", "en:sesame-seeds", "en:sulphur-dioxide-and-sulphites",
-            "en:lupin", "en:molluscs",
-        )
-
-        // Act
-        val allergens = mapAllergenTags(tags)
-
-        // Assert
-        assertEquals(Allergen.entries.toSet(), allergens)
+    fun `mapAllergenTags maps each EU allergen tag to its own Allergen`() {
+        // One assertion per tag, so a failure names the tag; three names differ from ours (gluten, sesame, sulphites).
+        for ((tag, allergen) in euTags) {
+            assertEquals(setOf(allergen), mapAllergenTags(listOf(tag)), tag)
+        }
     }
 
     @Test
-    fun `mapAllergenTags maps the tags whose name differs from the Allergen`() {
-        // Arrange
-        // The three tags where removing "en:" and using capitals is not enough.
-        val tags = listOf("en:gluten", "en:sesame-seeds", "en:sulphur-dioxide-and-sulphites")
-
-        // Act
-        val allergens = mapAllergenTags(tags)
-
-        // Assert
-        assertEquals(setOf(Allergen.CEREALS_CONTAINING_GLUTEN, Allergen.SESAME, Allergen.SULPHITES), allergens)
+    fun `the table covers all fourteen EU allergens`() {
+        assertEquals(Allergen.entries.toSet(), euTags.values.toSet())
     }
 
     @Test
@@ -61,27 +48,44 @@ class AllergenMapperTest {
     @Test
     fun `mapAllergenTags warns about a tag it does not know`() {
         // Arrange
-        val warnings = captureWarnings()
+        val events = captureLogEvents()
 
         // Act
         mapAllergenTags(listOf("en:kiwi"))
 
         // Assert
-        assertEquals(listOf("Skipped unknown allergen tag from Open Food Facts: en:kiwi"), warnings.messages())
+        val warning = events.about("en:kiwi").single()
+        assertEquals(Level.WARN, warning.level)
     }
 
     @Test
     fun `mapAllergenTags skips en none without a warning`() {
         // Arrange
         // en:none means someone stated "no allergens"; it is a known tag, so it is no reason to warn.
-        val warnings = captureWarnings()
+        val events = captureLogEvents()
 
         // Act
         val allergens = mapAllergenTags(listOf("en:none"))
 
         // Assert
         assertEquals(emptySet(), allergens)
-        assertEquals(emptyList(), warnings.messages())
+        assertEquals(emptyList(), events.about("en:none"))
+    }
+
+    @Test
+    fun `mapAllergenTags logs an unknown tag on one line and at most 64 characters of it`() {
+        // Arrange
+        // The tag comes from Open Food Facts; a line break in it could forge a log line (CWE-117).
+        val events = captureLogEvents()
+        val tag = "en:x\nFAKE ERROR " + "y".repeat(100)
+
+        // Act
+        mapAllergenTags(listOf(tag))
+
+        // Assert
+        val message = events.about("en:x").single().formattedMessage
+        assertFalse(message.contains('\n'), message)
+        assertTrue(message.endsWith("en:x_FAKE ERROR " + "y".repeat(48)), message)
     }
 
     @Test
@@ -106,7 +110,7 @@ class AllergenMapperTest {
     }
 
     // Collects what the mapper logs during one test; detached afterwards so tests do not see each other's logs.
-    private fun captureWarnings(): ListAppender<ILoggingEvent> {
+    private fun captureLogEvents(): ListAppender<ILoggingEvent> {
         val logger = LoggerFactory.getLogger(MAPPER_LOGGER) as Logger
         val appender = ListAppender<ILoggingEvent>().apply { start() }
         logger.addAppender(appender)
@@ -114,7 +118,8 @@ class AllergenMapperTest {
         return appender
     }
 
-    private fun ListAppender<ILoggingEvent>.messages() = list.map { it.formattedMessage }
+    // Only the events about [tag], so a log line from a test running at the same time cannot interfere.
+    private fun ListAppender<ILoggingEvent>.about(tag: String) = list.filter { it.formattedMessage.contains(tag) }
 
     private val attached = mutableListOf<ListAppender<ILoggingEvent>>()
 
@@ -126,5 +131,23 @@ class AllergenMapperTest {
 
     private companion object {
         const val MAPPER_LOGGER = "com.restpartijen.api.product.service.AllergenMapper"
+
+        // The fourteen EU tags of the taxonomy and the Allergen each one must become (§9.8).
+        val euTags = mapOf(
+            "en:gluten" to Allergen.CEREALS_CONTAINING_GLUTEN,
+            "en:crustaceans" to Allergen.CRUSTACEANS,
+            "en:eggs" to Allergen.EGGS,
+            "en:fish" to Allergen.FISH,
+            "en:peanuts" to Allergen.PEANUTS,
+            "en:soybeans" to Allergen.SOYBEANS,
+            "en:milk" to Allergen.MILK,
+            "en:nuts" to Allergen.NUTS,
+            "en:celery" to Allergen.CELERY,
+            "en:mustard" to Allergen.MUSTARD,
+            "en:sesame-seeds" to Allergen.SESAME,
+            "en:sulphur-dioxide-and-sulphites" to Allergen.SULPHITES,
+            "en:lupin" to Allergen.LUPIN,
+            "en:molluscs" to Allergen.MOLLUSCS,
+        )
     }
 }

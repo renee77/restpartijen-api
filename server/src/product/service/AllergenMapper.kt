@@ -9,6 +9,13 @@ private val log = LoggerFactory.getLogger("com.restpartijen.api.product.service.
 // it still maps to no allergens, just like a product where nobody filled them in.
 private const val NO_ALLERGENS_TAG = "en:none"
 
+// Real tags are short slugs; anything longer is cut off, so one odd tag cannot flood the log.
+private const val MAX_LOGGED_TAG_LENGTH = 64
+private val CONTROL_CHARACTERS = Regex("\\p{Cntrl}")
+
+// The tag comes from Open Food Facts: without line breaks it cannot forge a log line (CWE-117, security F-03).
+private fun String.forLog(): String = take(MAX_LOGGED_TAG_LENGTH).replace(CONTROL_CHARACTERS, "_")
+
 // Tag ids of the fourteen EU allergens in the Open Food Facts taxonomy (§9.8), checked against
 // https://world.openfoodfacts.org/data/taxonomies/allergens.json on 22 Oct 2026.
 // A fixed table, because some names differ from ours, such as en:gluten for CEREALS_CONTAINING_GLUTEN.
@@ -42,7 +49,7 @@ fun mapAllergenTags(tags: List<String>): Set<Allergen> = buildSet {
         if (tag == NO_ALLERGENS_TAG) continue
         val allergen = allergenByTag[tag]
         if (allergen == null) {
-            log.warn("Skipped unknown allergen tag from Open Food Facts: {}", tag)
+            log.warn("Skipped unknown allergen tag from Open Food Facts: {}", tag.forLog())
         } else {
             add(allergen)
         }
