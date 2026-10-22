@@ -1,4 +1,4 @@
-### F1 - Get existing product: expect 200 with JSON
+### F1 - Get existing product: expect 200 with JSON, including discountPercentage and currentPrice (null when expired)
 GET http://localhost:8080/api/v1/products/1
 Accept: application/json
 
@@ -29,6 +29,24 @@ Authorization: Bearer {{supplierToken}}
 {
   "category": "AMBIENT",
   "name": "Houdbare halfvolle melk 1L",
+  "originalPrice": 3.49,
+  "bestBeforeAt": "2027-06-30T12:00:00Z",
+  "quantity": 5,
+  "pickupWindow": {
+    "from": "2027-06-29T08:00:00Z",
+    "until": "2027-06-29T16:00:00Z"
+  },
+  "allergens": ["MILK"]
+}
+
+### F1 - Place product with an empty name: expect 400, field name
+POST http://localhost:8080/api/v1/products
+Content-Type: application/json
+Authorization: Bearer {{supplierToken}}
+
+{
+  "category": "AMBIENT",
+  "name": "   ",
   "originalPrice": 3.49,
   "bestBeforeAt": "2027-06-30T12:00:00Z",
   "quantity": 5,

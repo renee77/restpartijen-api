@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.runTest
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -264,6 +265,40 @@ class ExposedProductRepositoryTest {
 
         // Assert
         assertFalse(secondDelete)
+    }
+
+    // FTD §5.3 and §9.5: only LISTED may become REMOVED. A reserved product would otherwise vanish
+    // while its reservation stays ACTIVE, and the end states COLLECTED and EXPIRED could still change.
+    @Test
+    fun `delete refuses a RESERVED product and leaves its status`() = runTest {
+        assertDeleteRefused(ProductStatus.RESERVED)
+    }
+
+    @Test
+    fun `delete refuses a COLLECTED product and leaves its status`() = runTest {
+        assertDeleteRefused(ProductStatus.COLLECTED)
+    }
+
+    @Test
+    fun `delete refuses an EXPIRED product and leaves its status`() = runTest {
+        assertDeleteRefused(ProductStatus.EXPIRED)
+    }
+
+    private suspend fun assertDeleteRefused(status: ProductStatus) {
+        // Arrange: create always stores LISTED, so the status is set in the table directly
+        val supplier = emptyDatabaseWithSupplier()
+        val bread = repository.create(aProduct(supplier = supplier))
+        transaction { ProductsTable.update({ ProductsTable.id eq bread.id }) { it[ProductsTable.status] = status } }
+
+        // Act
+        val deleteSucceeded = repository.delete(bread.id)
+
+        // Assert
+        assertFalse(deleteSucceeded)
+        val statusAfter = transaction {
+            ProductsTable.selectAll().where { ProductsTable.id eq bread.id }.single()[ProductsTable.status]
+        }
+        assertEquals(status, statusAfter)
     }
 
     @Test

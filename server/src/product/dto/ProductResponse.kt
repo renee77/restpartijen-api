@@ -1,9 +1,7 @@
 package com.restpartijen.api.product.dto
 
-import com.restpartijen.api.persistence.ProductsTable.supplierId
-import com.restpartijen.api.product.model.SurplusProduct
+import com.restpartijen.api.product.service.ProductDetail
 import com.restpartijen.api.shared.Allergen
-import com.restpartijen.api.shared.PickupWindow
 import kotlinx.serialization.Serializable
 
 /**
@@ -13,6 +11,7 @@ import kotlinx.serialization.Serializable
  * without touching SurplusProduct, and vice versa.
  * The price is in euros (B-25); times are ISO-8601 text, like ReservationResponse.
  * Only the supplier id: the client needs nothing more about the supplier here.
+ * discountPercentage and currentPrice come from PriceProvider (§5.7, §10.1); both are null when expired (B-18).
  */
 @Serializable
 data class ProductResponse(
@@ -27,23 +26,33 @@ data class ProductResponse(
     val status: String,
     val pickupWindow: PickupWindowResponse,
     val allergens: Set<Allergen>,
+    val discountPercentage: Int?,
+    val currentPrice: Double?,
 )
 
 /** The pickup window in a response; the counterpart of PickupWindowRequest. */
 @Serializable
 data class PickupWindowResponse(val from: String, val until: String)
 
-/** Maps the domain model to the API response. */
-fun SurplusProduct.toResponse(): ProductResponse = ProductResponse(
-    id = id,
-    name = name,
-    category = category.name,
-    supplierId = supplier.id,
-    barcode = barcode,
-    originalPrice = originalPrice.toEuros(),
-    bestBeforeAt = bestBeforeAt.toString(),
-    quantity = quantity,
+/**
+ * Maps a product with its price to the API response; it only translates.
+ * The status comes from the detail, not from the product, so an expired LISTED product shows as EXPIRED.
+ */
+fun ProductDetail.toResponse(): ProductResponse = ProductResponse(
+    id = product.id,
+    name = product.name,
+    category = product.category.name,
+    supplierId = product.supplier.id,
+    barcode = product.barcode,
+    originalPrice = product.originalPrice.toEuros(),
+    bestBeforeAt = product.bestBeforeAt.toString(),
+    quantity = product.quantity,
     status = status.name,
-    pickupWindow = PickupWindowResponse(from = pickupWindow.from.toString(), until = pickupWindow.until.toString()),
-    allergens = allergens,
+    pickupWindow = PickupWindowResponse(
+        from = product.pickupWindow.from.toString(),
+        until = product.pickupWindow.until.toString(),
+    ),
+    allergens = product.allergens,
+    discountPercentage = price?.discountPercentage,
+    currentPrice = price?.currentPrice?.toEuros(),
 )

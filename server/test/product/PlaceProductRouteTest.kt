@@ -4,6 +4,7 @@ import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.plugins.ErrorResponse
+import com.restpartijen.api.plugins.configureRequestValidation
 import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.product.dto.ProductResponse
@@ -19,6 +20,7 @@ import com.restpartijen.api.security.TestTokens
 import com.restpartijen.api.security.service.JwtConfig
 import com.restpartijen.api.security.service.configureSecurity
 import com.restpartijen.api.shared.Allergen
+import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
@@ -61,12 +63,14 @@ class PlaceProductRouteTest {
     ) {
         configureSerialization()
         configureStatusPages()
+        configureRequestValidation()
         configureSecurity(JwtConfig(TestJwtSettings.default, Clock.System))
         dependencies {
             provide<ProductRepository> { products }
             provide<SupplierRepository> { suppliers }
             // The listing rules use a fixed "now"; the token below uses the real clock, because the JWT verifier does.
             provide<Clock> { FixedClock(testNow) }
+            provide<PriceProvider> { FixedPriceProvider(aBreakdown) }
             provide(::ProductService)
         }
         configureProductRouting()
@@ -104,6 +108,20 @@ class PlaceProductRouteTest {
         assertEquals("LISTED", product.status)
         assertEquals(aSupplier.id, product.supplierId)
         assertEquals(3.49, product.originalPrice)
+    }
+
+    @Test
+    fun `the answer to placing a product includes the price breakdown`() = testApplication {
+        // Arrange: §10.1, every answer with a product has the three price fields
+        application { testApp() }
+
+        // Act
+        val response = place(token = tokenFor(Role.SUPPLIER))
+
+        // Assert: the values of aBreakdown, in euros (B-25)
+        val product = Json.decodeFromString<ProductResponse>(response.bodyAsText())
+        assertEquals(40, product.discountPercentage)
+        assertEquals(2.10, product.currentPrice)
     }
 
     @Test
@@ -166,6 +184,36 @@ class PlaceProductRouteTest {
 
         // Assert
         assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `an empty name gives 400 and names the field`() = testApplication {
+        // Arrange: validBody with an empty name (E-03: was stored as is)
+        application { testApp() }
+        val body = validBody.replace("\"Volkoren brood\"", "\"\"")
+
+        // Act
+        val response = place(body = body, token = tokenFor(Role.SUPPLIER))
+
+        // Assert: RequestValidation stops it before the route, with the field
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("name", error.field)
+    }
+
+    @Test
+    fun `a barcode longer than 255 characters gives 400 and names the field`() = testApplication {
+        // Arrange: validBody plus a barcode that does not fit varchar(255) (E-03: was a 500 on INSERT)
+        application { testApp() }
+        val body = validBody.replace("\"quantity\": 2,", "\"quantity\": 2, \"barcode\": \"${"1".repeat(256)}\",")
+
+        // Act
+        val response = place(body = body, token = tokenFor(Role.SUPPLIER))
+
+        // Assert
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
+        assertEquals("barcode", error.field)
     }
 
     @Test

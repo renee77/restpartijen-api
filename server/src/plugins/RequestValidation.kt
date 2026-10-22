@@ -1,5 +1,7 @@
 package com.restpartijen.api.plugins
 
+import com.restpartijen.api.product.dto.PlaceProductRequest
+import com.restpartijen.api.product.dto.validatePlaceProductRequest
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.requestvalidation.RequestValidation
@@ -15,8 +17,7 @@ import io.ktor.server.plugins.requestvalidation.RequestValidation
 fun Application.configureRequestValidation() {
     install(RequestValidation) {
         // F1 (Eva): POST /products and PUT /products/{id}
-        // validate<CreateProductRequest>(::validateCreateProductRequest)
-        // validate<UpdateProductRequest>(::validateUpdateProductRequest)
+        validate<PlaceProductRequest>(::validatePlaceProductRequest)
 
         // F2 (Stefan): POST /reservations
         // validate<CreateReservationRequest>(::validateCreateReservationRequest)

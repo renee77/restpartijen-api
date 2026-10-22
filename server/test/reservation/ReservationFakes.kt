@@ -34,7 +34,7 @@ data class FakeProduct(
 }
 
 class FakeProductReader(private val products: List<ProductView>) : ProductReader {
-    override suspend fun findById(id: Long): ProductView? = products.find { it.id == id }
+    override suspend fun findById(id: Long): ProductView? = products.find { it.id == id && it.status != ProductStatus.REMOVED }
     override suspend fun findAvailable(now: Instant): List<ProductView> =
         products.filter { it.status == ProductStatus.LISTED }
 
@@ -73,4 +73,7 @@ class FakeReservationRepository(initial: List<Reservation> = emptyList()) :
 
     override suspend fun findActiveByProductId(productId: Long): Reservation? =
         findAll().firstOrNull { it.status == ReservationStatus.ACTIVE && it.productId == productId }
+
+    override suspend fun findByCollectorId(collectorId: Long): List<Reservation> =
+        findAll().filter { it.collectorId == collectorId }.sortedByDescending { it.reservedAt }
 }
