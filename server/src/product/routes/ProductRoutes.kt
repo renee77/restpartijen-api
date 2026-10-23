@@ -29,7 +29,9 @@ import io.ktor.server.util.getOrFail
 /**
  * Registers the F1 product routes.
  *
- * GET /api/v1/products/{id} reads one product; POST /api/v1/products places one (US-01).
+ * GET /api/v1/products/{id} reads one product; POST /api/v1/products places one (US-01); PUT and DELETE
+ * change an own product (US-03). GET and PUT /api/v1/suppliers/{id}/opening-hours read and replace the
+ * opening hours of a supplier (US-10).
  * The route knows the service, never the repository (§8.3). It only handles HTTP: errors are
  * exceptions from the layers below, which StatusPages turns into the right status code (GI-4).
  */

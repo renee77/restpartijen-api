@@ -16,15 +16,16 @@ import kotlin.time.Clock
 import kotlin.time.Instant
 
 /**
- * The domain logic of F1: reading, placing and deleting surplus products; products are returned with their
- * price breakdown.
+ * The domain logic of F1: reading, placing, updating and deleting surplus products; products are returned with
+ * their price breakdown. The pickup window of a placed or updated product is derived by PickupWindowCalculator
+ * (US-10).
  *
  * @param repository stores and finds products
  * @param suppliers finds the supplier that belongs to the user in the token (US-01),
- *   and whether a supplier exists (US-03)
+ *   whether a supplier exists (US-03), and its opening hours (US-10)
  * @param priceProvider gives the price breakdown of a product; F3 calculates it, F1 only asks (K-4, SD-3)
  * @param ownershipGuard checks that a supplier only changes or deletes an own product (US-03, §16.2)
- * @param clock decides what "now" is for the listing rules (GI-6, decision 6.5)
+ * @param clock decides what "now" is for the listing rules and the pickup window (GI-6, decision 6.5)
  */
 class ProductService(
     private val repository: ProductRepository,

@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
  * One open day in the body of PUT /api/v1/suppliers/{id}/opening-hours (US-10, §5.10), for example
  * `{"day": "MONDAY", "opensAt": "08:00", "closesAt": "21:00"}`.
  *
- * Typed fields instead of strings, like Instant and Allergen in PlaceProductRequest: an unknown day
+ * Typed fields instead of strings, like LocalDate and Allergen in PlaceProductRequest: an unknown day
  * or a time that is not ISO 8601 cannot be read, so the JSON reader already gives a 400.
  */
 @Serializable
