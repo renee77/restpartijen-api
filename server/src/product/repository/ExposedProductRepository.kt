@@ -24,7 +24,7 @@ import kotlin.time.Clock
  */
 class ExposedProductRepository(private val clock: Clock) : ProductRepository {
     override suspend fun findById(id: Long): SurplusProduct? = dbQuery {
-        // let gives the row a name (it), so it can deliver both the id for the allergens and the product itself.
+        // The allergens live in their own table, so they are read with the id of the row that was found.
         (ProductsTable innerJoin SuppliersTable).selectAll().where { (ProductsTable.id eq id) and notRemoved() }
             .singleOrNull()?.let { it.toProduct(allergensOfProduct(it[ProductsTable.id])) }
     }

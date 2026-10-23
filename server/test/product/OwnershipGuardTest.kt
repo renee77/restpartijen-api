@@ -46,4 +46,28 @@ class OwnershipGuardTest {
             guard.requireOwner(userId = 8, product = product)
         }
     }
+
+    // --- requireOwnSupplier (US-10): the same check for data that belongs to a supplier, not a product ---
+
+    @Test
+    fun `requireOwnSupplier accepts the supplier of the user`() = runTest {
+        // Act + Assert: no exception means the user may go on
+        guard.requireOwnSupplier(userId = ownerUserId, supplierId = aSupplier.id)
+    }
+
+    @Test
+    fun `requireOwnSupplier refuses another supplier`() = runTest {
+        // Act + Assert
+        assertFailsWith<ForbiddenException> {
+            guard.requireOwnSupplier(userId = ownerUserId, supplierId = aSupplier.id + 1)
+        }
+    }
+
+    @Test
+    fun `requireOwnSupplier refuses a user without a supplier`() = runTest {
+        // Act + Assert
+        assertFailsWith<ForbiddenException> {
+            guard.requireOwnSupplier(userId = 8, supplierId = aSupplier.id)
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.restpartijen.api.product.service
 
+import com.restpartijen.api.product.model.BEST_BEFORE_PASSED
 import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductRepository
@@ -12,17 +13,19 @@ import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.ProductStatus
 import kotlin.time.Clock
+import kotlin.time.Instant
 
 /**
- * The domain logic of F1: reading, placing and deleting surplus products; products are returned with their
- * price breakdown.
+ * The domain logic of F1: reading, placing, updating and deleting surplus products; products are returned with
+ * their price breakdown. The pickup window of a placed or updated product is derived by PickupWindowCalculator
+ * (US-10).
  *
  * @param repository stores and finds products
  * @param suppliers finds the supplier that belongs to the user in the token (US-01),
- *   and whether a supplier exists (US-03)
+ *   whether a supplier exists (US-03), and its opening hours (US-10)
  * @param priceProvider gives the price breakdown of a product; F3 calculates it, F1 only asks (K-4, SD-3)
  * @param ownershipGuard checks that a supplier only changes or deletes an own product (US-03, §16.2)
- * @param clock decides what "now" is for the listing rules (GI-6, decision 6.5)
+ * @param clock decides what "now" is for the listing rules and the pickup window (GI-6, decision 6.5)
  */
 class ProductService(
     private val repository: ProductRepository,
@@ -46,14 +49,16 @@ class ProductService(
      * Places a product for the supplier of [userId] (US-01, SD-1).
      *
      * @throws ForbiddenException when the user has no supplier (403)
-     * @throws DomainRuleException when there is no pickup window, or a listing rule is broken (422)
+     * @throws DomainRuleException when bestBeforeAt has passed, the supplier is not open before it,
+     *   or a listing rule is broken (422)
      */
     suspend fun createProduct(userId: Long, command: PlaceProductCommand): ProductDetail {
         // The supplier comes from the token, never from the request (§16.2).
         val supplier = suppliers.findByUserId(userId)
             ?: throw ForbiddenException("This account has no supplier")
 
-        val pickupWindow = requirePickupWindow(command.pickupWindow)
+        // The window follows from the opening hours, bestBeforeAt and the moment of placing (US-10, §9.9).
+        val pickupWindow = derivePickupWindow(supplier.id, command.bestBeforeAt)
 
         // Id 0: the database chooses the real id. A new product is always LISTED.
         val product = ProductFactory.create(
@@ -122,7 +127,8 @@ class ProductService(
      * @throws NotFoundException when the product does not exist or is REMOVED (404)
      * @throws ForbiddenException when the product belongs to another supplier, or the user has none (403)
      * @throws IllegalStateTransitionException when the product is not LISTED (409)
-     * @throws DomainRuleException when there is no pickup window, or a listing rule is broken (422)
+     * @throws DomainRuleException when bestBeforeAt has passed, the supplier is not open before it,
+     *   or a listing rule is broken (422)
      */
     suspend fun updateProduct(userId: Long, productId: Long, command: UpdateProductCommand): ProductDetail {
         // The same order as deleteProduct: first 404, then 403.
@@ -136,8 +142,9 @@ class ProductService(
             throw IllegalStateTransitionException("Only a LISTED product can be updated")
         }
 
-        // The window of the request, not the stored one: PUT replaces it.
-        val pickupWindow = requirePickupWindow(command.pickupWindow)
+        // Derived again, with the moment of updating as "now": PUT replaces the whole product (A13), and the
+        // product then follows the opening hours that apply today.
+        val pickupWindow = derivePickupWindow(product.supplier.id, command.bestBeforeAt)
 
         // A13: id, supplier, category and status stay as stored; every other field comes from the command.
         val updatedProduct = ProductFactory.create(
@@ -165,13 +172,22 @@ class ProductService(
         return toDetail(updatedProduct)
     }
 
-    // Shared by createProduct and updateProduct. Without a window, the API would derive one from the opening
-    // hours (US-10). Those do not exist yet, so "no window and no opening hours" always applies (§5.1).
-    private fun requirePickupWindow(window: PickupWindow?): PickupWindow =
-        window ?: throw DomainRuleException(
-            "pickupWindow is required: the supplier has no opening hours",
-            field = "pickupWindow"
-        )
+    // Shared by createProduct and updateProduct, so both give the same 422s. The calculator finds the window;
+    // the service decides what a missing window means for the supplier.
+    private suspend fun derivePickupWindow(supplierId: Long, bestBeforeAt: Instant): PickupWindow {
+        val openingHours = suppliers.getOpeningHours(supplierId)
+        return when (val result = PickupWindowCalculator.calculate(openingHours, clock.now(), bestBeforeAt)) {
+            is PickupWindowResult.Found -> result.window
+            // The same field and message as validateForListing, so the answer does not depend on the order.
+            PickupWindowResult.Expired -> throw DomainRuleException(BEST_BEFORE_PASSED, field = "bestBeforeAt")
+            // An empty week is NeverOpen too, but then the date is not the cause: say what is.
+            PickupWindowResult.NeverOpen -> throw DomainRuleException(
+                if (openingHours.isEmpty()) "The supplier has no opening hours yet"
+                else "The supplier is not open before bestBeforeAt",
+                field = "bestBeforeAt",
+            )
+        }
+    }
 
     // Shared by every function that returns products, so the EXPIRED rule lives in one place.
     private fun toDetail(product: SurplusProduct): ProductDetail {

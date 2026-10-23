@@ -30,7 +30,7 @@ data class ProductResponse(
     val currentPrice: Double?,
 )
 
-/** The pickup window in a response; the counterpart of PickupWindowRequest. */
+/** The pickup window in a response; the service derives it, so there is no request counterpart (US-10). */
 @Serializable
 data class PickupWindowResponse(val from: String, val until: String)
 

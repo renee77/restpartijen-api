@@ -1,5 +1,6 @@
 package com.restpartijen.api.product
 
+import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.product.service.PlaceProductCommand
 import com.restpartijen.api.product.service.UpdateProductCommand
 import com.restpartijen.api.shared.DomainRuleException
@@ -15,6 +16,8 @@ import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.testsupport.FixedClock
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -23,6 +26,7 @@ import kotlin.test.assertNull
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 
 class ProductServiceTest {
     @Test
@@ -144,36 +148,89 @@ class ProductServiceTest {
     }
 
     @Test
-    fun `createProduct refuses a product without a pickup window`() = runTest {
-        // Arrange: there are no opening hours yet (US-10), so the window cannot be derived
+    fun `createProduct derives the pickup window from the opening hours of the supplier`() = runTest {
+        // Arrange: open every day 08:00-21:00; testNow is Thu 1 Oct 02:00 in Amsterdam, best-before Sun 4 Oct 02:00
         val service = productService(
-            fakeProductRepository(), fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow),
+            fakeProductRepository(), fakeSupplierRepository(openingHours = anOpenWeek), FixedPriceProvider(),
+            FixedClock(testNow),
+        )
+
+        // Act
+        val detail = service.createProduct(userId = 7, command = aCommand(bestBeforeAt = testNow + 3.days))
+
+        // Assert: from the first opening (Thu 08:00) to the last closing before best-before (Sat 21:00)
+        assertEquals(
+            PickupWindow(from = Instant.parse("2026-10-01T06:00:00Z"), until = Instant.parse("2026-10-03T19:00:00Z")),
+            detail.product.pickupWindow,
+        )
+    }
+
+    @Test
+    fun `createProduct refuses a supplier that is not open before bestBeforeAt and stores nothing`() = runTest {
+        // Arrange: open on Saturday only, and the product expires on Friday (§5.10)
+        val repository = fakeProductRepository()
+        val saturday = OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0))
+        val service = productService(
+            repository, fakeSupplierRepository(openingHours = listOf(saturday)), FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act
         val error = assertFailsWith<DomainRuleException> {
-            service.createProduct(userId = 7, command = aCommand(pickupWindow = null))
+            service.createProduct(userId = 7, command = aCommand(bestBeforeAt = testNow + 1.days))
         }
 
         // Assert
-        assertEquals("pickupWindow", error.field)
+        assertEquals("bestBeforeAt", error.field)
+        assertEquals(emptyList(), repository.findAll())
+    }
+
+    @Test
+    fun `createProduct says the supplier has no opening hours instead of blaming the date`() = runTest {
+        // Arrange: a supplier from before US-10 has no week; NeverOpen, but the date is not the problem
+        val service = productService(
+            fakeProductRepository(), fakeSupplierRepository(openingHours = emptyList()), FixedPriceProvider(),
+            FixedClock(testNow),
+        )
+
+        // Act
+        val error = assertFailsWith<DomainRuleException> { service.createProduct(userId = 7, command = aCommand()) }
+
+        // Assert: the same field as NeverOpen (decision 23 Oct 2026), with a message that names the cause
+        assertEquals("bestBeforeAt", error.field)
+        assertEquals("The supplier has no opening hours yet", error.message)
+    }
+
+    @Test
+    fun `createProduct refuses a best-before moment in the past and stores nothing`() = runTest {
+        // Arrange: the calculator reports Expired before it looks at the opening hours
+        val repository = fakeProductRepository()
+        val service = productService(repository, fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow))
+
+        // Act
+        val error = assertFailsWith<DomainRuleException> {
+            service.createProduct(userId = 7, command = aCommand(bestBeforeAt = testNow - 1.days))
+        }
+
+        // Assert: the same field and message as validateForListing, so the answer does not depend on the order
+        assertEquals("bestBeforeAt", error.field)
+        assertEquals("bestBeforeAt must be in the future", error.message)
+        assertEquals(emptyList(), repository.findAll())
     }
 
     @Test
     fun `createProduct checks the listing rules and stores nothing when one is broken`() = runTest {
-        // Arrange: a best-before moment in the past breaks validateForListing (422)
+        // Arrange: a quantity of 0 breaks validateForListing (422); the window itself is fine
         val repository = fakeProductRepository()
         val service = productService(repository, fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow))
-        val command = aCommand(
-            bestBeforeAt = testNow - 1.days,
-            pickupWindow = PickupWindow(from = testNow - 2.days, until = testNow - 1.days),
-        )
 
         // Act
-        val error = assertFailsWith<DomainRuleException> { service.createProduct(userId = 7, command = command) }
+        val error = assertFailsWith<DomainRuleException> {
+            service.createProduct(userId = 7, command = aCommand(quantity = 0))
+        }
 
         // Assert
-        assertEquals("bestBeforeAt", error.field)
+        assertEquals("quantity", error.field)
         assertEquals(emptyList(), repository.findAll())
     }
 
@@ -383,11 +440,7 @@ class ProductServiceTest {
         val service = productService(
             repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
         )
-        val command = anUpdateCommand(
-            name = "Wit brood",
-            bestBeforeAt = testNow - 1.days,
-            pickupWindow = PickupWindow(from = testNow - 2.days, until = testNow - 1.days),
-        )
+        val command = anUpdateCommand(name = "Wit brood", bestBeforeAt = testNow - 1.days)
 
         // Act + Assert
         assertFailsWith<IllegalStateTransitionException> {
@@ -397,20 +450,41 @@ class ProductServiceTest {
     }
 
     @Test
-    fun `updateProduct checks the listing rules and stores nothing when one is broken`() = runTest {
-        // Arrange: a best-before moment in the past breaks validateForListing (422)
-        val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier, name = "Croissant"))
+    fun `updateProduct derives a new pickup window from the opening hours and the moment of updating`() = runTest {
+        // Arrange: the stored window (testNow to +2 days) differs from the derived one, so PUT must recalculate it
+        val stored = PickupWindow(from = testNow, until = testNow + 2.days)
+        val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier, pickupWindow = stored))
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7, openingHours = anOpenWeek),
+            FixedPriceProvider(), FixedClock(testNow),
         )
-        val command = anUpdateCommand(
-            name = "Wit brood",
-            bestBeforeAt = testNow - 1.days,
-            pickupWindow = PickupWindow(from = testNow - 2.days, until = testNow - 1.days),
+
+        // Act
+        val command = anUpdateCommand(bestBeforeAt = testNow + 3.days)
+        val detail = service.updateProduct(userId = 7, productId = 1, command = command)
+
+        // Assert: from the first opening (Thu 08:00) to the last closing before best-before (Sat 21:00), also stored
+        val derived = PickupWindow(
+            from = Instant.parse("2026-10-01T06:00:00Z"),
+            until = Instant.parse("2026-10-03T19:00:00Z"),
+        )
+        assertEquals(derived, detail.product.pickupWindow)
+        assertEquals(derived, repository.findById(1)?.pickupWindow)
+    }
+
+    @Test
+    fun `updateProduct refuses a supplier that is not open before bestBeforeAt and keeps the product`() = runTest {
+        // Arrange: open on Saturday only, and the new best-before is Friday (§5.10)
+        val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier, name = "Croissant"))
+        val saturday = OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0))
+        val service = productService(
+            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7, openingHours = listOf(saturday)),
+            FixedPriceProvider(), FixedClock(testNow),
         )
 
         // Act
         val error = assertFailsWith<DomainRuleException> {
+            val command = anUpdateCommand(name = "Wit brood", bestBeforeAt = testNow + 1.days)
             service.updateProduct(userId = 7, productId = 1, command = command)
         }
 
@@ -420,20 +494,42 @@ class ProductServiceTest {
     }
 
     @Test
-    fun `updateProduct refuses a product without a pickup window`() = runTest {
-        // Arrange: the same rule as placing (§5.1): no window and no opening hours (US-10) gives 422
-        val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier))
+    fun `updateProduct refuses a best-before moment in the past and keeps the product`() = runTest {
+        // Arrange: the calculator reports Expired before it looks at the opening hours
+        val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier, name = "Croissant"))
         val service = productService(
             repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
         )
 
         // Act
         val error = assertFailsWith<DomainRuleException> {
-            service.updateProduct(userId = 7, productId = 1, command = anUpdateCommand(pickupWindow = null))
+            val command = anUpdateCommand(name = "Wit brood", bestBeforeAt = testNow - 1.days)
+            service.updateProduct(userId = 7, productId = 1, command = command)
+        }
+
+        // Assert: the same field and message as validateForListing
+        assertEquals("bestBeforeAt", error.field)
+        assertEquals("bestBeforeAt must be in the future", error.message)
+        assertEquals("Croissant", repository.findById(1)?.name)
+    }
+
+    @Test
+    fun `updateProduct checks the listing rules and stores nothing when one is broken`() = runTest {
+        // Arrange: a quantity of 0 breaks validateForListing (422); the window itself is fine
+        val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier, name = "Croissant"))
+        val service = productService(
+            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+        )
+
+        // Act
+        val error = assertFailsWith<DomainRuleException> {
+            val command = anUpdateCommand(name = "Wit brood", quantity = 0)
+            service.updateProduct(userId = 7, productId = 1, command = command)
         }
 
         // Assert
-        assertEquals("pickupWindow", error.field)
+        assertEquals("quantity", error.field)
+        assertEquals("Croissant", repository.findById(1)?.name)
     }
 
     private fun anUpdateCommand(
@@ -441,24 +537,21 @@ class ProductServiceTest {
         originalPrice: Money = Money.fromCents(349),
         quantity: Int = 2,
         bestBeforeAt: kotlin.time.Instant = testNow + 3.days,
-        pickupWindow: PickupWindow? = PickupWindow(from = testNow, until = testNow + 1.days),
     ) = UpdateProductCommand(
         name = name,
         originalPrice = originalPrice,
         bestBeforeAt = bestBeforeAt,
         quantity = quantity,
-        pickupWindow = pickupWindow,
     )
 
     private fun aCommand(
         bestBeforeAt: kotlin.time.Instant = testNow + 3.days,
-        pickupWindow: PickupWindow? = PickupWindow(from = testNow, until = testNow + 1.days),
+        quantity: Int = 2,
     ) = PlaceProductCommand(
         category = ProductCategory.FRESH,
         name = "Volkoren brood",
         originalPrice = Money.fromCents(349),
         bestBeforeAt = bestBeforeAt,
-        quantity = 2,
-        pickupWindow = pickupWindow,
+        quantity = quantity,
     )
 }

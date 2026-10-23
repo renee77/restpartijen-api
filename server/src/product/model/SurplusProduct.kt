@@ -12,6 +12,9 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Instant
 
+/** The 422 message for a best-before moment that has passed; ProductService gives the same one (US-10). */
+const val BEST_BEFORE_PASSED = "bestBeforeAt must be in the future"
+
 /**
  * A surplus product a supplier offers (§8.4).
  *
@@ -52,11 +55,15 @@ sealed class SurplusProduct(
      * Checks the rules a product must meet when it is listed (§9.10).
      * The first three hold for every kind; the shelf-life limit comes from the subclass.
      *
+     * Through the API, the first two never fail here: ProductService derives the pickup window first, and the
+     * calculator already refuses an expired product and ends the window at bestBeforeAt at the latest (US-10).
+     * They stay as rules of the product itself, for every other way a product is built.
+     *
      * @throws DomainRuleException when a rule is broken; StatusPages turns it into a 422.
      */
     fun validateForListing(clock: Clock) {
         if (isExpired(clock)) {
-            throw DomainRuleException("bestBeforeAt must be in the future", field = "bestBeforeAt")
+            throw DomainRuleException(BEST_BEFORE_PASSED, field = "bestBeforeAt")
         }
         if (pickupWindow.until > bestBeforeAt) {
             throw DomainRuleException("The pickup window must not end after bestBeforeAt", field = "pickupWindow")

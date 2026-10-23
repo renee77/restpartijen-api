@@ -25,8 +25,6 @@ object DatabaseFactory {
             driver = "org.h2.Driver"
         )
         transaction {
-            // `tables` is an array here; the spread operator `*` passes its elements
-            // as separate arguments, because create() expects a vararg, not an array.
             SchemaUtils.create(*tables)
         }
     }

@@ -1,5 +1,6 @@
 package com.restpartijen.api.product.repository
 
+import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.shared.SupplierIdLookup
 import com.restpartijen.api.shared.SupplierSummary
 
@@ -16,4 +17,16 @@ interface SupplierRepository : SupplierIdLookup {
 
     /** Whether a supplier with [supplierId] is stored. Used by US-03 to give a 404 for an unknown supplier (A4). */
     suspend fun exists(supplierId: Long): Boolean
+
+    /**
+     * The opening hours of [supplierId], from Monday to Sunday; a closed day is not in the list (US-10, §9.9).
+     * An unknown supplier gives an empty list; the service checks [exists] first when that matters.
+     */
+    suspend fun getOpeningHours(supplierId: Long): List<OpeningHours>
+
+    /**
+     * Replaces the whole week of [supplierId] with [openingHours] in one transaction (US-10).
+     * A day that is not in [openingHours] is closed afterwards; if storing fails, the old week stays.
+     */
+    suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>)
 }

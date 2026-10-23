@@ -8,6 +8,7 @@ import com.restpartijen.api.product.dto.ProductResponse
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.product.repository.ProductAllergensTable
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.shared.Role
@@ -49,8 +50,7 @@ class UpdateProductRouteTest {
     // A valid body: every field of POST except category, best-before three days after testNow.
     private val validBody = """
         {"name": "Wit brood", "originalPrice": 2.49,
-         "bestBeforeAt": "2026-10-04T00:00:00Z", "quantity": 5,
-         "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
+         "bestBeforeAt": "2026-10-04", "quantity": 5,
          "allergens": ["MILK"]}
     """
 
@@ -90,9 +90,14 @@ class UpdateProductRouteTest {
     @Test
     fun `the update reaches the database, with the price in cents`() = testApplication {
         // Arrange: a real database and the Exposed repositories behind the service
-        createEmptyTestDatabase(UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable)
+        createEmptyTestDatabase(
+            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, SupplierOpeningHoursTable,
+        )
         val userId = insertUser(Role.SUPPLIER)
-        val productId = insertProduct(supplierId = insertSupplier(userId))
+        val supplierId = insertSupplier(userId)
+        // A supplier always has opening hours (US-10); without them the product gets no pickup window.
+        ExposedSupplierRepository().updateOpeningHours(supplierId, anOpenWeek)
+        val productId = insertProduct(supplierId = supplierId)
         application {
             productRoutesTestApp(tokenClock, ExposedProductRepository(FixedClock(testNow)), ExposedSupplierRepository())
         }
@@ -177,13 +182,24 @@ class UpdateProductRouteTest {
     }
 
     @Test
-    fun `a best-before moment in the past gives 422`() = testApplication {
-        // Arrange: a domain rule (validateForListing), not a shape error; the window ends before it
+    fun `a body with a pickupWindow gives 400, because the API derives the window`() = testApplication {
+        // Arrange: the field no longer exists (US-10); the JSON reader refuses an unknown field (B-49)
         application { productRoutesTestApp(tokenClock, fakeProductRepository(aProduct(id = 1))) }
-        val body = validBody
-            .replace("2026-10-04T00:00:00Z", "2026-09-30T00:00:00Z")
-            .replace("2026-10-01T09:00:00Z", "2026-09-29T09:00:00Z")
-            .replace("2026-10-01T17:00:00Z", "2026-09-29T17:00:00Z")
+        val window = """"pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},"""
+        val body = validBody.replace("\"quantity\": 5,", "\"quantity\": 5, $window")
+
+        // Act
+        val response = update("1", body = body, token = tokenFor(Role.SUPPLIER))
+
+        // Assert
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `a best-before moment in the past gives 422`() = testApplication {
+        // Arrange: a domain rule, not a shape error
+        application { productRoutesTestApp(tokenClock, fakeProductRepository(aProduct(id = 1))) }
+        val body = validBody.replace("2026-10-04", "2026-09-30")
 
         // Act
         val response = update("1", body = body, token = tokenFor(Role.SUPPLIER))
@@ -197,6 +213,10 @@ class UpdateProductRouteTest {
     fun `a product id that is not a number gives 400`() = testApplication {
         application { productRoutesTestApp(tokenClock) }
 
-        assertEquals(HttpStatusCode.BadRequest, update("abc", token = tokenFor(Role.SUPPLIER)).status)
+        val response = update("abc", token = tokenFor(Role.SUPPLIER))
+
+        // With the field, like the other routes (E-05)
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals("id", Json.decodeFromString<ErrorResponse>(response.bodyAsText()).field)
     }
 }

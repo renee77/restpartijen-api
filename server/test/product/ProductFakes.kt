@@ -1,6 +1,12 @@
 package com.restpartijen.api.product
 
+import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.Repository
+import com.restpartijen.api.persistence.SuppliersTable
+import com.restpartijen.api.persistence.UsersTable
+import com.restpartijen.api.product.client.OpenFoodFactsClient
+import com.restpartijen.api.product.client.OpenFoodFactsSettings
+import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductAllergensTable
@@ -8,9 +14,6 @@ import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.product.service.OwnershipGuard
 import com.restpartijen.api.product.service.ProductService
-import com.restpartijen.api.persistence.ProductsTable
-import com.restpartijen.api.persistence.SuppliersTable
-import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
@@ -25,6 +28,10 @@ import com.restpartijen.api.testsupport.FakeRepository
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.insertSupplier
 import com.restpartijen.api.testsupport.insertUser
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalTime
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.mock.MockEngine
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -74,18 +81,48 @@ fun productService(
     clock: Clock,
 ): ProductService = ProductService(repository, suppliers, priceProvider, OwnershipGuard(suppliers), clock)
 
+/** An OpenFoodFactsClient on [engine], with a test contact address instead of a real one. */
+fun openFoodFactsClient(engine: HttpClientEngine): OpenFoodFactsClient =
+    OpenFoodFactsClient(engine, OpenFoodFactsSettings(contactEmail = "test@example.org"))
+
+/**
+ * An OpenFoodFactsClient for tests that do not look up a barcode.
+ * A call fails loudly with an IllegalStateException, which the client does not turn into Unavailable.
+ */
+fun openFoodFactsNotCalled(): OpenFoodFactsClient =
+    openFoodFactsClient(MockEngine { error("This test does not expect a call to Open Food Facts") })
+
 /** The supplier the product fakes use by default; the same values as the default supplier of [aProduct]. */
 val aSupplier = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0, longitude = 5.0)
+
+/** Open every day 08:00-21:00, so a product of the fake supplier gets a pickup window unless a test says otherwise. */
+val anOpenWeek: List<OpeningHours> = DayOfWeek.entries.map { OpeningHours(it, LocalTime(8, 0), LocalTime(21, 0)) }
 
 /**
  * A SupplierRepository for tests that knows one supplier, or none.
  * [ownerUserId] is the account the supplier belongs to; any other user has no supplier.
+ * [openingHours] is the starting week of [supplier]: a supplier always has opening hours (US-10).
  */
-fun fakeSupplierRepository(supplier: SupplierSummary? = aSupplier, ownerUserId: Long = 7): SupplierRepository =
+fun fakeSupplierRepository(
+    supplier: SupplierSummary? = aSupplier,
+    ownerUserId: Long = 7,
+    openingHours: List<OpeningHours> = anOpenWeek,
+): SupplierRepository =
     object : SupplierRepository {
+        // Opening hours per supplier id. Replaced as a whole and returned from Monday to Sunday,
+        // like the real repository, so a test sees the same behaviour.
+        private val hoursBySupplier = mutableMapOf<Long, List<OpeningHours>>().apply {
+            if (supplier != null) put(supplier.id, openingHours)
+        }
+
         override suspend fun findByUserId(userId: Long): SupplierSummary? = supplier.takeIf { userId == ownerUserId }
         override suspend fun exists(supplierId: Long): Boolean = supplier?.id == supplierId
         override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
+        override suspend fun getOpeningHours(supplierId: Long): List<OpeningHours> =
+            hoursBySupplier[supplierId].orEmpty().sortedBy { it.day }
+        override suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>) {
+            hoursBySupplier[supplierId] = openingHours
+        }
     }
 
 /** A price breakdown with a real discount: 3.50 with 40% off is 2.10 (§5.7). */
