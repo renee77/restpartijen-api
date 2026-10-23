@@ -8,6 +8,7 @@ import com.restpartijen.api.product.repository.ExposedProductReader
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedProductStatusUpdater
 import com.restpartijen.api.product.repository.ProductAllergensTable
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationsTable
@@ -50,7 +51,11 @@ class ExposedAdminProductIntegrationTest {
 
     @BeforeTest
     fun setUp() {
-        createEmptyTestDatabase(UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, ReservationsTable)
+        // SupplierOpeningHoursTable too: the seed writes the opening hours of every supplier (US-10).
+        createEmptyTestDatabase(
+            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, ReservationsTable,
+            SupplierOpeningHoursTable,
+        )
         SeedData.seedIfEmpty(clock, PasswordHasher())
 
         productReader = ExposedProductReader(ExposedProductRepository(clock))
