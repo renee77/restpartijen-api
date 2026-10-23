@@ -2,22 +2,27 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
+import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.shared.SupplierSummary
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.insertSupplier
 import com.restpartijen.api.testsupport.insertUser
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
  * Integration test: the real SupplierIdLookup of F1 against a real, empty H2 database per test (A15).
- * One test per promise in the KDoc of SupplierIdLookup.
+ * One test per promise in the KDoc of SupplierIdLookup, plus the opening hours of US-10.
  */
 class ExposedSupplierRepositoryTest {
 
@@ -122,5 +127,83 @@ class ExposedSupplierRepositoryTest {
 
         // Assert
         assertFalse(found)
+    }
+
+    // --- opening hours (US-10) ---
+
+    @Test
+    fun `updateOpeningHours stores the week and getOpeningsHours returns it from Monday to Sunday`() = runTest {
+        // Arrange: stored out of order, so the result proves the repository sorts by day
+        val supplierId = emptyDatabaseWithSupplierAndOpeningHours()
+        val week = listOf(saturday, monday)
+
+        // Act
+        repository.updateOpeningHours(supplierId, week)
+
+        // Assert
+        assertEquals(listOf(monday, saturday), repository.getOpeningsHours(supplierId))
+    }
+
+    @Test
+    fun `getOpeningsHours returns an empty list for a supplier without opening hours`() = runTest {
+        // Arrange
+        val supplierId = emptyDatabaseWithSupplierAndOpeningHours()
+
+        // Act
+        val found = repository.getOpeningsHours(supplierId)
+
+        // Assert
+        assertEquals(emptyList(), found)
+    }
+
+    @Test
+    fun `updateOpeningHours replaces the whole week, so a day that is left out is closed`() = runTest {
+        // Arrange
+        val supplierId = emptyDatabaseWithSupplierAndOpeningHours()
+        repository.updateOpeningHours(supplierId, listOf(monday, saturday))
+
+        // Act: Saturday is no longer in the week
+        repository.updateOpeningHours(supplierId, listOf(mondayLate))
+
+        // Assert
+        assertEquals(listOf(mondayLate), repository.getOpeningsHours(supplierId))
+    }
+
+    @Test
+    fun `updateOpeningHours leaves the opening hours of another supplier alone`() = runTest {
+        // Arrange
+        val supplierId = emptyDatabaseWithSupplierAndOpeningHours()
+        val otherSupplierId = insertSupplier(insertUser(Role.SUPPLIER))
+        repository.updateOpeningHours(otherSupplierId, listOf(saturday))
+
+        // Act
+        repository.updateOpeningHours(supplierId, listOf(monday))
+
+        // Assert: replacing one week must not delete the rows of every supplier
+        assertEquals(listOf(saturday), repository.getOpeningsHours(otherSupplierId))
+        assertEquals(listOf(monday), repository.getOpeningsHours(supplierId))
+    }
+
+    @Test
+    fun `updateOpeningHours keeps the old week when the new week cannot be stored`() = runTest {
+        // Arrange
+        val supplierId = emptyDatabaseWithSupplierAndOpeningHours()
+        repository.updateOpeningHours(supplierId, listOf(saturday))
+
+        // Act: two Mondays break the primary key (supplier_id, day_of_week) halfway through
+        assertFails { repository.updateOpeningHours(supplierId, listOf(monday, mondayLate)) }
+
+        // Assert: delete and insert run in one transaction, so the delete is rolled back too
+        assertEquals(listOf(saturday), repository.getOpeningsHours(supplierId))
+    }
+
+    private val monday = OpeningHours(DayOfWeek.MONDAY, opensAt = LocalTime(8, 0), closesAt = LocalTime(21, 0))
+    private val mondayLate = OpeningHours(DayOfWeek.MONDAY, opensAt = LocalTime(12, 0), closesAt = LocalTime(22, 0))
+    private val saturday = OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0))
+
+    // An empty database with the opening-hours table and one supplier; returns the supplier id.
+    private fun emptyDatabaseWithSupplierAndOpeningHours(): Long {
+        createEmptyTestDatabase(UsersTable, SuppliersTable, SupplierOpeningHoursTable)
+        return insertSupplier(insertUser(Role.SUPPLIER))
     }
 }

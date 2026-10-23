@@ -10,6 +10,7 @@ import com.restpartijen.api.plugins.configureRequestValidation
 import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.product.repository.ProductAllergensTable
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.pricing.configureMaintenanceLoop
 import com.restpartijen.api.pricing.routes.configurePricingRouting
 import com.restpartijen.api.persistence.ProductsTable
@@ -54,6 +55,7 @@ fun Application.module() {
         SuppliersTable,
         ProductsTable,
         ProductAllergensTable,
+        SupplierOpeningHoursTable,
         ReservationsTable
     )
 

@@ -6,6 +6,7 @@ import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.client.OpenFoodFactsSettings
+import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductAllergensTable
@@ -101,6 +102,10 @@ fun fakeSupplierRepository(supplier: SupplierSummary? = aSupplier, ownerUserId: 
         override suspend fun findByUserId(userId: Long): SupplierSummary? = supplier.takeIf { userId == ownerUserId }
         override suspend fun exists(supplierId: Long): Boolean = supplier?.id == supplierId
         override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
+        // Placeholders until US-10 step 3 gives this fake real opening hours.
+        override suspend fun getOpeningsHours(supplierId: Long): List<OpeningHours> = TODO("US-10 step 3")
+        override suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>) =
+            TODO("US-10 step 3")
     }
 
 /** A price breakdown with a real discount: 3.50 with 40% off is 2.10 (§5.7). */
