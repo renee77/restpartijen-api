@@ -23,11 +23,12 @@ class PlaceProductRequestValidatorTest {
         name: String = "Volkoren brood",
         barcode: String? = null,
         originalPrice: Double = 3.49,
+        bestBeforeAt: LocalDate = LocalDate(2026, 10, 4),
     ) = PlaceProductRequest(
         category = ProductCategory.FRESH,
         name = name,
         originalPrice = originalPrice,
-        bestBeforeAt = LocalDate(2026, 10, 4),
+        bestBeforeAt = bestBeforeAt,
         quantity = 2,
         barcode = barcode,
     )
@@ -106,5 +107,23 @@ class PlaceProductRequestValidatorTest {
         for (barcode in listOf("1234567", "8710400000001", "1".repeat(14))) {
             assertEquals(ValidationResult.Valid, validatePlaceProductRequest(aRequest(barcode = barcode)), barcode)
         }
+    }
+
+    @Test
+    fun `a best-before date after the year 9999 is refused and names the field`() {
+        // Arrange: a valid ISO date that the conversion to an instant cannot handle at the edge (500 before)
+        val request = aRequest(bestBeforeAt = LocalDate.parse("+999999999-12-31"))
+
+        // Act + Assert
+        assertEquals("bestBeforeAt", fieldOfError(request))
+    }
+
+    @Test
+    fun `a best-before date in the year 9999 passes`() {
+        // Act: the last day of the limit itself is allowed; the shelf-life rule then gives a 422 later
+        val result = validatePlaceProductRequest(aRequest(bestBeforeAt = LocalDate(9999, 12, 31)))
+
+        // Assert
+        assertEquals(ValidationResult.Valid, result)
     }
 }

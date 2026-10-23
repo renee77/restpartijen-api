@@ -31,7 +31,7 @@ class ExposedSupplierRepository : SupplierRepository {
     // Passes on to findByUserId, so the query that finds a user's supplier exists only once.
     override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
 
-    override suspend fun getOpeningsHours(supplierId: Long): List<OpeningHours> = dbQuery {
+    override suspend fun getOpeningHours(supplierId: Long): List<OpeningHours> = dbQuery {
         SupplierOpeningHoursTable
             .selectAll()
             .where { SupplierOpeningHoursTable.supplierId eq supplierId }
@@ -50,6 +50,10 @@ class ExposedSupplierRepository : SupplierRepository {
     // Delete and insert share one dbQuery, so one transaction: if the insert fails, the old week stays.
     override suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>) {
         dbQuery {
+            // Locks the supplier row first, so two replacements of one week run one after the other. Without it,
+            // both can insert the same day and one breaks the primary key; that only worked out through the
+            // default retry of Exposed.
+            SuppliersTable.selectAll().where { SuppliersTable.id eq supplierId }.forUpdate().toList()
             SupplierOpeningHoursTable.deleteWhere { SupplierOpeningHoursTable.supplierId eq supplierId }
             SupplierOpeningHoursTable.batchInsert(openingHours) { hours ->
                 this[SupplierOpeningHoursTable.supplierId] = supplierId

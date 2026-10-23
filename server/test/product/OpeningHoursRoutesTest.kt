@@ -1,11 +1,18 @@
 package com.restpartijen.api.product
 
+import com.restpartijen.api.persistence.SuppliersTable
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.product.dto.OpeningHoursResponse
 import com.restpartijen.api.product.model.OpeningHours
+import com.restpartijen.api.product.repository.ExposedSupplierRepository
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
+import com.restpartijen.api.testsupport.createEmptyTestDatabase
+import com.restpartijen.api.testsupport.insertSupplier
+import com.restpartijen.api.testsupport.insertUser
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.put
@@ -20,6 +27,8 @@ import io.ktor.server.testing.testApplication
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
 import kotlinx.serialization.json.Json
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
@@ -27,8 +36,8 @@ import kotlin.time.Clock
 /**
  * The opening-hours routes of US-10 (§5.10), with the fake SupplierRepository behind the service.
  * The fake knows aSupplier (id 1), owned by supplierUserId.
- * Order of the checks for PUT: role (401/403), body (400), supplier exists (404), own supplier (403),
- * week rules (422); then 200 with the stored week.
+ * Order of the checks for PUT: role (401/403), body shape (400), supplier exists (404), own supplier (403),
+ * week rules (422); then 200 with the stored week. Only the owner hears about the week rules.
  */
 class OpeningHoursRoutesTest {
 
@@ -127,7 +136,7 @@ class OpeningHoursRoutesTest {
             ),
             Json.decodeFromString<List<OpeningHoursResponse>>(response.bodyAsText()),
         )
-        assertEquals(listOf(monday, saturday), suppliers.getOpeningsHours(aSupplier.id))
+        assertEquals(listOf(monday, saturday), suppliers.getOpeningHours(aSupplier.id))
     }
 
     @Test
@@ -165,7 +174,7 @@ class OpeningHoursRoutesTest {
 
         // Assert
         assertEquals(HttpStatusCode.Forbidden, response.status)
-        assertEquals(listOf(saturday), suppliers.getOpeningsHours(aSupplier.id))
+        assertEquals(listOf(saturday), suppliers.getOpeningHours(aSupplier.id))
     }
 
     @Test
@@ -224,12 +233,49 @@ class OpeningHoursRoutesTest {
         application { productRoutesTestApp(tokenClock, suppliers = suppliers) }
 
         // Act
-        val response = replace(body = """[{"day": "MONDAY", "opensAt": "21:00", "closesAt": "08:00"}]""")
+        val response = replace(body = closingBeforeOpening)
 
-        // Assert: the check in OpeningHours, reached through toOpeningHours in the route
+        // Assert: the check in OpeningHours, made by the service after the 404 and 403 checks
         assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
         assertEquals("closesAt", Json.decodeFromString<ErrorResponse>(response.bodyAsText()).field)
-        assertEquals(listOf(saturday), suppliers.getOpeningsHours(aSupplier.id))
+        assertEquals(listOf(saturday), suppliers.getOpeningHours(aSupplier.id))
+    }
+
+    @Test
+    fun `PUT opening hours closing before opening of an unknown supplier returns 404, not 422`() = testApplication {
+        // Arrange
+        application { productRoutesTestApp(tokenClock) }
+
+        // Act
+        val response = replace(id = "999", body = closingBeforeOpening)
+
+        // Assert
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `PUT opening hours closing before opening of another supplier returns 403, not 422`() = testApplication {
+        // Arrange: user 8 is a supplier token without a supplier of its own
+        application { productRoutesTestApp(tokenClock) }
+
+        // Act
+        val response = replace(body = closingBeforeOpening, token = tokenFor(Role.SUPPLIER, userId = 8))
+
+        // Assert
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+    }
+
+    @Test
+    fun `PUT opening hours with seconds returns 400 and names the field`() = testApplication {
+        // Arrange: opening hours are whole minutes (decision 23 Oct 2026)
+        application { productRoutesTestApp(tokenClock) }
+
+        // Act
+        val response = replace(body = """[{"day": "MONDAY", "opensAt": "08:00:30", "closesAt": "21:00"}]""")
+
+        // Assert
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals("opensAt", Json.decodeFromString<ErrorResponse>(response.bodyAsText()).field)
     }
 
     @Test
@@ -244,8 +290,45 @@ class OpeningHoursRoutesTest {
         // Assert
         assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
         assertEquals("openingHours", Json.decodeFromString<ErrorResponse>(response.bodyAsText()).field)
-        assertEquals(listOf(saturday), suppliers.getOpeningsHours(aSupplier.id))
+        assertEquals(listOf(saturday), suppliers.getOpeningHours(aSupplier.id))
     }
+
+    // --- TC-10 against the real database ---
+
+    @Test
+    fun `TC-10 a week replaced through PUT is stored in the database and shown by GET`() = testApplication {
+        // Arrange: a real database and the Exposed repository behind the service
+        createEmptyTestDatabase(UsersTable, SuppliersTable, SupplierOpeningHoursTable)
+        val userId = insertUser(Role.SUPPLIER)
+        val supplierId = insertSupplier(userId)
+        application { productRoutesTestApp(tokenClock, suppliers = ExposedSupplierRepository()) }
+        val token = tokenFor(Role.SUPPLIER, userId)
+
+        // Act: a first week, then a smaller one that replaces it; minutes and Sunday on purpose
+        replace(id = "$supplierId", body = validBody, token = token)
+        val response = replace(
+            id = "$supplierId",
+            body = """
+                [{"day": "SUNDAY", "opensAt": "10:00", "closesAt": "16:00"},
+                 {"day": "TUESDAY", "opensAt": "08:30", "closesAt": "17:45"}]
+            """,
+            token = token,
+        )
+        val shown = client.get("/api/v1/suppliers/$supplierId/opening-hours")
+
+        // Assert: only the second week is left, from Monday to Sunday, the same in the answer and in GET
+        val expected = listOf(
+            OpeningHoursResponse(day = "TUESDAY", opensAt = "08:30", closesAt = "17:45"),
+            OpeningHoursResponse(day = "SUNDAY", opensAt = "10:00", closesAt = "16:00"),
+        )
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(expected, Json.decodeFromString<List<OpeningHoursResponse>>(response.bodyAsText()))
+        assertEquals(expected, Json.decodeFromString<List<OpeningHoursResponse>>(shown.bodyAsText()))
+        // Read the table itself, so the test sees what the database holds, not what the API returns.
+        assertEquals(2L, transaction { SupplierOpeningHoursTable.selectAll().count() })
+    }
+
+    private val closingBeforeOpening = """[{"day": "MONDAY", "opensAt": "21:00", "closesAt": "08:00"}]"""
 
     private val monday = OpeningHours(DayOfWeek.MONDAY, opensAt = LocalTime(8, 0), closesAt = LocalTime(21, 0))
     private val saturday = OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0))

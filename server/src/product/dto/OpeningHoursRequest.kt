@@ -1,6 +1,7 @@
 package com.restpartijen.api.product.dto
 
-import com.restpartijen.api.product.model.OpeningHours
+import com.restpartijen.api.product.service.OpeningHoursCommand
+import com.restpartijen.api.shared.ValidationException
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
 import kotlinx.serialization.Serializable
@@ -19,5 +20,25 @@ data class OpeningHoursRequest(
     val closesAt: LocalTime,
 )
 
-/** Turns the request into the domain model; OpeningHours then checks closing after opening itself (422). */
-fun OpeningHoursRequest.toOpeningHours() = OpeningHours(day, opensAt, closesAt)
+/**
+ * Turns the request into a command; it only translates. The service builds OpeningHours from it after the
+ * 404 and 403 checks, and OpeningHours then checks closing after opening itself (422).
+ */
+fun OpeningHoursRequest.toCommand() = OpeningHoursCommand(day, opensAt, closesAt)
+
+/**
+ * Checks the shape of one open day: opening hours are whole minutes (decision 23 Oct 2026). Seconds would
+ * also be cut off by the time column, so a stored week would differ from the one that was sent.
+ *
+ * @throws ValidationException when opensAt or closesAt has seconds; StatusPages turns it into a 400.
+ */
+fun requireWholeMinutes(request: OpeningHoursRequest) {
+    requireWholeMinute(request.opensAt, field = "opensAt")
+    requireWholeMinute(request.closesAt, field = "closesAt")
+}
+
+private fun requireWholeMinute(time: LocalTime, field: String) {
+    if (time.second != 0 || time.nanosecond != 0) {
+        throw ValidationException("$field must be whole minutes, for example \"08:00\"", field = field)
+    }
+}

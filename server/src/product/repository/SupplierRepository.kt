@@ -18,7 +18,7 @@ interface SupplierRepository : SupplierIdLookup {
     /** Whether a supplier with [supplierId] is stored. Used by US-03 to give a 404 for an unknown supplier (A4). */
     suspend fun exists(supplierId: Long): Boolean
 
-    suspend fun getOpeningsHours(supplierId: Long): List<OpeningHours>
+    suspend fun getOpeningHours(supplierId: Long): List<OpeningHours>
 
     suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>)
 }

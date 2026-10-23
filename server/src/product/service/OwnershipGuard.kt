@@ -35,7 +35,7 @@ class OwnershipGuard(private val suppliers: SupplierRepository) {
      */
     suspend fun requireOwnSupplier(userId: Long, supplierId: Long) {
         if (supplierIdOf(userId) != supplierId) {
-            throw ForbiddenException("Only this supplier itself may change this")
+            throw ForbiddenException("These opening hours belong to another supplier")
         }
     }
 

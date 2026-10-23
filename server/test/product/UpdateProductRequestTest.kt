@@ -25,10 +25,11 @@ class UpdateProductRequestTest {
         name: String = "Volkoren brood",
         barcode: String? = null,
         originalPrice: Double = 3.49,
+        bestBeforeAt: LocalDate = LocalDate(2026, 10, 4),
     ) = UpdateProductRequest(
         name = name,
         originalPrice = originalPrice,
-        bestBeforeAt = LocalDate(2026, 10, 4),
+        bestBeforeAt = bestBeforeAt,
         quantity = 2,
         barcode = barcode,
         allergens = setOf(Allergen.MILK),
@@ -85,5 +86,10 @@ class UpdateProductRequestTest {
     @Test
     fun `a negative price is refused`() {
         assertEquals("originalPrice", fieldOfError(aRequest(originalPrice = -0.01)))
+    }
+
+    @Test
+    fun `a best-before date after the year 9999 is refused`() {
+        assertEquals("bestBeforeAt", fieldOfError(aRequest(bestBeforeAt = LocalDate(10000, 1, 1))))
     }
 }

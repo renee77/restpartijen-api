@@ -1,5 +1,6 @@
 package com.restpartijen.api.product.service
 
+import com.restpartijen.api.product.model.BEST_BEFORE_PASSED
 import com.restpartijen.api.product.model.SurplusProduct
 import com.restpartijen.api.product.model.SurplusProduct.ProductFactory
 import com.restpartijen.api.product.repository.ProductRepository
@@ -173,14 +174,17 @@ class ProductService(
     // Shared by createProduct and updateProduct, so both give the same 422s. The calculator finds the window;
     // the service decides what a missing window means for the supplier.
     private suspend fun derivePickupWindow(supplierId: Long, bestBeforeAt: Instant): PickupWindow {
-        val openingHours = suppliers.getOpeningsHours(supplierId)
+        val openingHours = suppliers.getOpeningHours(supplierId)
         return when (val result = PickupWindowCalculator.calculate(openingHours, clock.now(), bestBeforeAt)) {
             is PickupWindowResult.Found -> result.window
             // The same field and message as validateForListing, so the answer does not depend on the order.
-            PickupWindowResult.Expired ->
-                throw DomainRuleException("bestBeforeAt must be in the future", field = "bestBeforeAt")
-            PickupWindowResult.NeverOpen ->
-                throw DomainRuleException("The supplier is not open before bestBeforeAt", field = "bestBeforeAt")
+            PickupWindowResult.Expired -> throw DomainRuleException(BEST_BEFORE_PASSED, field = "bestBeforeAt")
+            // An empty week is NeverOpen too, but then the date is not the cause: say what is.
+            PickupWindowResult.NeverOpen -> throw DomainRuleException(
+                if (openingHours.isEmpty()) "The supplier has no opening hours yet"
+                else "The supplier is not open before bestBeforeAt",
+                field = "bestBeforeAt",
+            )
         }
     }
 

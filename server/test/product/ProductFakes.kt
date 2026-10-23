@@ -118,7 +118,7 @@ fun fakeSupplierRepository(
         override suspend fun findByUserId(userId: Long): SupplierSummary? = supplier.takeIf { userId == ownerUserId }
         override suspend fun exists(supplierId: Long): Boolean = supplier?.id == supplierId
         override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
-        override suspend fun getOpeningsHours(supplierId: Long): List<OpeningHours> =
+        override suspend fun getOpeningHours(supplierId: Long): List<OpeningHours> =
             hoursBySupplier[supplierId].orEmpty().sortedBy { it.day }
         override suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>) {
             hoursBySupplier[supplierId] = openingHours

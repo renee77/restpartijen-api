@@ -28,7 +28,7 @@ class OpeningHoursService(
         // Checked separately: without it, an unknown supplier would look like a supplier that is always closed.
         if (!suppliers.exists(supplierId)) throw NotFoundException("Supplier not found")
 
-        return suppliers.getOpeningsHours(supplierId)
+        return suppliers.getOpeningHours(supplierId)
     }
 
     /**
@@ -36,9 +36,13 @@ class OpeningHoursService(
      *
      * @throws NotFoundException when the supplier is unknown (404)
      * @throws ForbiddenException when the supplier is not the supplier of [userId] (403)
-     * @throws DomainRuleException when [week] is empty or has a day twice (422)
+     * @throws DomainRuleException when [week] is empty, has a day twice, or closes before it opens (422)
      */
-    suspend fun replaceOpeningHours(userId: Long, supplierId: Long, week: List<OpeningHours>): List<OpeningHours> {
+    suspend fun replaceOpeningHours(
+        userId: Long,
+        supplierId: Long,
+        week: List<OpeningHoursCommand>,
+    ): List<OpeningHours> {
         // 404 before 403, as with products (US-03); ownership before the week, so only the owner hears about it.
         if (!suppliers.exists(supplierId)) throw NotFoundException("Supplier not found")
         ownershipGuard.requireOwnSupplier(userId, supplierId)
@@ -48,13 +52,15 @@ class OpeningHoursService(
             throw DomainRuleException("openingHours must contain at least one open day", field = "openingHours")
         }
         // Checked here, not left to the primary key: a database error would be a 500 without the day.
-        val doubleDays = week.groupBy { it.day }.filterValues { it.size > 1 }.keys
-        if (doubleDays.isNotEmpty()) {
-            throw DomainRuleException("openingHours has a day more than once: $doubleDays", field = "openingHours")
+        val duplicateDays = week.groupBy { it.day }.filterValues { it.size > 1 }.keys
+        if (duplicateDays.isNotEmpty()) {
+            throw DomainRuleException("openingHours has a day more than once: $duplicateDays", field = "openingHours")
         }
+        // Built only now, after the checks above: OpeningHours refuses closing before opening itself (422).
+        val openingHours = week.map { OpeningHours(it.day, it.opensAt, it.closesAt) }
 
-        suppliers.updateOpeningHours(supplierId, week)
+        suppliers.updateOpeningHours(supplierId, openingHours)
         // The stored week, from Monday to Sunday, so the answer shows what is really saved (§5.10).
-        return suppliers.getOpeningsHours(supplierId)
+        return suppliers.getOpeningHours(supplierId)
     }
 }

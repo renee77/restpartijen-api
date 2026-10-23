@@ -186,6 +186,22 @@ class ProductServiceTest {
     }
 
     @Test
+    fun `createProduct says the supplier has no opening hours instead of blaming the date`() = runTest {
+        // Arrange: a supplier from before US-10 has no week; NeverOpen, but the date is not the problem
+        val service = productService(
+            fakeProductRepository(), fakeSupplierRepository(openingHours = emptyList()), FixedPriceProvider(),
+            FixedClock(testNow),
+        )
+
+        // Act
+        val error = assertFailsWith<DomainRuleException> { service.createProduct(userId = 7, command = aCommand()) }
+
+        // Assert: the same field as NeverOpen (decision 23 Oct 2026), with a message that names the cause
+        assertEquals("bestBeforeAt", error.field)
+        assertEquals("The supplier has no opening hours yet", error.message)
+    }
+
+    @Test
     fun `createProduct refuses a best-before moment in the past and stores nothing`() = runTest {
         // Arrange: the calculator reports Expired before it looks at the opening hours
         val repository = fakeProductRepository()

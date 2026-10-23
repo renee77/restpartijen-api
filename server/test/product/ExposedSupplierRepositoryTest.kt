@@ -10,6 +10,10 @@ import com.restpartijen.api.shared.SupplierSummary
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.insertSupplier
 import com.restpartijen.api.testsupport.insertUser
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.DayOfWeek
 import kotlinx.datetime.LocalTime
@@ -132,7 +136,7 @@ class ExposedSupplierRepositoryTest {
     // --- opening hours (US-10) ---
 
     @Test
-    fun `updateOpeningHours stores the week and getOpeningsHours returns it from Monday to Sunday`() = runTest {
+    fun `updateOpeningHours stores the week and getOpeningHours returns it from Monday to Sunday`() = runTest {
         // Arrange: stored out of order, so the result proves the repository sorts by day
         val supplierId = emptyDatabaseWithSupplierAndOpeningHours()
         val week = listOf(saturday, monday)
@@ -141,16 +145,16 @@ class ExposedSupplierRepositoryTest {
         repository.updateOpeningHours(supplierId, week)
 
         // Assert
-        assertEquals(listOf(monday, saturday), repository.getOpeningsHours(supplierId))
+        assertEquals(listOf(monday, saturday), repository.getOpeningHours(supplierId))
     }
 
     @Test
-    fun `getOpeningsHours returns an empty list for a supplier without opening hours`() = runTest {
+    fun `getOpeningHours returns an empty list for a supplier without opening hours`() = runTest {
         // Arrange
         val supplierId = emptyDatabaseWithSupplierAndOpeningHours()
 
         // Act
-        val found = repository.getOpeningsHours(supplierId)
+        val found = repository.getOpeningHours(supplierId)
 
         // Assert
         assertEquals(emptyList(), found)
@@ -166,7 +170,7 @@ class ExposedSupplierRepositoryTest {
         repository.updateOpeningHours(supplierId, listOf(mondayLate))
 
         // Assert
-        assertEquals(listOf(mondayLate), repository.getOpeningsHours(supplierId))
+        assertEquals(listOf(mondayLate), repository.getOpeningHours(supplierId))
     }
 
     @Test
@@ -180,8 +184,8 @@ class ExposedSupplierRepositoryTest {
         repository.updateOpeningHours(supplierId, listOf(monday))
 
         // Assert: replacing one week must not delete the rows of every supplier
-        assertEquals(listOf(saturday), repository.getOpeningsHours(otherSupplierId))
-        assertEquals(listOf(monday), repository.getOpeningsHours(supplierId))
+        assertEquals(listOf(saturday), repository.getOpeningHours(otherSupplierId))
+        assertEquals(listOf(monday), repository.getOpeningHours(supplierId))
     }
 
     @Test
@@ -194,7 +198,30 @@ class ExposedSupplierRepositoryTest {
         assertFails { repository.updateOpeningHours(supplierId, listOf(monday, mondayLate)) }
 
         // Assert: delete and insert run in one transaction, so the delete is rolled back too
-        assertEquals(listOf(saturday), repository.getOpeningsHours(supplierId))
+        assertEquals(listOf(saturday), repository.getOpeningHours(supplierId))
+    }
+
+    @Test
+    fun `two simultaneous replacements of one week both succeed and leave one of the two weeks`() = runTest {
+        // Arrange: a supplier without opening hours, so both transactions find nothing to delete and both insert
+        // MONDAY. Without the lock one of them breaks the primary key (a 500); the default retry of Exposed hid
+        // that, which a run with defaultMaxAttempts = 1 showed (23 Oct 2026).
+        val supplierId = emptyDatabaseWithSupplierAndOpeningHours()
+        val weeks = listOf(listOf(monday), listOf(mondayLate, saturday))
+
+        // Act: on real threads at the same time, repeated, because a race does not show every time
+        repeat(20) {
+            repository.updateOpeningHours(supplierId, emptyList())
+            val results = coroutineScope {
+                weeks.map { week ->
+                    async(Dispatchers.IO) { runCatching { repository.updateOpeningHours(supplierId, week) } }
+                }.awaitAll()
+            }
+
+            // Assert: no failure, and the stored week is exactly one of the two, never a mix
+            assertTrue(results.all { it.isSuccess }, "results: $results")
+            assertTrue(repository.getOpeningHours(supplierId) in weeks)
+        }
     }
 
     private val monday = OpeningHours(DayOfWeek.MONDAY, opensAt = LocalTime(8, 0), closesAt = LocalTime(21, 0))

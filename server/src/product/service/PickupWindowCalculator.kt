@@ -54,11 +54,8 @@ object PickupWindowCalculator {
 
         val local = now.toLocalDateTime(PLATFORM_TIME_ZONE)
 
-        // The opening hours of today; null when the supplier is closed today.
-        val today = openingHours.find { it.day == local.date.dayOfWeek }
-
         // Step 2: the first open moment from now on; too late when it is not before bestBeforeAt.
-        val from = firstOpenMoment(openingHours, now, local, today)
+        val from = firstOpenMoment(openingHours, now, local)
         if (from == null || from >= bestBeforeAt) return PickupWindowResult.NeverOpen
 
         // Step 3: the last closing moment before bestBeforeAt.
@@ -69,15 +66,14 @@ object PickupWindowCalculator {
 
     /**
      * The first moment from [now] on at which the supplier is open; null when the week has no open day.
+     * [local] is [now] in Amsterdam.
      *
-     * [today] is checked first; after that the next seven days, which covers every day of the week once.
+     * Today is checked first; after that the next seven days, which covers every day of the week once.
      */
-    private fun firstOpenMoment(
-        openingHours: List<OpeningHours>,
-        now: Instant,
-        local: LocalDateTime,
-        today: OpeningHours?,
-    ): Instant? {
+    private fun firstOpenMoment(openingHours: List<OpeningHours>, now: Instant, local: LocalDateTime): Instant? {
+        // The opening hours of today; null when the supplier is closed today.
+        val today = openingHours.find { it.day == local.date.dayOfWeek }
+
         // Open now: start now. Not open yet: start at opening time. Closing time itself is not open.
         if (today != null && local.time < today.closesAt) {
             return if (local.time < today.opensAt) atLocalTime(local.date, today.opensAt) else now

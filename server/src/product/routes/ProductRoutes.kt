@@ -4,8 +4,8 @@ import com.restpartijen.api.product.dto.OpeningHoursRequest
 import com.restpartijen.api.product.dto.PlaceProductRequest
 import com.restpartijen.api.product.dto.UpdateProductRequest
 import com.restpartijen.api.product.dto.requireBarcode
+import com.restpartijen.api.product.dto.requireWholeMinutes
 import com.restpartijen.api.product.dto.toCommand
-import com.restpartijen.api.product.dto.toOpeningHours
 import com.restpartijen.api.product.dto.toResponse
 import com.restpartijen.api.product.service.OpeningHoursService
 import com.restpartijen.api.product.service.ProductLookupService
@@ -128,11 +128,13 @@ fun Application.configureProductRouting() {
                 val supplierId = call.parameters["id"]?.toLongOrNull()
                     ?: throw ValidationException("Supplier id must be a number", field = "id")
 
-                // An unknown day or a time that is not ISO 8601 cannot be read, so it gives a 400.
-                // toOpeningHours runs the check in OpeningHours: closing before opening gives a 422.
-                val week = call.receive<List<OpeningHoursRequest>>().map { it.toOpeningHours() }
+                // An unknown day or a time that is not ISO 8601 cannot be read, and seconds are refused: a 400.
+                val requests = call.receive<List<OpeningHoursRequest>>()
+                requests.forEach { requireWholeMinutes(it) }
 
-                // The service checks 404, 403 and 422 in that order and replaces the whole week.
+                // The service checks 404, 403 and 422 in that order and replaces the whole week; closing before
+                // opening is one of the 422s, so only the owner hears about it.
+                val week = requests.map { it.toCommand() }
                 val storedWeek = openingHoursService.replaceOpeningHours(call.currentUser().id, supplierId, week)
 
                 // 200: the week as it is now stored, from Monday to Sunday.

@@ -61,6 +61,45 @@ Accept: application/json
 GET http://localhost:8080/api/v1/suppliers/999/products
 Accept: application/json
 
+### F1 - Opening hours of a supplier (US-10): expect 200 with the week from Monday to Sunday; no token needed
+GET http://localhost:8080/api/v1/suppliers/{{supplierId}}/opening-hours
+Accept: application/json
+
+### F1 - Replace the own opening hours (US-10, TC-10): expect 200 with the stored week; a day not listed is closed
+PUT http://localhost:8080/api/v1/suppliers/{{supplierId}}/opening-hours
+Content-Type: application/json
+Authorization: Bearer {{supplierToken}}
+
+[
+  {"day": "MONDAY", "opensAt": "08:00", "closesAt": "21:00"},
+  {"day": "TUESDAY", "opensAt": "08:00", "closesAt": "21:00"},
+  {"day": "WEDNESDAY", "opensAt": "08:00", "closesAt": "21:00"},
+  {"day": "THURSDAY", "opensAt": "08:00", "closesAt": "21:00"},
+  {"day": "FRIDAY", "opensAt": "08:00", "closesAt": "21:00"},
+  {"day": "SATURDAY", "opensAt": "09:00", "closesAt": "18:00"}
+]
+
+### F1 - Opening hours closing before opening: expect 422, field closesAt
+PUT http://localhost:8080/api/v1/suppliers/{{supplierId}}/opening-hours
+Content-Type: application/json
+Authorization: Bearer {{supplierToken}}
+
+[{"day": "MONDAY", "opensAt": "21:00", "closesAt": "08:00"}]
+
+### F1 - Opening hours with seconds: expect 400, field opensAt; opening hours are whole minutes
+PUT http://localhost:8080/api/v1/suppliers/{{supplierId}}/opening-hours
+Content-Type: application/json
+Authorization: Bearer {{supplierToken}}
+
+[{"day": "MONDAY", "opensAt": "08:00:30", "closesAt": "21:00"}]
+
+### F1 - Opening hours of another supplier: expect 404 for an unknown id, before any check of the week
+PUT http://localhost:8080/api/v1/suppliers/999/opening-hours
+Content-Type: application/json
+Authorization: Bearer {{supplierToken}}
+
+[{"day": "MONDAY", "opensAt": "21:00", "closesAt": "08:00"}]
+
 ### F1 - Update an own product (US-03, TC-03): expect 200 with the new name and price; category stays AMBIENT
 PUT http://localhost:8080/api/v1/products/{{productId}}
 Content-Type: application/json
