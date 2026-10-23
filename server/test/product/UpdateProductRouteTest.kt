@@ -8,6 +8,7 @@ import com.restpartijen.api.product.dto.ProductResponse
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.product.repository.ProductAllergensTable
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.shared.Role
@@ -90,9 +91,14 @@ class UpdateProductRouteTest {
     @Test
     fun `the update reaches the database, with the price in cents`() = testApplication {
         // Arrange: a real database and the Exposed repositories behind the service
-        createEmptyTestDatabase(UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable)
+        createEmptyTestDatabase(
+            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, SupplierOpeningHoursTable,
+        )
         val userId = insertUser(Role.SUPPLIER)
-        val productId = insertProduct(supplierId = insertSupplier(userId))
+        val supplierId = insertSupplier(userId)
+        // A supplier always has opening hours (US-10); without them the product gets no pickup window.
+        ExposedSupplierRepository().updateOpeningHours(supplierId, anOpenWeek)
+        val productId = insertProduct(supplierId = supplierId)
         application {
             productRoutesTestApp(tokenClock, ExposedProductRepository(FixedClock(testNow)), ExposedSupplierRepository())
         }
