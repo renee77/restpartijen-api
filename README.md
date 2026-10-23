@@ -45,13 +45,14 @@ first maintenance run, five minutes after the start.
 
 ## Configuration
 
-- The application reads two environment variables: `JWT_SECRET`, which is required, and `DB_MODE`, which is optional.
+- The application reads three environment variables: `JWT_SECRET` and `OFF_CONTACT_EMAIL`, which are required, and `DB_MODE`, which is optional.
 - Without `JWT_SECRET` the application stops at startup with a message (FTD §16.4, decision B-52, issue #5). Setting the variable is not a "manual step" in the sense of GI-2.
 - Generate a secret with `openssl rand -base64 32` (Linux/macOS) or the PowerShell lines below, and put it in `.env` (ignored by git) or in the run configuration of IntelliJ. `.env.example` shows the variables.
 
   | Variable | Required | Values | Default |
   |---|---|---|---|
   | `JWT_SECRET` | yes | any string of at least 32 bytes | none: the application stops |
+  | `OFF_CONTACT_EMAIL` | yes | one e-mail address, sent to Open Food Facts in the User-Agent (US-02) | none: the application stops |
   | `DB_MODE` | no | `memory` or `file` | `memory` |
 
 ## Powershell

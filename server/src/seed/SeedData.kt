@@ -72,7 +72,7 @@ private data class SeedReservation(
  * The start state of the database for the demo and manual tests (FTD §9.7).
  *
  * Lives in its own package next to Application.kt, because it writes into the tables of every feature:
- * in persistence or shared it would make a lower layer import a feature (open point 20).
+ * in persistence or shared it would make a lower layer import a feature (FTD §8.3, §12.1).
  * It writes into the tables directly instead of through the contracts; §12.1 allows that for the seed only.
  */
 object SeedData {
@@ -283,6 +283,9 @@ object SeedData {
         val isEmpty = transaction { UsersTable.selectAll().empty() }
         if (!isEmpty) return
 
+        // Once for all accounts: Argon2 is slow on purpose, and all demo accounts share the one demo password (E-14).
+        val demoPasswordHash = hasher.hashPassword(DEMO_PASSWORD)
+
         transaction {
             // Email → id, filled while inserting: the database chooses the ids, the data only knows the emails.
             val userIds = mutableMapOf<String, Long>()
@@ -294,7 +297,7 @@ object SeedData {
                         it[UsersTable.email] = user.email
                         it[UsersTable.displayName] = user.displayName
                         it[UsersTable.role] = user.role
-                        it[UsersTable.passwordHash] = hasher.hashPassword(DEMO_PASSWORD)
+                        it[UsersTable.passwordHash] = demoPasswordHash
                         it[UsersTable.createdAt] = clock.now()
                     }[UsersTable.id]
             }

@@ -197,6 +197,10 @@ class UpdateProductRouteTest {
     fun `a product id that is not a number gives 400`() = testApplication {
         application { productRoutesTestApp(tokenClock) }
 
-        assertEquals(HttpStatusCode.BadRequest, update("abc", token = tokenFor(Role.SUPPLIER)).status)
+        val response = update("abc", token = tokenFor(Role.SUPPLIER))
+
+        // With the field, like the other routes (E-05)
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals("id", Json.decodeFromString<ErrorResponse>(response.bodyAsText()).field)
     }
 }

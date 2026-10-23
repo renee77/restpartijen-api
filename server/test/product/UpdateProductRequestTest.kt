@@ -82,8 +82,24 @@ class UpdateProductRequestTest {
     }
 
     @Test
-    fun `a barcode longer than 255 characters is refused`() {
-        assertEquals("barcode", fieldOfError(aRequest(barcode = "1".repeat(256))))
+    fun `a barcode with letters is refused`() {
+        // PUT shares the barcode rule with POST and the lookup: 7 to 14 digits, or no barcode
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "871040000000A")))
+    }
+
+    @Test
+    fun `a barcode of 6 digits is refused`() {
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "123456")))
+    }
+
+    @Test
+    fun `a barcode of 15 digits is refused`() {
+        assertEquals("barcode", fieldOfError(aRequest(barcode = "1".repeat(15))))
+    }
+
+    @Test
+    fun `a barcode of 13 digits passes`() {
+        assertEquals(ValidationResult.Valid, validateUpdateProductRequest(aRequest(barcode = "8710400000001")))
     }
 
     @Test
