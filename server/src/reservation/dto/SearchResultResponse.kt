@@ -14,9 +14,15 @@ data class SearchResultResponse(
     val discountPercentage: Int,
     val currentPrice: Double,
     val shelfLifeRemainingHours: Long,
-    val pickupFrom: String,
-    val pickupUntil: String,
+    val pickupWindow: PickupWindowResponse,
 )
+
+/**
+ * The pickup window, in the same shape as in F1's ProductResponse: { "from": ..., "until": ... }.
+ * Its own class because features only share code through shared (GI-5); the JSON is what must match.
+ */
+@Serializable
+data class PickupWindowResponse(val from: String, val until: String)
 
 /** Name and location of the supplier, without personal data (§15). */
 @Serializable
@@ -41,6 +47,8 @@ fun SearchResult.toResponse() = SearchResultResponse(
     discountPercentage = price.discountPercentage,
     currentPrice = price.currentPrice.toEuros(),
     shelfLifeRemainingHours = shelfLifeRemaining.inWholeHours,
-    pickupFrom = product.pickupWindow.from.toString(),
-    pickupUntil = product.pickupWindow.until.toString(),
+    pickupWindow = PickupWindowResponse(
+        from = product.pickupWindow.from.toString(),
+        until = product.pickupWindow.until.toString(),
+    ),
 )

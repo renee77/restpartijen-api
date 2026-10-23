@@ -21,6 +21,9 @@ import io.ktor.server.plugins.di.provide
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
@@ -56,6 +59,19 @@ class SearchRoutesTest {
         assertEquals("Bakkerij De Korenaar", result.supplier.name)
         assertEquals(51.69, result.supplier.latitude)
         assertEquals(1.99, result.currentPrice)
+    }
+
+    @Test
+    fun `the pickup window is a nested object, the same shape as in a product`() = testApplication {
+        // Arrange
+        setUp(FakeProduct(id = 1, pickupWindow = PickupWindow(now - 1.hours, now + 5.hours)))
+        // Act
+        val response = client.get("/api/v1/products")
+        // Assert: read as raw JSON, so going back to flat fields fails here
+        val product = Json.parseToJsonElement(response.bodyAsText()).jsonArray.single().jsonObject
+        val window = product.getValue("pickupWindow").jsonObject
+        assertEquals("2026-10-20T11:00:00Z", window.getValue("from").jsonPrimitive.content)
+        assertEquals("2026-10-20T17:00:00Z", window.getValue("until").jsonPrimitive.content)
     }
 
     @Test
