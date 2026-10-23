@@ -10,5 +10,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class LoginResponse(
     val token: String,
-    val role: Role
-)
+    val role: Role,
+    val supplierId: Long? = null
+    )

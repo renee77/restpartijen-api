@@ -8,6 +8,7 @@ import com.restpartijen.api.security.service.JwtConfig
 import com.restpartijen.api.security.service.LoginService
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.security.service.RegistrationService
+import com.restpartijen.api.shared.SupplierIdLookup
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import kotlin.time.Instant
@@ -19,7 +20,11 @@ val authTestNow: Instant = Instant.parse("2026-01-15T10:30:00Z")
  * Same plugin chain as production for the auth routes, with the real services on the test database.
  * Call createEmptyTestDatabase(UsersTable) first.
  */
-fun Application.setUpAuthTestApp(jwtConfig: JwtConfig) {
+fun Application.setUpAuthTestApp(
+    jwtConfig: JwtConfig,
+    supplierIdLookup: SupplierIdLookup = FakeSupplierIdLookup()
+
+    ) {
     configureSerialization()
     configureStatusPages()
     dependencies {
@@ -27,7 +32,7 @@ fun Application.setUpAuthTestApp(jwtConfig: JwtConfig) {
             RegistrationService(ExposedUserRepository(), PasswordHasher(), FixedClock(authTestNow))
         }
         provide<LoginService> {
-            LoginService(ExposedUserRepository(), PasswordHasher(), jwtConfig)
+            LoginService(ExposedUserRepository(), PasswordHasher(), jwtConfig, supplierIdLookup)
         }
     }
     configureAuthRouting()

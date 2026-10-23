@@ -31,8 +31,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import com.restpartijen.api.security.service.PROVIDER_NAME
-import com.restpartijen.api.testsupport.FixedClock
-import kotlin.time.Instant
 
 class LoginEndpointTest {
     // Arrange: use a fixed clock for predictable token timestamps
@@ -192,5 +190,20 @@ class LoginEndpointTest {
 
         // Assert
         assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun `login of a collector shows supplierId as null`() = testApplication {
+        // Arrange
+        createEmptyTestDatabase(UsersTable)
+        setUpLoginApp()
+        client.registerDefaultUser()
+
+        // Act
+        val text = client.login(loginBody()).bodyAsText()
+
+        // Assert: the field is there and null. The app reads null as "no supplier".
+        assertEquals(null, Json.decodeFromString<LoginResponse>(text).supplierId)
+        assertTrue(text.contains("\"supplierId\":null"))
     }
 }
