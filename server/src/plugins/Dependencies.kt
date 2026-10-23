@@ -17,6 +17,7 @@ import com.restpartijen.api.product.service.ProductLookupService
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationRepository
+import com.restpartijen.api.reservation.service.ProductSearchService
 import com.restpartijen.api.reservation.service.ReservationMaintenanceService
 import com.restpartijen.api.reservation.service.ReservationService
 import com.restpartijen.api.shared.PriceProvider
@@ -61,6 +62,7 @@ fun Application.configureDependencies() {
         provide<ReservationRepository>(::ExposedReservationRepository)
         provide<ReservationMaintenance>(::ReservationMaintenanceService)
         provide(::ReservationService)
+        provide(::ProductSearchService)
 
         // F3: Pricing
         provide<PriceProvider>(::PricingService)
