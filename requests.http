@@ -19,9 +19,7 @@ Content-Type: application/json
   "password": "Demo-Restpartij-2026"
 }
 
-> {%
-    client.global.set("supplierToken", response.body.token);
-%}
+> {% client.global.set("supplierToken", response.body.token); %}
 
 ### F1 - Place product as supplier: expect 201 with the stored product
 POST http://localhost:8080/api/v1/products
@@ -38,15 +36,10 @@ Authorization: Bearer {{supplierToken}}
     "from": "2027-06-29T08:00:00Z",
     "until": "2027-06-29T16:00:00Z"
   },
-  "allergens": [
-    "MILK"
-  ]
+  "allergens": ["MILK"]
 }
 
-> {%
-    client.global.set("productId", response.body.id);
-    client.global.set("supplierId", response.body.supplierId);
-%}
+> {% client.global.set("productId", response.body.id); client.global.set("supplierId", response.body.supplierId); %}
 
 ### F1 - Place product with an empty name: expect 400, field name
 POST http://localhost:8080/api/v1/products
@@ -63,14 +56,11 @@ Authorization: Bearer {{supplierToken}}
     "from": "2027-06-29T08:00:00Z",
     "until": "2027-06-29T16:00:00Z"
   },
-  "allergens": [
-    "MILK"
-  ]
+  "allergens": ["MILK"]
 }
 
 
 # Feature 3 - Registeren
-
 ### F1 - My offer (US-03): expect 200 with the LISTED and RESERVED products of the supplier; no token needed
 GET http://localhost:8080/api/v1/suppliers/{{supplierId}}/products
 Accept: application/json
@@ -93,9 +83,7 @@ Authorization: Bearer {{supplierToken}}
     "from": "2027-06-29T08:00:00Z",
     "until": "2027-06-29T16:00:00Z"
   },
-  "allergens": [
-    "MILK"
-  ]
+  "allergens": ["MILK"]
 }
 
 ### F1 - Update with a category: expect 400, the category cannot change (A13)
@@ -141,6 +129,22 @@ Authorization: Bearer {{supplierToken}}
 
 ### F1 - Delete without a token: expect 401
 DELETE http://localhost:8080/api/v1/products/1
+
+### F1 - Look up a barcode (US-02, TC-02): expect 200 with name Nutella, allergens MILK, NUTS, SOYBEANS and manualEntryRequired false
+# Calls the real Open Food Facts API; a second call within 24 hours comes from the cache.
+GET http://localhost:8080/api/v1/products/lookup/3017620422003
+Authorization: Bearer {{supplierToken}}
+
+### F1 - Look up an unknown barcode: expect 404
+GET http://localhost:8080/api/v1/products/lookup/8712345678906
+Authorization: Bearer {{supplierToken}}
+
+### F1 - Look up a barcode with letters: expect 400, field barcode; Open Food Facts is not called
+GET http://localhost:8080/api/v1/products/lookup/abc1234
+Authorization: Bearer {{supplierToken}}
+
+### F1 - Look up without a token: expect 401
+GET http://localhost:8080/api/v1/products/lookup/3017620422003
 
 ### F2 - Search without filters (US-04): expect 200 with all LISTED products, soonest best-before first; no token needed
 GET http://localhost:8080/api/v1/products
@@ -303,9 +307,7 @@ Content-Type: application/json
   "password": "Demo-Restpartij-2026"
 }
 
-> {%
-    client.global.set("adminToken", response.body.token);
-%}
+> {% client.global.set("adminToken", response.body.token); %}
 
 ### F3 - Login as collector: expect 200 with token and role COLLECTOR
 POST http://localhost:8080/api/v1/auth/login
@@ -316,9 +318,7 @@ Content-Type: application/json
   "password": "MyTestPassword123"
 }
 
-> {%
-    client.global.set("collectorToken", response.body.token);
-%}
+> {% client.global.set("collectorToken", response.body.token); %}
 
 ### Feature 3 - Status monitoring (US-08)
 ### F3 - Run maintenance without a token: expect 401

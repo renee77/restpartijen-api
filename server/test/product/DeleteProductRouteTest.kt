@@ -3,6 +3,7 @@ package com.restpartijen.api.product
 import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
+import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.product.repository.ProductAllergensTable
@@ -16,9 +17,11 @@ import com.restpartijen.api.testsupport.insertUser
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Clock
@@ -154,7 +157,8 @@ class DeleteProductRouteTest {
         // Act
         val response = deleteProduct("abc", tokenFor(Role.SUPPLIER))
 
-        // Assert
+        // Assert: with the field, like the other routes (E-05)
         assertEquals(HttpStatusCode.BadRequest, response.status)
+        assertEquals("id", Json.decodeFromString<ErrorResponse>(response.bodyAsText()).field)
     }
 }
