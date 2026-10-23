@@ -51,7 +51,6 @@ class UpdateProductRouteTest {
     private val validBody = """
         {"name": "Wit brood", "originalPrice": 2.49,
          "bestBeforeAt": "2026-10-04", "quantity": 5,
-         "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
          "allergens": ["MILK"]}
     """
 
@@ -183,13 +182,24 @@ class UpdateProductRouteTest {
     }
 
     @Test
-    fun `a best-before moment in the past gives 422`() = testApplication {
-        // Arrange: a domain rule (validateForListing), not a shape error; the window ends before it
+    fun `a body with a pickupWindow gives 400, because the API derives the window`() = testApplication {
+        // Arrange: the field no longer exists (US-10); the JSON reader refuses an unknown field (B-49)
         application { productRoutesTestApp(tokenClock, fakeProductRepository(aProduct(id = 1))) }
-        val body = validBody
-            .replace("2026-10-04", "2026-09-30")
-            .replace("2026-10-01T09:00:00Z", "2026-09-29T09:00:00Z")
-            .replace("2026-10-01T17:00:00Z", "2026-09-29T17:00:00Z")
+        val window = """"pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},"""
+        val body = validBody.replace("\"quantity\": 5,", "\"quantity\": 5, $window")
+
+        // Act
+        val response = update("1", body = body, token = tokenFor(Role.SUPPLIER))
+
+        // Assert
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `a best-before moment in the past gives 422`() = testApplication {
+        // Arrange: a domain rule, not a shape error
+        application { productRoutesTestApp(tokenClock, fakeProductRepository(aProduct(id = 1))) }
+        val body = validBody.replace("2026-10-04", "2026-09-30")
 
         // Act
         val response = update("1", body = body, token = tokenFor(Role.SUPPLIER))

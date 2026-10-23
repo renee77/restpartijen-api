@@ -32,10 +32,6 @@ Authorization: Bearer {{supplierToken}}
   "originalPrice": 3.49,
   "bestBeforeAt": "2027-06-30",
   "quantity": 5,
-  "pickupWindow": {
-    "from": "2027-06-29T08:00:00Z",
-    "until": "2027-06-29T16:00:00Z"
-  },
   "allergens": ["MILK"]
 }
 
@@ -52,10 +48,6 @@ Authorization: Bearer {{supplierToken}}
   "originalPrice": 3.49,
   "bestBeforeAt": "2027-06-30",
   "quantity": 5,
-  "pickupWindow": {
-    "from": "2027-06-29T08:00:00Z",
-    "until": "2027-06-29T16:00:00Z"
-  },
   "allergens": ["MILK"]
 }
 
@@ -79,10 +71,6 @@ Authorization: Bearer {{supplierToken}}
   "originalPrice": 2.99,
   "bestBeforeAt": "2027-06-30",
   "quantity": 3,
-  "pickupWindow": {
-    "from": "2027-06-29T08:00:00Z",
-    "until": "2027-06-29T16:00:00Z"
-  },
   "allergens": ["MILK"]
 }
 
@@ -96,11 +84,7 @@ Authorization: Bearer {{supplierToken}}
   "name": "Houdbare volle melk 1L",
   "originalPrice": 2.99,
   "bestBeforeAt": "2027-06-30",
-  "quantity": 3,
-  "pickupWindow": {
-    "from": "2027-06-29T08:00:00Z",
-    "until": "2027-06-29T16:00:00Z"
-  }
+  "quantity": 3
 }
 
 ### F1 - Update an unknown product: expect 404
@@ -112,11 +96,7 @@ Authorization: Bearer {{supplierToken}}
   "name": "Houdbare volle melk 1L",
   "originalPrice": 2.99,
   "bestBeforeAt": "2027-06-30",
-  "quantity": 3,
-  "pickupWindow": {
-    "from": "2027-06-29T08:00:00Z",
-    "until": "2027-06-29T16:00:00Z"
-  }
+  "quantity": 3
 }
 
 ### F1 - Delete an own product (US-03): expect 204; the row stays with status REMOVED

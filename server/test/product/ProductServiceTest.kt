@@ -155,7 +155,7 @@ class ProductServiceTest {
             FixedClock(testNow),
         )
 
-        // Act: the window in the command is ignored; it leaves the request in step 8
+        // Act
         val detail = service.createProduct(userId = 7, command = aCommand(bestBeforeAt = testNow + 3.days))
 
         // Assert: from the first opening (Thu 08:00) to the last closing before best-before (Sat 21:00)
@@ -424,11 +424,7 @@ class ProductServiceTest {
         val service = productService(
             repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
         )
-        val command = anUpdateCommand(
-            name = "Wit brood",
-            bestBeforeAt = testNow - 1.days,
-            pickupWindow = PickupWindow(from = testNow - 2.days, until = testNow - 1.days),
-        )
+        val command = anUpdateCommand(name = "Wit brood", bestBeforeAt = testNow - 1.days)
 
         // Act + Assert
         assertFailsWith<IllegalStateTransitionException> {
@@ -447,7 +443,7 @@ class ProductServiceTest {
             FixedPriceProvider(), FixedClock(testNow),
         )
 
-        // Act: the window in the command is ignored; it leaves the request in step 8
+        // Act
         val command = anUpdateCommand(bestBeforeAt = testNow + 3.days)
         val detail = service.updateProduct(userId = 7, productId = 1, command = command)
 
@@ -525,25 +521,21 @@ class ProductServiceTest {
         originalPrice: Money = Money.fromCents(349),
         quantity: Int = 2,
         bestBeforeAt: kotlin.time.Instant = testNow + 3.days,
-        pickupWindow: PickupWindow? = PickupWindow(from = testNow, until = testNow + 1.days),
     ) = UpdateProductCommand(
         name = name,
         originalPrice = originalPrice,
         bestBeforeAt = bestBeforeAt,
         quantity = quantity,
-        pickupWindow = pickupWindow,
     )
 
     private fun aCommand(
         bestBeforeAt: kotlin.time.Instant = testNow + 3.days,
         quantity: Int = 2,
-        pickupWindow: PickupWindow? = PickupWindow(from = testNow, until = testNow + 1.days),
     ) = PlaceProductCommand(
         category = ProductCategory.FRESH,
         name = "Volkoren brood",
         originalPrice = Money.fromCents(349),
         bestBeforeAt = bestBeforeAt,
         quantity = quantity,
-        pickupWindow = pickupWindow,
     )
 }

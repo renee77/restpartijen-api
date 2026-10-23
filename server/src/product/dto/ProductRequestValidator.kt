@@ -12,32 +12,24 @@ import io.ktor.server.plugins.requestvalidation.ValidationResult
  * below 1, are not checked here: they belong to the product (validateForListing, 422).
  */
 fun validatePlaceProductRequest(request: PlaceProductRequest): ValidationResult =
-    validateProductFields(request.name, request.barcode, request.originalPrice, request.pickupWindow)
+    validateProductFields(request.name, request.barcode, request.originalPrice)
 
 /**
  * Checks the shape of a PUT /api/v1/products/{id} body (US-03), with the same rules as POST:
  * both bodies carry the same product fields, apart from category.
  */
 fun validateUpdateProductRequest(request: UpdateProductRequest): ValidationResult =
-    validateProductFields(request.name, request.barcode, request.originalPrice, request.pickupWindow)
+    validateProductFields(request.name, request.barcode, request.originalPrice)
 
 // The shape rules of the product fields, shared by POST and PUT so each rule exists once.
-private fun validateProductFields(
-    name: String,
-    barcode: String?,
-    originalPrice: Double,
-    pickupWindow: PickupWindowRequest?,
-): ValidationResult {
+private fun validateProductFields(name: String, barcode: String?, originalPrice: Double): ValidationResult {
     requireText(name, field = "name")
     // No barcode is fine (bread from a bakery); a barcode follows the same rule as the lookup.
     barcode?.let { requireBarcode(it) }
 
-    // Money and PickupWindow refuse these values with IllegalArgumentException, which would give a 500.
+    // Money refuses a negative amount with IllegalArgumentException, which would give a 500.
     if (originalPrice < 0) {
         throw ValidationException("originalPrice must not be negative", field = "originalPrice")
-    }
-    if (pickupWindow != null && pickupWindow.from >= pickupWindow.until) {
-        throw ValidationException("pickupWindow.from must be before pickupWindow.until", field = "pickupWindow")
     }
 
     return ValidationResult.Valid

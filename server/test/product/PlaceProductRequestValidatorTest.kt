@@ -1,6 +1,5 @@
 package com.restpartijen.api.product
 
-import com.restpartijen.api.product.dto.PickupWindowRequest
 import com.restpartijen.api.product.dto.PlaceProductRequest
 import com.restpartijen.api.product.dto.validatePlaceProductRequest
 import com.restpartijen.api.shared.ProductCategory
@@ -24,7 +23,6 @@ class PlaceProductRequestValidatorTest {
         name: String = "Volkoren brood",
         barcode: String? = null,
         originalPrice: Double = 3.49,
-        pickupWindow: PickupWindowRequest? = PickupWindowRequest(from = testNow, until = testNow + 1.days),
     ) = PlaceProductRequest(
         category = ProductCategory.FRESH,
         name = name,
@@ -32,7 +30,6 @@ class PlaceProductRequestValidatorTest {
         bestBeforeAt = LocalDate(2026, 10, 4),
         quantity = 2,
         barcode = barcode,
-        pickupWindow = pickupWindow,
     )
 
     // Runs the validator and returns the field it names; fails the test when nothing is thrown.
@@ -51,15 +48,6 @@ class PlaceProductRequestValidatorTest {
     @Test
     fun `a negative price is refused and names the field`() {
         assertEquals("originalPrice", fieldOfError(aRequest(originalPrice = -1.0)))
-    }
-
-    @Test
-    fun `a pickup window that does not start before it ends is refused`() {
-        // Arrange: from equals until, which PickupWindow itself rejects with a 500
-        val window = PickupWindowRequest(from = testNow, until = testNow)
-
-        // Act + Assert
-        assertEquals("pickupWindow", fieldOfError(aRequest(pickupWindow = window)))
     }
 
     @Test

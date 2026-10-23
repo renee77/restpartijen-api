@@ -1,11 +1,9 @@
 package com.restpartijen.api.product
 
-import com.restpartijen.api.product.dto.PickupWindowRequest
 import com.restpartijen.api.product.dto.PlaceProductRequest
 import com.restpartijen.api.product.dto.toCommand
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
-import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ProductCategory
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
@@ -22,14 +20,12 @@ class PlaceProductRequestTest {
 
     private fun aRequest(
         originalPrice: Double = 3.49,
-        pickupWindow: PickupWindowRequest? = PickupWindowRequest(from = testNow, until = testNow + 1.days),
     ) = PlaceProductRequest(
         category = ProductCategory.FRESH,
         name = "Volkoren brood",
         originalPrice = originalPrice,
         bestBeforeAt = LocalDate(2026, 10, 4),
         quantity = 2,
-        pickupWindow = pickupWindow,
     )
 
     @Test
@@ -64,14 +60,5 @@ class PlaceProductRequestTest {
 
         // Assert: 5 October 00:00 summer time; the cases around the clock change are in BestBeforeDateTest
         assertEquals(Instant.parse("2026-10-04T22:00:00Z"), command.bestBeforeAt)
-    }
-
-    @Test
-    fun `toCommand turns the pickup window into the domain type`() {
-        // Act
-        val command = aRequest().toCommand()
-
-        // Assert
-        assertEquals(PickupWindow(from = testNow, until = testNow + 1.days), command.pickupWindow)
     }
 }

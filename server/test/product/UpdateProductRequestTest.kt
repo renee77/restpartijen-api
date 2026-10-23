@@ -1,12 +1,10 @@
 package com.restpartijen.api.product
 
-import com.restpartijen.api.product.dto.PickupWindowRequest
 import com.restpartijen.api.product.dto.UpdateProductRequest
 import com.restpartijen.api.product.dto.toCommand
 import com.restpartijen.api.product.dto.validateUpdateProductRequest
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
-import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ValidationException
 import io.ktor.server.plugins.requestvalidation.ValidationResult
 import kotlinx.datetime.LocalDate
@@ -27,14 +25,12 @@ class UpdateProductRequestTest {
         name: String = "Volkoren brood",
         barcode: String? = null,
         originalPrice: Double = 3.49,
-        pickupWindow: PickupWindowRequest? = PickupWindowRequest(from = testNow, until = testNow + 1.days),
     ) = UpdateProductRequest(
         name = name,
         originalPrice = originalPrice,
         bestBeforeAt = LocalDate(2026, 10, 4),
         quantity = 2,
         barcode = barcode,
-        pickupWindow = pickupWindow,
         allergens = setOf(Allergen.MILK),
     )
 
@@ -53,24 +49,6 @@ class UpdateProductRequestTest {
         assertEquals(Instant.parse("2026-10-04T22:00:00Z"), command.bestBeforeAt) // 5 Oct 00:00 in Amsterdam
         assertEquals(2, command.quantity)
         assertEquals(setOf(Allergen.MILK), command.allergens)
-    }
-
-    @Test
-    fun `toCommand turns the pickup window into the domain type`() {
-        // Act
-        val command = aRequest().toCommand()
-
-        // Assert
-        assertEquals(PickupWindow(from = testNow, until = testNow + 1.days), command.pickupWindow)
-    }
-
-    @Test
-    fun `toCommand keeps a missing pickup window missing, for the service to refuse`() {
-        // Act
-        val command = aRequest(pickupWindow = null).toCommand()
-
-        // Assert: no window is a domain rule (422 in the service), not a shape error
-        assertEquals(null, command.pickupWindow)
     }
 
     @Test
@@ -107,11 +85,5 @@ class UpdateProductRequestTest {
     @Test
     fun `a negative price is refused`() {
         assertEquals("originalPrice", fieldOfError(aRequest(originalPrice = -0.01)))
-    }
-
-    @Test
-    fun `a pickup window that does not start before it ends is refused`() {
-        val window = PickupWindowRequest(from = testNow + 1.days, until = testNow)
-        assertEquals("pickupWindow", fieldOfError(aRequest(pickupWindow = window)))
     }
 }

@@ -56,11 +56,10 @@ class PlaceProductRouteTest {
 
     private fun tokenFor(role: Role, userId: Long = supplierUserId) = productToken(role, tokenClock, userId)
 
-    // A valid body: best-before three days after testNow, pickup window inside it.
+    // A valid body: best-before three days after testNow. No pickup window: the API derives it (US-10).
     private val validBody = """
         {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
          "bestBeforeAt": "2026-10-04", "quantity": 2,
-         "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
          "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
     """
 
@@ -132,7 +131,6 @@ class PlaceProductRouteTest {
         val body = """
       {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
        "quantity": 2,
-       "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
        "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
   """
 
@@ -152,7 +150,6 @@ class PlaceProductRouteTest {
         val body = """
             {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
              "bestBeforeAt": "2026-10-04", "quantity": 2,
-             "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
              "allergens": ["CHOCOLATE"]}
         """
 
@@ -214,7 +211,6 @@ class PlaceProductRouteTest {
         val body = """
             {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
              "bestBeforeAt": "2026-10-04", "quantity": 2,
-             "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
              "allergens": []}
         """
 
@@ -228,23 +224,32 @@ class PlaceProductRouteTest {
     }
 
     @Test
-    fun `without a pickup window the API derives one from the opening hours`() = testApplication {
-        // Arrange: no pickupWindow; the fake supplier is open every day 08:00-21:00 (US-10)
+    fun `the API derives the pickup window from the opening hours`() = testApplication {
+        // Arrange: the fake supplier is open every day 08:00-21:00 (US-10)
         application { testApp() }
-        val body = """
-            {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-             "bestBeforeAt": "2026-10-04", "quantity": 2,
-             "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
-        """
 
         // Act
-        val response = place(body = body, token = tokenFor(Role.SUPPLIER))
+        val response = place(token = tokenFor(Role.SUPPLIER))
 
         // Assert: from Thu 1 Oct 08:00 to Sun 4 Oct 21:00 in Amsterdam; the date counts up to Mon 5 Oct 00:00
         assertEquals(HttpStatusCode.Created, response.status)
         val window = Json.decodeFromString<ProductResponse>(response.bodyAsText()).pickupWindow
         assertEquals("2026-10-01T06:00:00Z", window.from)
         assertEquals("2026-10-04T19:00:00Z", window.until)
+    }
+
+    @Test
+    fun `a body with a pickupWindow gives 400, because the API derives the window`() = testApplication {
+        // Arrange: the field no longer exists (US-10); the JSON reader refuses an unknown field (B-49)
+        application { testApp() }
+        val window = """"pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},"""
+        val body = validBody.replace("\"quantity\": 2,", "\"quantity\": 2, $window")
+
+        // Act
+        val response = place(body = body, token = tokenFor(Role.SUPPLIER))
+
+        // Assert
+        assertEquals(HttpStatusCode.BadRequest, response.status)
     }
 
     @Test
@@ -265,13 +270,11 @@ class PlaceProductRouteTest {
 
     @Test
     fun `a best-before date in the past gives 422`() = testApplication {
-        // Arrange: best-before one day before testNow; the window still ends before it,
-        // so only the expiry rule is broken
+        // Arrange: best-before one day before testNow, so there is no time left for a window
         application { testApp() }
         val body = """
             {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
              "bestBeforeAt": "2026-09-30", "quantity": 2,
-             "pickupWindow": {"from": "2026-09-29T09:00:00Z", "until": "2026-09-29T17:00:00Z"},
              "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
         """
 
