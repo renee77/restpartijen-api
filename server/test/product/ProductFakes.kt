@@ -99,13 +99,18 @@ val aSupplier = SupplierSummary(id = 1, name = "Bakkerij Test", latitude = 52.0,
  */
 fun fakeSupplierRepository(supplier: SupplierSummary? = aSupplier, ownerUserId: Long = 7): SupplierRepository =
     object : SupplierRepository {
+        // Opening hours per supplier id. Replaced as a whole and returned from Monday to Sunday,
+        // like the real repository, so a test sees the same behaviour.
+        private val hoursBySupplier = mutableMapOf<Long, List<OpeningHours>>()
+
         override suspend fun findByUserId(userId: Long): SupplierSummary? = supplier.takeIf { userId == ownerUserId }
         override suspend fun exists(supplierId: Long): Boolean = supplier?.id == supplierId
         override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
-        // Placeholders until US-10 step 3 gives this fake real opening hours.
-        override suspend fun getOpeningsHours(supplierId: Long): List<OpeningHours> = TODO("US-10 step 3")
-        override suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>) =
-            TODO("US-10 step 3")
+        override suspend fun getOpeningsHours(supplierId: Long): List<OpeningHours> =
+            hoursBySupplier[supplierId].orEmpty().sortedBy { it.day }
+        override suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>) {
+            hoursBySupplier[supplierId] = openingHours
+        }
     }
 
 /** A price breakdown with a real discount: 3.50 with 40% off is 2.10 (§5.7). */
