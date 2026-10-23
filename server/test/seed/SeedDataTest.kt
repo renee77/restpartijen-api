@@ -5,6 +5,7 @@ import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.pricing.model.DiscountPolicyResolver
 import com.restpartijen.api.product.repository.ProductAllergensTable
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.repository.ReservationsTable
 import com.restpartijen.api.security.service.PasswordHasher
@@ -93,7 +94,10 @@ class SeedDataTest {
 
     @BeforeTest
     fun seedAnEmptyDatabase() {
-        createEmptyTestDatabase(UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, ReservationsTable)
+        createEmptyTestDatabase(
+            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, ReservationsTable,
+            SupplierOpeningHoursTable,
+        )
         SeedData.seedIfEmpty(FixedClock(now), hasher)
     }
 
@@ -129,6 +133,16 @@ class SeedDataTest {
         val supplierUserIds = users().filter { it.role == Role.SUPPLIER }.map { it.id }.toSet()
 
         assertEquals(supplierUserIds, suppliers().map { it.userId }.toSet())
+    }
+
+    @Test
+    fun `every supplier has opening hours`() {
+        // A supplier always has opening hours (US-10, decision 23 Oct 2026); without them no product gets a window.
+        val suppliersWithHours = transaction {
+            SupplierOpeningHoursTable.selectAll().map { it[SupplierOpeningHoursTable.supplierId] }.toSet()
+        }
+
+        assertEquals(suppliers().map { it.id }.toSet(), suppliersWithHours)
     }
 
     // ---- Products (§9.7) ----
