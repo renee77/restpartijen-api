@@ -30,8 +30,7 @@ internal fun allergensOfProduct(productId: Long): Set<Allergen> =
         .map { it[ProductAllergensTable.allergen] }
         .toSet()
 
-// Extension function on ResultRow, Exposed's class for one row of a query result.
-// Translates that row into the domain model: the bridge between table and object.
+// The one place that turns a row into the domain model, so every query builds a product the same way.
 // The row must come from a join with SuppliersTable; the allergens live in another table, so the caller passes them.
 internal fun ResultRow.toProduct(allergens: Set<Allergen>): SurplusProduct = SurplusProduct.create(
     category = this[ProductsTable.category],

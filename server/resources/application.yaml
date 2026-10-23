@@ -14,3 +14,6 @@ jwt:
   issuer: restpartijen-api
   audience: restpartijen-app
   validityHours: 24
+
+openFoodFacts:
+  contactEmail: "$?OFF_CONTACT_EMAIL" # sent in the User-Agent (A5); no address in the source. Missing: the application stops (security review M-4)
