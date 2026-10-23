@@ -9,6 +9,7 @@ import com.restpartijen.api.product.repository.ExposedProductReader
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedProductStatusUpdater
 import com.restpartijen.api.product.repository.ProductAllergensTable
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationsTable
@@ -43,7 +44,10 @@ class ExpirySchedulerIntegrationTest {
     @BeforeTest
     fun setUp() {
         // Every test gets its own empty database, filled with the seed data for this one moment
-        createEmptyTestDatabase(UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, ReservationsTable)
+        createEmptyTestDatabase(
+            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, ReservationsTable,
+            SupplierOpeningHoursTable,
+        )
         SeedData.seedIfEmpty(clock, PasswordHasher())
 
         // The real parts behind the contracts, wired like configureDependencies() does, but with the fixed clock

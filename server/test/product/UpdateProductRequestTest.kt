@@ -1,18 +1,18 @@
 package com.restpartijen.api.product
 
-import com.restpartijen.api.product.dto.PickupWindowRequest
 import com.restpartijen.api.product.dto.UpdateProductRequest
 import com.restpartijen.api.product.dto.toCommand
 import com.restpartijen.api.product.dto.validateUpdateProductRequest
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
-import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ValidationException
 import io.ktor.server.plugins.requestvalidation.ValidationResult
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 
 /**
  * The request for PUT /api/v1/products/{id} (US-03, A13): turning it into a command, and its shape check.
@@ -25,14 +25,13 @@ class UpdateProductRequestTest {
         name: String = "Volkoren brood",
         barcode: String? = null,
         originalPrice: Double = 3.49,
-        pickupWindow: PickupWindowRequest? = PickupWindowRequest(from = testNow, until = testNow + 1.days),
+        bestBeforeAt: LocalDate = LocalDate(2026, 10, 4),
     ) = UpdateProductRequest(
         name = name,
         originalPrice = originalPrice,
-        bestBeforeAt = testNow + 3.days,
+        bestBeforeAt = bestBeforeAt,
         quantity = 2,
         barcode = barcode,
-        pickupWindow = pickupWindow,
         allergens = setOf(Allergen.MILK),
     )
 
@@ -48,27 +47,9 @@ class UpdateProductRequestTest {
         assertEquals(Money.fromCents(249), command.originalPrice)
         assertEquals("Wit brood", command.name)
         assertEquals("8710400000001", command.barcode)
-        assertEquals(testNow + 3.days, command.bestBeforeAt)
+        assertEquals(Instant.parse("2026-10-04T22:00:00Z"), command.bestBeforeAt) // 5 Oct 00:00 in Amsterdam
         assertEquals(2, command.quantity)
         assertEquals(setOf(Allergen.MILK), command.allergens)
-    }
-
-    @Test
-    fun `toCommand turns the pickup window into the domain type`() {
-        // Act
-        val command = aRequest().toCommand()
-
-        // Assert
-        assertEquals(PickupWindow(from = testNow, until = testNow + 1.days), command.pickupWindow)
-    }
-
-    @Test
-    fun `toCommand keeps a missing pickup window missing, for the service to refuse`() {
-        // Act
-        val command = aRequest(pickupWindow = null).toCommand()
-
-        // Assert: no window is a domain rule (422 in the service), not a shape error
-        assertEquals(null, command.pickupWindow)
     }
 
     @Test
@@ -108,8 +89,7 @@ class UpdateProductRequestTest {
     }
 
     @Test
-    fun `a pickup window that does not start before it ends is refused`() {
-        val window = PickupWindowRequest(from = testNow + 1.days, until = testNow)
-        assertEquals("pickupWindow", fieldOfError(aRequest(pickupWindow = window)))
+    fun `a best-before date after the year 9999 is refused`() {
+        assertEquals("bestBeforeAt", fieldOfError(aRequest(bestBeforeAt = LocalDate(10000, 1, 1))))
     }
 }

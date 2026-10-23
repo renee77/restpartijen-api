@@ -2,7 +2,6 @@ package com.restpartijen.api.product.service
 
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
-import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ProductCategory
 import kotlin.time.Instant
 
@@ -13,8 +12,8 @@ import kotlin.time.Instant
  * so the service only deals with domain rules. No id, status or supplier: the database chooses the id,
  * a new product is always LISTED, and the supplier comes from the token, never from the request (§16.2).
  *
- * Barcode, pickup window and allergens are optional (§11.1). Without a pickup window, the service would
- * derive it from the supplier's opening hours (US-10); until those exist, it refuses the request.
+ * Barcode and allergens are optional (§11.1). There is no pickup window: the service derives it from the
+ * opening hours of the supplier, bestBeforeAt and the moment of placing (US-10).
  */
 data class PlaceProductCommand(
     val category: ProductCategory,
@@ -23,6 +22,5 @@ data class PlaceProductCommand(
     val bestBeforeAt: Instant,
     val quantity: Int,
     val barcode: String? = null,
-    val pickupWindow: PickupWindow? = null,
     val allergens: Set<Allergen> = emptySet(),
 )
