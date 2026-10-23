@@ -146,6 +146,21 @@ Authorization: Bearer {{supplierToken}}
 ### F1 - Look up without a token: expect 401
 GET http://localhost:8080/api/v1/products/lookup/3017620422003
 
+### F2 - Search without filters (US-04): expect 200 with all LISTED products, soonest best-before first; no token needed
+GET http://localhost:8080/api/v1/products
+
+### F2 - Search FRESH products of at most 2.50 euros with at least 12 hours of shelf life (US-04): expect 200 with only products that match all three
+GET http://localhost:8080/api/v1/products?category=FRESH&maxPrice=2.50&minShelfLifeHours=12
+
+### F2 - Search for unknown category: category=BEER gives a 400 with field: category
+GET http://localhost:8080/api/v1/products?category=BEER
+
+### F2 - Search for negative maxPrice: maxPrice=-10 gives a 400 with field: maxPrice
+GET http://localhost:8080/api/v1/products?maxPrice=-10
+
+### F2 - Search for negative minShelfLifeHours: minShelfLifeHours=-1 gives a 400 with field: minShelfLifeHours
+GET http://localhost:8080/api/v1/products?minShelfLifeHours=-1
+
 ### F2 - Login as collector A: expect 200 with token and role COLLECTOR
 POST http://localhost:8080/api/v1/auth/login
 Content-Type: application/json
