@@ -7,6 +7,7 @@ import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.product.routes.configureProductRouting
+import com.restpartijen.api.product.service.OpeningHoursService
 import com.restpartijen.api.product.service.OwnershipGuard
 import com.restpartijen.api.product.service.ProductLookupService
 import com.restpartijen.api.product.service.ProductService
@@ -53,6 +54,7 @@ fun Application.productRoutesTestApp(
         provide<PriceProvider> { priceProvider }
         provide(::OwnershipGuard)
         provide(::ProductService)
+        provide(::OpeningHoursService)
         provide<OpenFoodFactsClient> { openFoodFacts }
         provide(::ProductLookupService)
     }

@@ -5,6 +5,7 @@ import com.restpartijen.api.product.dto.UpdateProductRequest
 import com.restpartijen.api.product.dto.requireBarcode
 import com.restpartijen.api.product.dto.toCommand
 import com.restpartijen.api.product.dto.toResponse
+import com.restpartijen.api.product.service.OpeningHoursService
 import com.restpartijen.api.product.service.ProductLookupService
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.security.service.currentUser
@@ -33,6 +34,7 @@ import io.ktor.server.util.getOrFail
 fun Application.configureProductRouting() {
     val service: ProductService by dependencies
     val lookupService: ProductLookupService by dependencies
+    val openingHoursService: OpeningHoursService by dependencies
     routing {
         get("/api/v1/products/{id}") {
             // Path parameters are always text; toLongOrNull avoids a 500 on input like "abc".
@@ -57,6 +59,18 @@ fun Application.configureProductRouting() {
 
             call.respond(productList.map { it.toResponse() })
         }
+
+        // Public, like the supplier's products: a collector checks when to pick up (US-10, §5.10).
+        get("/api/v1/suppliers/{id}/opening-hours") {
+            val supplierId = call.parameters["id"]?.toLongOrNull()
+                ?: throw ValidationException("Supplier id must be a number", field = "id")
+
+            // Unknown supplier: the service throws NotFoundException (404).
+            val week = openingHoursService.getOpeningHours(supplierId)
+
+            call.respond(week.map { it.toResponse() })
+        }
+
         // Only a supplier may place a product: no token gives 401, another role 403 (decision 3.6).
         requireRole(Role.SUPPLIER) {
             // A suggestion from Open Food Facts before placing; it stores nothing (US-02, W-14).
