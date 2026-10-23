@@ -5,13 +5,16 @@ import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ProductCategory
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 import kotlin.time.Instant
 
 /**
  * Body of POST /api/v1/products (US-01).
  *
- * The price is in euros, for example 3.49 (B-25). Times are ISO-8601 text, for example "2026-10-04T00:00:00Z".
+ * The price is in euros, for example 3.49 (B-25). bestBeforeAt is an ISO-8601 date, for example "2026-10-04",
+ * because a label shows a date; a time gives a 400. Other times are ISO-8601 text, for example
+ * "2026-10-01T09:00:00Z".
  * An allergen that is not one of the fourteen EU allergens cannot be read, which gives a 400 (§5.1).
  * There is no supplier field: the supplier comes from the token (§16.2).
  */
@@ -20,7 +23,7 @@ data class PlaceProductRequest(
     val category: ProductCategory,
     val name: String,
     val originalPrice: Double,
-    val bestBeforeAt: Instant,
+    val bestBeforeAt: LocalDate,
     val quantity: Int,
     val barcode: String? = null,
     val pickupWindow: PickupWindowRequest? = null,
@@ -42,7 +45,7 @@ fun PlaceProductRequest.toCommand(): PlaceProductCommand {
         category = category,
         name = name,
         originalPrice = Money.fromEuros(originalPrice),
-        bestBeforeAt = bestBeforeAt,
+        bestBeforeAt = bestBeforeAt.toBestBeforeAt(),
         quantity = quantity,
         barcode = barcode,
         pickupWindow = pickupWindow?.let { PickupWindow(from = it.from, until = it.until) },

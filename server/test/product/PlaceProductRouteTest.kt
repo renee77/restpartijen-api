@@ -55,7 +55,7 @@ class PlaceProductRouteTest {
     // A valid body: best-before three days after testNow, pickup window inside it.
     private val validBody = """
         {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-         "bestBeforeAt": "2026-10-04T00:00:00Z", "quantity": 2,
+         "bestBeforeAt": "2026-10-04", "quantity": 2,
          "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
          "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
     """
@@ -147,10 +147,23 @@ class PlaceProductRouteTest {
         application { testApp() }
         val body = """
             {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-             "bestBeforeAt": "2026-10-04T00:00:00Z", "quantity": 2,
+             "bestBeforeAt": "2026-10-04", "quantity": 2,
              "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
              "allergens": ["CHOCOLATE"]}
         """
+
+        // Act
+        val response = place(body = body, token = tokenFor(Role.SUPPLIER))
+
+        // Assert
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `a best-before moment instead of a date gives 400`() = testApplication {
+        // Arrange: a label shows a date, so the API only accepts a date (decision 23 Oct 2026)
+        application { testApp() }
+        val body = validBody.replace("\"2026-10-04\"", "\"2026-10-04T00:00:00Z\"")
 
         // Act
         val response = place(body = body, token = tokenFor(Role.SUPPLIER))
@@ -196,7 +209,7 @@ class PlaceProductRouteTest {
         application { testApp() }
         val body = """
             {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-             "bestBeforeAt": "2026-10-04T00:00:00Z", "quantity": 2,
+             "bestBeforeAt": "2026-10-04", "quantity": 2,
              "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
              "allergens": []}
         """
@@ -216,7 +229,7 @@ class PlaceProductRouteTest {
         application { testApp() }
         val body = """
             {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-             "bestBeforeAt": "2026-10-04T00:00:00Z", "quantity": 2,
+             "bestBeforeAt": "2026-10-04", "quantity": 2,
              "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
         """
 
@@ -236,7 +249,7 @@ class PlaceProductRouteTest {
         application { testApp() }
         val body = """
             {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-             "bestBeforeAt": "2026-09-30T00:00:00Z", "quantity": 2,
+             "bestBeforeAt": "2026-09-30", "quantity": 2,
              "pickupWindow": {"from": "2026-09-29T09:00:00Z", "until": "2026-09-29T17:00:00Z"},
              "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
         """

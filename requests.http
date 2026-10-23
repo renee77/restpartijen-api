@@ -30,7 +30,7 @@ Authorization: Bearer {{supplierToken}}
   "category": "AMBIENT",
   "name": "Houdbare halfvolle melk 1L",
   "originalPrice": 3.49,
-  "bestBeforeAt": "2027-06-30T12:00:00Z",
+  "bestBeforeAt": "2027-06-30",
   "quantity": 5,
   "pickupWindow": {
     "from": "2027-06-29T08:00:00Z",
@@ -50,7 +50,7 @@ Authorization: Bearer {{supplierToken}}
   "category": "AMBIENT",
   "name": "   ",
   "originalPrice": 3.49,
-  "bestBeforeAt": "2027-06-30T12:00:00Z",
+  "bestBeforeAt": "2027-06-30",
   "quantity": 5,
   "pickupWindow": {
     "from": "2027-06-29T08:00:00Z",
@@ -77,7 +77,7 @@ Authorization: Bearer {{supplierToken}}
 {
   "name": "Houdbare volle melk 1L",
   "originalPrice": 2.99,
-  "bestBeforeAt": "2027-06-30T12:00:00Z",
+  "bestBeforeAt": "2027-06-30",
   "quantity": 3,
   "pickupWindow": {
     "from": "2027-06-29T08:00:00Z",
@@ -95,7 +95,7 @@ Authorization: Bearer {{supplierToken}}
   "category": "FRESH",
   "name": "Houdbare volle melk 1L",
   "originalPrice": 2.99,
-  "bestBeforeAt": "2027-06-30T12:00:00Z",
+  "bestBeforeAt": "2027-06-30",
   "quantity": 3,
   "pickupWindow": {
     "from": "2027-06-29T08:00:00Z",
@@ -111,7 +111,7 @@ Authorization: Bearer {{supplierToken}}
 {
   "name": "Houdbare volle melk 1L",
   "originalPrice": 2.99,
-  "bestBeforeAt": "2027-06-30T12:00:00Z",
+  "bestBeforeAt": "2027-06-30",
   "quantity": 3,
   "pickupWindow": {
     "from": "2027-06-29T08:00:00Z",

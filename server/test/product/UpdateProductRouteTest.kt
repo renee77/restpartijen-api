@@ -49,7 +49,7 @@ class UpdateProductRouteTest {
     // A valid body: every field of POST except category, best-before three days after testNow.
     private val validBody = """
         {"name": "Wit brood", "originalPrice": 2.49,
-         "bestBeforeAt": "2026-10-04T00:00:00Z", "quantity": 5,
+         "bestBeforeAt": "2026-10-04", "quantity": 5,
          "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
          "allergens": ["MILK"]}
     """
@@ -181,7 +181,7 @@ class UpdateProductRouteTest {
         // Arrange: a domain rule (validateForListing), not a shape error; the window ends before it
         application { productRoutesTestApp(tokenClock, fakeProductRepository(aProduct(id = 1))) }
         val body = validBody
-            .replace("2026-10-04T00:00:00Z", "2026-09-30T00:00:00Z")
+            .replace("2026-10-04", "2026-09-30")
             .replace("2026-10-01T09:00:00Z", "2026-09-29T09:00:00Z")
             .replace("2026-10-01T17:00:00Z", "2026-09-29T17:00:00Z")
 

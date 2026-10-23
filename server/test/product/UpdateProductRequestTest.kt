@@ -9,10 +9,12 @@ import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.ValidationException
 import io.ktor.server.plugins.requestvalidation.ValidationResult
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.days
+import kotlin.time.Instant
 
 /**
  * The request for PUT /api/v1/products/{id} (US-03, A13): turning it into a command, and its shape check.
@@ -29,7 +31,7 @@ class UpdateProductRequestTest {
     ) = UpdateProductRequest(
         name = name,
         originalPrice = originalPrice,
-        bestBeforeAt = testNow + 3.days,
+        bestBeforeAt = LocalDate(2026, 10, 4),
         quantity = 2,
         barcode = barcode,
         pickupWindow = pickupWindow,
@@ -48,7 +50,7 @@ class UpdateProductRequestTest {
         assertEquals(Money.fromCents(249), command.originalPrice)
         assertEquals("Wit brood", command.name)
         assertEquals("8710400000001", command.barcode)
-        assertEquals(testNow + 3.days, command.bestBeforeAt)
+        assertEquals(Instant.parse("2026-10-04T22:00:00Z"), command.bestBeforeAt) // 5 Oct 00:00 in Amsterdam
         assertEquals(2, command.quantity)
         assertEquals(setOf(Allergen.MILK), command.allergens)
     }

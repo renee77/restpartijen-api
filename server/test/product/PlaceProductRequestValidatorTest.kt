@@ -6,6 +6,7 @@ import com.restpartijen.api.product.dto.validatePlaceProductRequest
 import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ValidationException
 import io.ktor.server.plugins.requestvalidation.ValidationResult
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -28,7 +29,7 @@ class PlaceProductRequestValidatorTest {
         category = ProductCategory.FRESH,
         name = name,
         originalPrice = originalPrice,
-        bestBeforeAt = testNow + 3.days,
+        bestBeforeAt = LocalDate(2026, 10, 4),
         quantity = 2,
         barcode = barcode,
         pickupWindow = pickupWindow,
