@@ -23,6 +23,10 @@ dependencies:
   - org.jetbrains.exposed:exposed-core:1.5.0
   - org.jetbrains.exposed:exposed-jdbc:1.5.0
   - org.jetbrains.exposed:exposed-kotlin-datetime:1.5.0
+  # Used directly for opening hours (DayOfWeek, LocalTime; US-10), so declared here instead of relying on
+  # Exposed and Ktor to bring it along. Same version they resolve to; both depend on this compat variant,
+  # so a plain 0.8.0 could replace the variant they expect.
+  - org.jetbrains.kotlinx:kotlinx-datetime:0.8.0-0.6.x-compat
   - com.h2database:h2:2.4.240
   - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0
   - io.ktor:ktor-server-status-pages

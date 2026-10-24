@@ -3,7 +3,9 @@ package com.restpartijen.api.seed
 import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
+import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.product.repository.ProductAllergensTable
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.repository.ReservationsTable
 import com.restpartijen.api.security.service.PasswordHasher
@@ -11,6 +13,8 @@ import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.shared.Role
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalTime
 import org.jetbrains.exposed.v1.jdbc.insert
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -29,6 +33,7 @@ private data class SeedUser(
 /**
  * One supplier to seed, linked to its account by [ownerEmail].
  * An email instead of a user id: the database chooses the id, so the data can only name the account.
+ * [openingHours] uses the model, so a closing time before the opening time fails at startup (§5.10).
  */
 private data class SeedSupplier(
     val ownerEmail: String,
@@ -36,7 +41,15 @@ private data class SeedSupplier(
     val address: String,
     val latitude: Double,
     val longitude: Double,
+    val openingHours: List<OpeningHours>,
 )
+
+// The same hours on each of [days]; a day that is not listed is closed.
+private fun openOn(days: List<DayOfWeek>, opensAt: LocalTime, closesAt: LocalTime) =
+    days.map { OpeningHours(it, opensAt, closesAt) }
+
+private val mondayToFriday =
+    listOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
 
 /**
  * One product to seed. [key] is a name of our own, so a reservation can refer to the product before it has an id.
@@ -87,10 +100,27 @@ object SeedData {
     )
 
     // A supermarket, a bakery and a wholesaler in Breda, so the distance in search results means something.
+    // Each has its own opening hours with closed days, so the derived pickup window has something to skip (§9.7).
     private val suppliers = listOf(
-        SeedSupplier("supermarkt@mail.com", "Supermarkt Breda Centrum", "Grote Markt 5, Breda", 51.5890, 4.7760),
-        SeedSupplier("bakker@mail.com", "Bakkerij De Korenschoof", "Ginnekenweg 12, Breda", 51.5795, 4.7820),
-        SeedSupplier("groothandel@mail.com", "Groothandel Vers & Vries", "Minervum 7001, Breda", 51.6020, 4.7350),
+        SeedSupplier(
+            "supermarkt@mail.com", "Supermarkt Breda Centrum", "Grote Markt 5, Breda", 51.5890, 4.7760,
+            // Mon to Fri 08:00-21:00, Sat 09:00-18:00, Sun closed.
+            openingHours = openOn(mondayToFriday, LocalTime(8, 0), LocalTime(21, 0)) +
+                OpeningHours(DayOfWeek.SATURDAY, LocalTime(9, 0), LocalTime(18, 0)),
+        ),
+        SeedSupplier(
+            "bakker@mail.com", "Bakkerij De Korenschoof", "Ginnekenweg 12, Breda", 51.5795, 4.7820,
+            // Tue to Sat 07:00-17:00, Sun and Mon closed.
+            openingHours = openOn(
+                listOf(DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
+                LocalTime(7, 0), LocalTime(17, 0),
+            ),
+        ),
+        SeedSupplier(
+            "groothandel@mail.com", "Groothandel Vers & Vries", "Minervum 7001, Breda", 51.6020, 4.7350,
+            // Mon to Fri 06:00-16:00, weekend closed.
+            openingHours = openOn(mondayToFriday, LocalTime(6, 0), LocalTime(16, 0)),
+        ),
     )
 
     private val products = listOf(
@@ -303,7 +333,7 @@ object SeedData {
             }
 
             for (supplier in suppliers) {
-                supplierIds[supplier.ownerEmail] =
+                val supplierId =
                     SuppliersTable.insert {
                         // getValue fails loudly on a typo in ownerEmail, instead of storing a wrong link.
                         it[SuppliersTable.userId] = userIds.getValue(supplier.ownerEmail)
@@ -312,6 +342,16 @@ object SeedData {
                         it[SuppliersTable.latitude] = supplier.latitude
                         it[SuppliersTable.longitude] = supplier.longitude
                     }[SuppliersTable.id]
+                supplierIds[supplier.ownerEmail] = supplierId
+
+                for (hours in supplier.openingHours) {
+                    SupplierOpeningHoursTable.insert {
+                        it[SupplierOpeningHoursTable.supplierId] = supplierId
+                        it[SupplierOpeningHoursTable.dayOfWeek] = hours.day
+                        it[SupplierOpeningHoursTable.opensAt] = hours.opensAt
+                        it[SupplierOpeningHoursTable.closesAt] = hours.closesAt
+                    }
+                }
             }
 
             // One moment for all products, so their offsets are relative to the same "now".

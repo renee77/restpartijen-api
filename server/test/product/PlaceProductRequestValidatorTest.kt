@@ -1,11 +1,11 @@
 package com.restpartijen.api.product
 
-import com.restpartijen.api.product.dto.PickupWindowRequest
 import com.restpartijen.api.product.dto.PlaceProductRequest
 import com.restpartijen.api.product.dto.validatePlaceProductRequest
 import com.restpartijen.api.shared.ProductCategory
 import com.restpartijen.api.shared.ValidationException
 import io.ktor.server.plugins.requestvalidation.ValidationResult
+import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -23,15 +23,14 @@ class PlaceProductRequestValidatorTest {
         name: String = "Volkoren brood",
         barcode: String? = null,
         originalPrice: Double = 3.49,
-        pickupWindow: PickupWindowRequest? = PickupWindowRequest(from = testNow, until = testNow + 1.days),
+        bestBeforeAt: LocalDate = LocalDate(2026, 10, 4),
     ) = PlaceProductRequest(
         category = ProductCategory.FRESH,
         name = name,
         originalPrice = originalPrice,
-        bestBeforeAt = testNow + 3.days,
+        bestBeforeAt = bestBeforeAt,
         quantity = 2,
         barcode = barcode,
-        pickupWindow = pickupWindow,
     )
 
     // Runs the validator and returns the field it names; fails the test when nothing is thrown.
@@ -50,15 +49,6 @@ class PlaceProductRequestValidatorTest {
     @Test
     fun `a negative price is refused and names the field`() {
         assertEquals("originalPrice", fieldOfError(aRequest(originalPrice = -1.0)))
-    }
-
-    @Test
-    fun `a pickup window that does not start before it ends is refused`() {
-        // Arrange: from equals until, which PickupWindow itself rejects with a 500
-        val window = PickupWindowRequest(from = testNow, until = testNow)
-
-        // Act + Assert
-        assertEquals("pickupWindow", fieldOfError(aRequest(pickupWindow = window)))
     }
 
     @Test
@@ -117,5 +107,23 @@ class PlaceProductRequestValidatorTest {
         for (barcode in listOf("1234567", "8710400000001", "1".repeat(14))) {
             assertEquals(ValidationResult.Valid, validatePlaceProductRequest(aRequest(barcode = barcode)), barcode)
         }
+    }
+
+    @Test
+    fun `a best-before date after the year 9999 is refused and names the field`() {
+        // Arrange: a valid ISO date that the conversion to an instant cannot handle at the edge (500 before)
+        val request = aRequest(bestBeforeAt = LocalDate.parse("+999999999-12-31"))
+
+        // Act + Assert
+        assertEquals("bestBeforeAt", fieldOfError(request))
+    }
+
+    @Test
+    fun `a best-before date in the year 9999 passes`() {
+        // Act: the last day of the limit itself is allowed; the shelf-life rule then gives a 422 later
+        val result = validatePlaceProductRequest(aRequest(bestBeforeAt = LocalDate(9999, 12, 31)))
+
+        // Assert
+        assertEquals(ValidationResult.Valid, result)
     }
 }
