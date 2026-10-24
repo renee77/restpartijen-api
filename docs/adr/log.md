@@ -13,7 +13,7 @@ De nieuwste wijziging staat bovenaan. Het overzicht van alle ADR's staat in de [
 ## 2026-10-24 — ADR's naast de code en FTD v3.0 gelegd
 
 - Alle ADR's en de index verwijzen nu naar FTD v3.0 in plaats van v2.4. De §-nummers zijn gelijk gebleven.
-- ADR-01: `security` staat bij de featurepackages, en de gedeelde packages zijn genoemd. De laagindeling is daardoor vier keer herhaald, niet drie.
+- ADR-01: `security` staat bij de featurepackages, en de gedeelde packages zijn genoemd. De laagindeling geldt voor zover een feature de laag nodig heeft: `pricing` heeft geen `repository`.
 - ADR-02: `shelfLifeRemaining(clock)` met de `Clock` als parameter, zoals in de code.
 - ADR-05: de reden voor `CORS` is de demo-frontend in de browser. De Android-app heeft CORS niet nodig, want alleen browsers handhaven het. Er is een bronnenlijst bij gekomen. De tekst bij Gevolgen is opgeschoond. Het besluit zelf is niet veranderd.
 - ADR-06: het polymorfisme zit in `tiers()`. `discountPercentage(remaining)` staat één keer in de interface.
