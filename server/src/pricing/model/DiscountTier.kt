@@ -1,6 +1,5 @@
 package com.restpartijen.api.pricing.model
 
-import com.restpartijen.api.shared.ProductCategory
 import kotlin.time.Duration
 
 data class DiscountTier(val appliesFrom: Duration, val percentage: Int)
