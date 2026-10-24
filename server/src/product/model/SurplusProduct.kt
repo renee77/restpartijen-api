@@ -20,7 +20,6 @@ const val BEST_BEFORE_PASSED = "bestBeforeAt must be in the future"
  *
  * Sealed, so the compiler checks that the factory handles every kind. What is the same
  * for every kind lives here; each subclass only supplies its [category] and [maxShelfLife].
- * Not a data class: copy() would bypass the private setter on [status].
  *
  * @property barcode the barcode on the package, or null for a product without one, such as bread from a bakery
  * @property bestBeforeAt the moment the best-before date ends; from then on the product has expired
@@ -44,11 +43,9 @@ sealed class SurplusProduct(
     /**
      * The lifecycle status this product was built with.
      *
-     * Final, because Kotlin does not allow a private setter on an open property.
      * Other features change the status only through ProductStatusUpdater.
      */
-    final override var status: ProductStatus = status
-        private set
+    override val status: ProductStatus = status
 
     /** Each subclass returns its own kind (§9.3). */
     abstract override val category: ProductCategory
