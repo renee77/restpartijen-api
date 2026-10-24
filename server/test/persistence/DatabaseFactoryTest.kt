@@ -12,9 +12,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+/** File mode of the database: the data must survive a restart. */
 class DatabaseFactoryTest {
 
-    // A fresh temporary folder per test, so the test never touches the real data/ folder.
+    /** A fresh temporary folder per test, so the test never touches the real data/ folder. */
     private val tempDir = createTempDirectory("restpartijen-test")
 
     @AfterTest

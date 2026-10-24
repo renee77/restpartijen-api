@@ -18,6 +18,7 @@ import kotlin.time.Instant
  */
 class ForeignKeyTest {
 
+    /** An id that no row has: every test starts with an empty database. */
     private val unknownId = 999L
 
     @Test
@@ -59,6 +60,7 @@ class ForeignKeyTest {
         assertFailsWith<ExposedSQLException> { insertReservation(productId = productId, collectorId = unknownId) }
     }
 
+    /** Stores an ACTIVE reservation with fixed values, pointing at [productId] and [collectorId]. */
     private fun insertReservation(productId: Long, collectorId: Long) = transaction {
         ReservationsTable.insert {
             it[ReservationsTable.productId] = productId
