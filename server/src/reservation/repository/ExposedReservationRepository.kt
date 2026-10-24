@@ -48,6 +48,7 @@ class ExposedReservationRepository : ReservationRepository {
         item.copy(id = newId)
     }
 
+    /** Stores only a new status and pickup moment; every other column keeps the value it got at reserving. */
     override suspend fun update(item: Reservation): Boolean = dbQuery {
         // Only the status and the pickup moment can change; price and the other times are fixed when reserving (§5.5).
         ReservationsTable.update({ ReservationsTable.id eq item.id }) {
@@ -56,9 +57,14 @@ class ExposedReservationRepository : ReservationRepository {
         } > 0
     }
 
-    // Required by Repository<T>, but reservations are never deleted: the history is kept through the status (§9.5).
-    // This deliberately does not honour the interface's contract. No code should call it; ending a reservation
-    // goes through ReservationService and the state machine. Throwing makes a mistaken call fail at once.
+    /**
+     * Required by Repository<T>, but reservations are never deleted: the history is kept through the status
+     * (§9.5). This deliberately does not honour the interface's contract. No code should call it; ending a
+     * reservation goes through ReservationService and the state machine. Throwing makes a mistaken call fail
+     * at once.
+     *
+     * @throws UnsupportedOperationException always
+     */
     override suspend fun delete(id: Long): Boolean = throw UnsupportedOperationException(
         "Reservations are never deleted; history is kept through the status. Cancel through ReservationService (§9.5).",
     )
@@ -91,7 +97,7 @@ class ExposedReservationRepository : ReservationRepository {
     }
 }
 
-// Translates one row into the domain model.
+/** Translates one row into the domain model. */
 private fun ResultRow.toReservation(): Reservation = Reservation(
     id = this[ReservationsTable.id],
     productId = this[ReservationsTable.productId],

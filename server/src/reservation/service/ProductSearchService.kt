@@ -8,6 +8,10 @@ import kotlin.time.Clock
 
 /**
  * Searching the offer (US-04, §5.4, SD-2). Talks to other features only through the contracts in shared (GI-5).
+ *
+ * @property productReader supplies the listed products that are not expired
+ * @property priceProvider supplies the current price of each product
+ * @property clock decides what "now" is for the search and the remaining shelf life
  */
 class ProductSearchService(
     private val productReader: ProductReader,

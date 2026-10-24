@@ -16,6 +16,10 @@ import kotlin.time.Instant
 /**
  * F2's side of K-5: lapses reservations through the state machine (§9.5).
  * F3 decides when; this class decides which reservations.
+ *
+ * @property productReader reads the product status the state machine needs
+ * @property productStatusUpdater puts the product back to LISTED
+ * @property reservations finds the overdue or active reservations and stores the LAPSED status
  */
 class ReservationMaintenanceService(
     private val productReader: ProductReader,
@@ -23,6 +27,7 @@ class ReservationMaintenanceService(
     private val reservations: ReservationRepository,
 ) : ReservationMaintenance {
 
+    /** Logs a reservation that could not lapse because a write failed. */
     private val log = LoggerFactory.getLogger(ReservationMaintenanceService::class.java)
 
     override suspend fun lapseOverdue(now: Instant): Int = reservations.findOverdue(now).count { lapse(it) }
