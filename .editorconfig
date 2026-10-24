@@ -11,10 +11,15 @@ trim_trailing_whitespace = true
 [*.md]
 trim_trailing_whitespace = false
 
+# Windows batch files need CRLF; labels and goto can break with LF.
+[*.{bat,cmd}]
+end_of_line = crlf
+
 [*.{kt,kts}]
 indent_style = space
 indent_size = 4
 # The team works in IntelliJ, so ktlint follows the IntelliJ IDEA style, which matches the Kotlin coding conventions.
 ktlint_code_style = intellij_idea
-# 120 is the IntelliJ default for Kotlin, so the IDE and ktlint wrap at the same width.
+# The intellij_idea style has no line-length limit by default; 120 is the team's choice.
+# IntelliJ also reads this value, so the IDE and ktlint wrap at the same width.
 max_line_length = 120
