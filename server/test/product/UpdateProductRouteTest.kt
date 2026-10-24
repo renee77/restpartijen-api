@@ -45,7 +45,7 @@ class UpdateProductRouteTest {
     // Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp.
     private val tokenClock = FixedClock(Clock.System.now())
 
-    private fun tokenFor(role: Role, userId: Long = supplierUserId) = productToken(role, tokenClock, userId)
+    private fun tokenFor(role: Role, userId: Long = SUPPLIER_USER_ID) = productToken(role, tokenClock, userId)
 
     // A valid body: every field of POST except category, best-before three days after testNow.
     private val validBody = """

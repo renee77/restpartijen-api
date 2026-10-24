@@ -21,7 +21,18 @@ class FreshProduct(
     status: ProductStatus,
     pickupWindow: PickupWindow,
     allergens: Set<Allergen>,
-) : SurplusProduct(id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens) {
+) : SurplusProduct(
+    id,
+    supplier,
+    name,
+    barcode,
+    originalPrice,
+    bestBeforeAt,
+    quantity,
+    status,
+    pickupWindow,
+    allergens,
+) {
     override val category: ProductCategory = ProductCategory.FRESH
     override val maxShelfLife: Duration = 14.days
 }

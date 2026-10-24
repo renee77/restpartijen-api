@@ -30,7 +30,10 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 
-/** GET /api/v1/products through the route, with fakes behind the service (US-04, §5.4). No database: search opens no transaction. */
+/**
+ * GET /api/v1/products through the route, with fakes behind the service (US-04, §5.4). No database: search opens
+ * no transaction.
+ */
 class SearchRoutesTest {
 
     private val now = Instant.parse("2026-10-20T12:00:00Z")

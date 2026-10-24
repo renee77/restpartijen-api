@@ -223,12 +223,18 @@ class SurplusProductTest {
         allergens: Set<Allergen> = emptySet(),
     ): SurplusProduct = when (category) {
         ProductCategory.FRESH ->
-            FreshProduct(id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens)
+            FreshProduct(
+                id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens,
+            )
 
         ProductCategory.FROZEN ->
-            FrozenProduct(id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens)
+            FrozenProduct(
+                id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens,
+            )
 
         ProductCategory.AMBIENT ->
-            AmbientProduct(id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens)
+            AmbientProduct(
+                id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens,
+            )
     }
 }

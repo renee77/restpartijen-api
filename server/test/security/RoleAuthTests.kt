@@ -12,7 +12,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class RoleAuthTests {
-    // Test with a token that has a role not defined in the Role enum. This should also result in a 401 Unauthorized response.
+    // Test with a token that has a role not defined in the Role enum. This should also result in a 401 Unauthorized
+    // response.
     @Test
     fun `token with invalid role gets 401`() = testApplication {
         // Arrange: set up the test application with security and a protected route

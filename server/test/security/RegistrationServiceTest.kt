@@ -54,14 +54,14 @@ class RegistrationServiceTest {
     fun `stored password is a hash, not the plain password`() = runTest {
         // Arrange: Arranging valid input
         val email = "test@mail.com"
-        val display_name = "TestName"
+        val displayName = "TestName"
         val password = "TestPassword123"
 
         // Act: Register the user with the given information
         service.register(
             email = email,
             password = password,
-            display_name = display_name,
+            display_name = displayName,
         )
 
         // Assert

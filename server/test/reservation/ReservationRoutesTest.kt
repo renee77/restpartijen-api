@@ -62,7 +62,8 @@ class ReservationRoutesTest {
         reservations: List<Reservation> = emptyList(),
         price: Money? = Money.fromCents(299),
     ) {
-        createEmptyTestDatabase() // The service opens its own transaction (GI-1, decision 1.4), so even with fakes it needs a database.
+        // The service opens its own transaction (GI-1, decision 1.4), so even with fakes it needs a database.
+        createEmptyTestDatabase()
         configureSerialization()
         configureStatusPages()
         configureSecurity(JwtConfig(TestJwtSettings.default, testClock))

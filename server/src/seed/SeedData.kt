@@ -299,7 +299,8 @@ object SeedData {
         SeedReservation("supermarkt-wraps", "afhaler-a@mail.com", priceCents = 239, reservedAgo = 3.hours),
         SeedReservation("groothandel-yoghurt", "afhaler-b@mail.com", priceCents = 250, reservedAgo = 25.hours),
         SeedReservation("supermarkt-brood", "afhaler-a@mail.com", priceCents = 120, reservedAgo = 6.hours),
-        // History of collector A. The COLLECTED one was picked up after reserving and inside its pickup window (issue #42).
+        // History of collector A. The COLLECTED one was picked up after reserving and inside its pickup window
+        // (issue #42).
         SeedReservation(
             "bakker-appeltaart",
             "afhaler-a@mail.com",

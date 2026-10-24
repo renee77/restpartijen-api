@@ -89,7 +89,8 @@ class ExpirySchedulerIntegrationTest {
         val products = productStatuses()
         // LISTED and past its date
         assertEquals(ProductStatus.EXPIRED, products["Griekse yoghurt"])
-        // RESERVED and past its date: it lapses first and then expires. LISTED here would mean the steps ran in the wrong order.
+        // RESERVED and past its date: it lapses first and then expires. LISTED here would mean the steps ran in the
+        // wrong order.
         assertEquals(ProductStatus.EXPIRED, products["Wit casinobrood"])
         // Lapsed reservations put their products back on the list
         assertEquals(ProductStatus.LISTED, products["Wraps kip-kerrie"])

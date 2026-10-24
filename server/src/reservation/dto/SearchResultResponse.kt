@@ -3,7 +3,10 @@ package com.restpartijen.api.reservation.dto
 import com.restpartijen.api.reservation.model.SearchResult
 import kotlinx.serialization.Serializable
 
-/** One product in the search result (US-04). Prices in euros (B-25); the supplier's coordinates let the app compute the distance (§18.1). */
+/**
+ * One product in the search result (US-04). Prices in euros (B-25); the supplier's coordinates let the app compute
+ * the distance (§18.1).
+ */
 @Serializable
 data class SearchResultResponse(
     val id: Long,

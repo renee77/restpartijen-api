@@ -27,7 +27,7 @@ import kotlin.time.Clock
 // setup and the token rules live in one place.
 
 /** The user id in the tokens; the default fake supplier repository knows [aSupplier] for this user. */
-const val supplierUserId = 7L
+const val SUPPLIER_USER_ID = 7L
 
 /**
  * Starts the F1 routes with fakes behind the service; a database test passes the Exposed repositories.
@@ -38,7 +38,7 @@ const val supplierUserId = 7L
 fun Application.productRoutesTestApp(
     tokenClock: Clock,
     products: ProductRepository = fakeProductRepository(),
-    suppliers: SupplierRepository = fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId),
+    suppliers: SupplierRepository = fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID),
     openFoodFacts: OpenFoodFactsClient = openFoodFactsNotCalled(),
     priceProvider: PriceProvider = FixedPriceProvider(aBreakdown),
 ) {
@@ -62,5 +62,5 @@ fun Application.productRoutesTestApp(
 }
 
 /** A token for [userId] with [role], made with the same [tokenClock] as [productRoutesTestApp]. */
-fun productToken(role: Role, tokenClock: Clock, userId: Long = supplierUserId): String =
+fun productToken(role: Role, tokenClock: Clock, userId: Long = SUPPLIER_USER_ID): String =
     TestTokens().createTestToken(userId = userId, role = role, clock = tokenClock)

@@ -21,7 +21,18 @@ class FrozenProduct(
     status: ProductStatus,
     pickupWindow: PickupWindow,
     allergens: Set<Allergen>,
-) : SurplusProduct(id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens) {
+) : SurplusProduct(
+    id,
+    supplier,
+    name,
+    barcode,
+    originalPrice,
+    bestBeforeAt,
+    quantity,
+    status,
+    pickupWindow,
+    allergens,
+) {
     override val category: ProductCategory = ProductCategory.FROZEN
     override val maxShelfLife: Duration = 1095.days // 3 years
 }

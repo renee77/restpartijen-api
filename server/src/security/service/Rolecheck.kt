@@ -18,7 +18,8 @@ class RoleCheckConfig {
 private val RoleCheck = createRouteScopedPlugin("RoleCheck", ::RoleCheckConfig) {
     val allowedRoles = pluginConfig.roles
     require(allowedRoles.isNotEmpty()) { "requireRole needs at least one role" }
-    // The plugin runs after authentication, so the principal is available. It checks the role claim in the JWT and compares it to the allowed roles.
+    // The plugin runs after authentication, so the principal is available. It checks the role claim in the JWT and
+    // compares it to the allowed roles.
     on(AuthenticationChecked) { call ->
         // No principal means authentication failed; the challenge already answers that with a 401.
         val principal = call.principal<JWTPrincipal>() ?: return@on

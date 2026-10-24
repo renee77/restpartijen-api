@@ -51,10 +51,10 @@ class PlaceProductRouteTest {
     // Fakes by default; the database test passes the Exposed repositories instead.
     private fun Application.testApp(
         products: ProductRepository = fakeProductRepository(),
-        suppliers: SupplierRepository = fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId),
+        suppliers: SupplierRepository = fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID),
     ) = productRoutesTestApp(tokenClock, products, suppliers)
 
-    private fun tokenFor(role: Role, userId: Long = supplierUserId) = productToken(role, tokenClock, userId)
+    private fun tokenFor(role: Role, userId: Long = SUPPLIER_USER_ID) = productToken(role, tokenClock, userId)
 
     // A valid body: best-before three days after testNow. No pickup window: the API derives it (US-10).
     private val validBody = """
@@ -256,7 +256,7 @@ class PlaceProductRouteTest {
     fun `a supplier that is not open before bestBeforeAt gives 422`() = testApplication {
         // Arrange: open on Saturday only, and the product expires on Thursday 1 October (§5.10)
         val saturday = OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0))
-        application { testApp(suppliers = fakeSupplierRepository(aSupplier, supplierUserId, listOf(saturday))) }
+        application { testApp(suppliers = fakeSupplierRepository(aSupplier, SUPPLIER_USER_ID, listOf(saturday))) }
         val body = validBody.replace("\"2026-10-04\"", "\"2026-10-01\"")
 
         // Act

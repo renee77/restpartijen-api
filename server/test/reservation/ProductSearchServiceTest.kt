@@ -23,7 +23,10 @@ class ProductSearchServiceTest {
 
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
-    /** FakeProduct counts its shelf life to the end of the pickup window, so [hoursLeft] sets the remaining shelf life. */
+    /**
+     * FakeProduct counts its shelf life to the end of the pickup window, so [hoursLeft] sets the remaining shelf
+     * life.
+     */
     private fun product(
         id: Long,
         hoursLeft: Int,

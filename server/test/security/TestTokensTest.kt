@@ -69,7 +69,8 @@ class TestTokensTest {
         assertEquals(Duration.parse("24h"), validity)
     }
 
-    // Sad path. The token is signed with another secret, so it should fail verification and throw a SignatureVerificationException.
+    // Sad path. The token is signed with another secret, so it should fail verification and throw a
+    // SignatureVerificationException.
     @Test
     fun `token signed with another secret fails`() {
         // Arange. Create a test token with the default settings and clock.
@@ -80,7 +81,8 @@ class TestTokensTest {
         // Act. We define the other secret.
         val otherSecret = "this-is-another-test-secret-that-is-long-enough"
 
-        // Assert.We expect it will throw a SignatureVerificationException, because the token was signed with a different secret.
+        // Assert.We expect it will throw a SignatureVerificationException, because the token was signed with a
+        // different secret.
         assertFailsWith<SignatureVerificationException> { verifyToken(token, otherSecret) }
     }
 
@@ -95,7 +97,8 @@ class TestTokensTest {
             settings = testSettings,
             clock = pastClock,
         )
-        // Act and Assert. We expect it will throw a TokenExpiredException, because the token was created with a past expiration time.
+        // Act and Assert. We expect it will throw a TokenExpiredException, because the token was created with a past
+        // expiration time.
         assertFailsWith<TokenExpiredException> { verifyToken(testToken, testSettings.secret) }
     }
 }

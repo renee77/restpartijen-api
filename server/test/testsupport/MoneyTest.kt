@@ -1,6 +1,6 @@
 package com.restpartijen.api.testsupport
 
-import com.restpartijen.api.shared.*
+import com.restpartijen.api.shared.Money
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

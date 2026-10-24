@@ -13,7 +13,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * The test class for the 4 tests in ExpiryEndpointTest.kt. The tests are in a separate file so that they can be run with a different test app than the other pricing tests, which use the real ExpiryScheduler service. This test app uses a fake ExpiryScheduler that we can control.
+ * The test class for the 4 tests in ExpiryEndpointTest.kt. The tests are in a separate file so that they can be run
+ * with a different test app than the other pricing tests, which use the real ExpiryScheduler service. This test app
+ * uses a fake ExpiryScheduler that we can control.
  */
 class ExpiryEndpointTest {
 

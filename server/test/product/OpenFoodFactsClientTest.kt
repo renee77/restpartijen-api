@@ -134,7 +134,8 @@ class OpenFoodFactsClientTest {
                 body.close()
             } catch (e: ClosedByteChannelException) {
                 // Expected: the client hung up after 64 KiB, which is what this test wants to see. The parent class,
-                // because the hang-up can land in writeFully (ClosedWriteChannelException) or in flush (review round 3).
+                // because the hang-up can land in writeFully (ClosedWriteChannelException) or in flush
+                // (review round 3).
             }
         }
         val client = openFoodFactsClient(
@@ -372,9 +373,18 @@ class OpenFoodFactsClientTest {
         const val UNKNOWN_BARCODE = "8712345678906"
 
         // Real response of GET /api/v3/product/3017620422003?fields=product_name,allergens_tags.
-        const val NUTELLA_BODY = """{"code":"3017620422003","errors":[],"product":{"allergens_tags":["en:milk","en:nuts","en:soybeans"],"product_name":"Nutella"},"result":{"id":"product_found","lc_name":"Product found","name":"Product found"},"status":"success","warnings":[]}"""
+        const val NUTELLA_BODY =
+            """{"code":"3017620422003","errors":[]""" +
+                ""","product":{"allergens_tags":["en:milk","en:nuts","en:soybeans"],"product_name":"Nutella"}""" +
+                ""","result":{"id":"product_found","lc_name":"Product found","name":"Product found"}""" +
+                ""","status":"success","warnings":[]}"""
 
         // Real response of GET /api/v3/product/8712345678906?fields=product_name,allergens_tags.
-        const val NOT_FOUND_BODY = """{"code":"8712345678906","errors":[{"field":{"id":"code","value":"8712345678906"},"impact":{"id":"failure","lc_name":"Failure","name":"Failure"},"message":{"id":"product_not_found","lc_name":"","name":""}}],"result":{"id":"product_not_found","lc_name":"Product not found","name":"Product not found"},"status":"failure","warnings":[]}"""
+        const val NOT_FOUND_BODY =
+            """{"code":"8712345678906","errors":[{"field":{"id":"code","value":"8712345678906"}""" +
+                ""","impact":{"id":"failure","lc_name":"Failure","name":"Failure"}""" +
+                ""","message":{"id":"product_not_found","lc_name":"","name":""}}]""" +
+                ""","result":{"id":"product_not_found","lc_name":"Product not found","name":"Product not found"}""" +
+                ""","status":"failure","warnings":[]}"""
     }
 }

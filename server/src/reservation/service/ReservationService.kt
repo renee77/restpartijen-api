@@ -4,7 +4,13 @@ import com.restpartijen.api.persistence.dbQuery
 import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationEvent
 import com.restpartijen.api.reservation.repository.ReservationRepository
-import com.restpartijen.api.shared.*
+import com.restpartijen.api.shared.DomainRuleException
+import com.restpartijen.api.shared.ForbiddenException
+import com.restpartijen.api.shared.IllegalStateTransitionException
+import com.restpartijen.api.shared.NotFoundException
+import com.restpartijen.api.shared.PriceProvider
+import com.restpartijen.api.shared.ProductReader
+import com.restpartijen.api.shared.ProductStatusUpdater
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
@@ -86,7 +92,10 @@ class ReservationService(
         }
     }
 
-    /** Confirms the pickup of an own reservation (US-11, §5.11): both the reservation and the product become COLLECTED. */
+    /**
+     * Confirms the pickup of an own reservation (US-11, §5.11): both the reservation and the product become
+     * COLLECTED.
+     */
     suspend fun collect(reservationId: Long, collectorId: Long): Reservation = dbQuery {
         val reservation = reservations.findById(reservationId)
             ?: throw NotFoundException("Reservation $reservationId not found")

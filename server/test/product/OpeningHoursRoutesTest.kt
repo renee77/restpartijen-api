@@ -35,7 +35,7 @@ import kotlin.time.Clock
 
 /**
  * The opening-hours routes of US-10 (§5.10), with the fake SupplierRepository behind the service.
- * The fake knows aSupplier (id 1), owned by supplierUserId.
+ * The fake knows aSupplier (id 1), owned by SUPPLIER_USER_ID.
  * Order of the checks for PUT: role (401/403), body shape (400), supplier exists (404), own supplier (403),
  * week rules (422); then 200 with the stored week. Only the owner hears about the week rules.
  */
@@ -49,7 +49,7 @@ class OpeningHoursRoutesTest {
     @Test
     fun `GET opening hours returns 200 with the week as JSON, without a token`() = testApplication {
         // Arrange
-        val suppliers = fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId)
+        val suppliers = fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID)
         suppliers.updateOpeningHours(aSupplier.id, listOf(monday, saturday))
         application { productRoutesTestApp(tokenClock, suppliers = suppliers) }
 
@@ -100,7 +100,7 @@ class OpeningHoursRoutesTest {
          {"day": "MONDAY", "opensAt": "08:00", "closesAt": "21:00"}]
     """
 
-    private fun tokenFor(role: Role, userId: Long = supplierUserId) = productToken(role, tokenClock, userId)
+    private fun tokenFor(role: Role, userId: Long = SUPPLIER_USER_ID) = productToken(role, tokenClock, userId)
 
     private suspend fun ApplicationTestBuilder.replace(
         id: String = aSupplier.id.toString(),
@@ -114,13 +114,13 @@ class OpeningHoursRoutesTest {
 
     // A fake that already holds a week, so a refused request can be checked to leave it alone.
     private suspend fun suppliersWithSaturday(): SupplierRepository =
-        fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId)
+        fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID)
             .also { it.updateOpeningHours(aSupplier.id, listOf(saturday)) }
 
     @Test
     fun `PUT opening hours of the own supplier returns 200 with the stored week`() = testApplication {
         // Arrange: TC-10
-        val suppliers = fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId)
+        val suppliers = fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID)
         application { productRoutesTestApp(tokenClock, suppliers = suppliers) }
 
         // Act

@@ -25,8 +25,9 @@ import com.restpartijen.api.security.routes.configureAuthRouting
 import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.seed.SeedData
-import io.ktor.server.application.*
-import io.ktor.server.netty.*
+import io.ktor.server.application.Application
+import io.ktor.server.application.log
+import io.ktor.server.netty.EngineMain
 import kotlin.time.Clock
 
 /**
