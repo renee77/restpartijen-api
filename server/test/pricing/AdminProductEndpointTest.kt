@@ -25,13 +25,13 @@ class AdminProductEndpointTest {
 
     @Test
     fun `No token gives a 401`() = testApplication {
-        // Arrange: test app with the real pricing round and fakes behind the service.
+        // Arrange: test app with the real pricing route and fakes behind the service.
         application { setUpPricingTestApp(productReader = FakeProductReader(emptyList())) }
 
         // Act: call the endpoint without a token
         val response = client.get("/api/v1/admin/products")
 
-        // Assert: the response status should be 401 Unauthorized, indicating that the token's role is not valid
+        // Assert: the error body says that authentication is required (the 401 message)
         val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
         assertEquals("Authentication required", error.message)
     }
@@ -50,7 +50,7 @@ class AdminProductEndpointTest {
             bearerAuth(collectorToken)
         }
 
-        // Assert. Verify that the decoded token contains the expected userId and role.
+        // Assert: the error body says that the role is not allowed (the 403 message)
         val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText()).message
         assertEquals("Insufficient role", error)
     }

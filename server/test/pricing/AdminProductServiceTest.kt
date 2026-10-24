@@ -60,13 +60,13 @@ class AdminProductServiceTest {
         // Act
         service.delete(1)
 
-        // Arrange
+        // Assert
         assertEquals(listOf("markRemoved(1)"), calls)
     }
 
     @Test
     fun `delete of a product with status collected or expired will give an exception`() = runTest {
-        // Assert
+        // Arrange
         createEmptyTestDatabase()
         val calls = mutableListOf<String>()
         val service = AdminProductService(

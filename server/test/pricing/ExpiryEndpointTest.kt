@@ -13,9 +13,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * The test class for the 4 tests in ExpiryEndpointTest.kt. The tests are in a separate file so that they can be run
- * with a different test app than the other pricing tests, which use the real ExpiryScheduler service. This test app
- * uses a fake ExpiryScheduler that we can control.
+ * POST /api/v1/admin/maintenance/expire on the pricing test app (US-08): the real route and the real
+ * ExpiryScheduler, with fakes behind the scheduler that each test controls.
  */
 class ExpiryEndpointTest {
 
@@ -57,7 +56,7 @@ class ExpiryEndpointTest {
 
         val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN")
 
-        // Act: Make a post request to the protected route with the role that is not allowed to enter this route
+        // Act: Make a post request to the protected route with the role that is allowed to enter this route
         val response = client.post("/api/v1/admin/maintenance/expire") {
             bearerAuth(token)
         }
@@ -84,7 +83,7 @@ class ExpiryEndpointTest {
             bearerAuth(token)
         }
 
-        // Assert: StatusPages throws an OK
+        // Assert: the smaller count is not an error, so the run still answers 200
         assertEquals(HttpStatusCode.OK, response.status)
     }
 }
