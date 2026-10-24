@@ -24,10 +24,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
-// Test-only request body: one required String and one enum, like a real POST /products.
+/** Test-only enum for [TestProductRequest]: a value outside it must give 400. */
 @Serializable
 enum class TestCategory { FRESH, FROZEN }
 
+/** Test-only request body: one required String and one enum, like a real POST /products. */
 @Serializable
 data class TestProductRequest(val name: String, val category: TestCategory)
 
@@ -36,7 +37,7 @@ data class TestProductRequest(val name: String, val category: TestCategory)
  */
 class RequestValidationTest {
 
-    // The plugins under test, a validator on the test DTO, and one POST route. No module(), so no config.
+    /** The plugins under test, a validator on the test DTO, and one POST route. No module(), so no config. */
     private fun Application.testApp() {
         configureSerialization()
         configureStatusPages()
@@ -60,13 +61,16 @@ class RequestValidationTest {
         }
     }
 
+    /** Starts the test application of [testApp]. */
     private fun ApplicationTestBuilder.setUp() = application { testApp() }
 
+    /** Posts [json] as is to the test route, so a test can send a body that no DTO could produce. */
     private suspend fun ApplicationTestBuilder.postJson(json: String): HttpResponse = client.post("/test/products") {
         contentType(ContentType.Application.Json)
         setBody(json)
     }
 
+    /** Reads the body as the one error shape. */
     private suspend fun HttpResponse.errorBody(): ErrorResponse = Json.decodeFromString<ErrorResponse>(bodyAsText())
 
     @Test
