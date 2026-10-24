@@ -22,11 +22,6 @@ fun Application.configureRequestValidation() {
         validate<PlaceProductRequest>(::validatePlaceProductRequest)
         validate<UpdateProductRequest>(::validateUpdateProductRequest)
 
-        // F2 (Stefan): POST /reservations
-        // validate<CreateReservationRequest>(::validateCreateReservationRequest)
-
-        // F3 (Lonneke): POST /auth/register (decision 3.7) and POST /auth/login
-        // validate<RegisterRequest>(::validateRegisterRequest)
-        // validate<LoginRequest>(::validateLoginRequest)
+        // POST /auth/register is not checked here: RegistrationService calls RegistrationValidator (A11).
     }
 }
