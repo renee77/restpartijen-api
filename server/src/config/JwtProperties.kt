@@ -4,13 +4,31 @@ import io.ktor.server.config.ApplicationConfig
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
+/**
+ * The settings of the `jwt` section in application.yaml.
+ *
+ * `config` only reads them in; Application.module() copies them into the JwtSettings that security uses.
+ *
+ * @property secret the signing secret from JWT_SECRET, at least 32 bytes.
+ * @property issuer the issuer that every token names and every check expects.
+ * @property audience the audience that every token names and every check expects.
+ * @property validity how long a token stays valid after it is issued.
+ */
 data class JwtProperties(val secret: String, val issuer: String, val audience: String, val validity: Duration) {
+    /** Shows the secret as `***`, so logging these properties never leaks it. */
     override fun toString(): String =
         "JwtProperties(secret=***, issuer=$issuer, audience=$audience, validity=$validity)"
 }
 
+/** The shortest accepted secret in bytes: 256 bits, the key size of the HMAC-SHA256 signature. */
 private const val MIN_SECRET_BYTES = 32
 
+/**
+ * Reads the `jwt` section and checks every value.
+ *
+ * A missing, blank or too short secret, a missing key or a validity that is not a whole number of hours
+ * above 0 stops the application with a message that says what to fix. No message contains the secret.
+ */
 fun ApplicationConfig.jwtProperties(): JwtProperties {
     val jwtSecret = propertyOrNull("jwt.secret")?.getString()?.trim()?.ifBlank { null }
 
