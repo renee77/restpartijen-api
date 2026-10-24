@@ -337,7 +337,7 @@ object SeedData {
         // Collector B, fixed price: reserved 20 hours ago at 10%, the product is now at 60% (€5,40 against €2,40).
         SeedReservation("groothandel-soep", "afhaler-b@mail.com", priceCents = 540, reservedAgo = 20.hours),
         // lapseOverdue: the wraps are past their pickup window, the yoghurt was reserved more than 24 hours ago,
-        // and the bread is past its date while still RESERVED, and its pickup window has ended too.
+        // and the bread is past its date while still RESERVED, with its pickup window ended too.
         SeedReservation("supermarkt-wraps", "afhaler-a@mail.com", priceCents = 239, reservedAgo = 3.hours),
         SeedReservation("groothandel-yoghurt", "afhaler-b@mail.com", priceCents = 250, reservedAgo = 25.hours),
         SeedReservation("supermarkt-brood", "afhaler-a@mail.com", priceCents = 120, reservedAgo = 6.hours),
