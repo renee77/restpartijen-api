@@ -6,6 +6,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
+/** Reading the `database` section: the mode, its default and the file path. */
 class DatabaseSettingsTest {
 
     @Test
