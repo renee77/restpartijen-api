@@ -45,7 +45,7 @@ first maintenance run, five minutes after the start.
 
 ## Configuration
 
-The application reads three environment variables. If a required one is missing, the application stops at startup and the error message names it (FTD §16.4).
+The application reads three environment variables. If a required one is missing, the application stops at startup and the error message names it (FTD §16.4, decision B-52, issue #5). Setting `JWT_SECRET` is not a "manual step" in the sense of GI-2.
 
 | Variable | Required | Values | Default |
 |---|---|---|---|
