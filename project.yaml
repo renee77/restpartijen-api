@@ -2,3 +2,7 @@ modules:
 # android module will be implemented in the next phase (blok 2)
 #  - android
   - server
+
+mavenPlugins:
+  # Measures test coverage (NFR-03); the toolchain has no built-in coverage.
+  - org.jacoco:jacoco-maven-plugin:0.8.15
