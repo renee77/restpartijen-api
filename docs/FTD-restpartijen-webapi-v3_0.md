@@ -760,6 +760,11 @@ classDiagram
         +validateForListing(Clock)
     }
 
+    class ProductFactory {
+        <<companion object>>
+        +create(ProductCategory, …) SurplusProduct
+    }
+
     class FreshProduct {
         +ProductCategory category
         +Duration maxShelfLife
@@ -849,18 +854,21 @@ classDiagram
     }
 
     class Reservation {
+        <<data>>
         +Long id
         +Long productId
         +Long collectorId
-        +ReservationStatus status
         +Money reservedPrice
         +Instant reservedAt
+        +Instant expiresAt
+        +ReservationStatus status
         +Instant? collectedAt
     }
 
     class ReservationStateMachine {
-        +transition(ProductStatus, ReservationEvent) ProductStatus
-        +allowedEvents(ProductStatus) Set~ReservationEvent~
+        <<object>>
+        -Map~From, To~ transitions
+        +transition(ReservationEvent, ProductStatus, ReservationStatus?) To
     }
 
     class ReservationStatus {
@@ -896,13 +904,28 @@ classDiagram
     }
 
     class PickupWindowCalculator {
-        -TimeZone zone
-        +defaultWindow(List~OpeningHours~, Instant, Instant) PickupWindow?
+        <<object>>
+        +calculate(List~OpeningHours~, Instant, Instant) PickupWindowResult
+    }
+
+    class PickupWindowResult {
+        <<sealed interface>>
+    }
+    class Found {
+        <<data>>
+        +PickupWindow window
+    }
+    class Expired {
+        <<data object>>
+    }
+    class NeverOpen {
+        <<data object>>
     }
 
     SurplusProduct <|-- FreshProduct
     SurplusProduct <|-- FrozenProduct
     SurplusProduct <|-- AmbientProduct
+    SurplusProduct *-- ProductFactory : companion
 
     DiscountPolicy <|.. FreshDiscountPolicy
     DiscountPolicy <|.. FrozenDiscountPolicy
@@ -910,25 +933,39 @@ classDiagram
 
     DiscountPolicy *-- DiscountTier
     DiscountPolicyResolver o-- DiscountPolicy
-    PricingService --> DiscountPolicyResolver
+    PricingService ..> DiscountPolicyResolver
     PricingService ..> PricedProduct
     PriceProvider <|.. PricingService
     PricedProduct <|-- ProductView
     ProductView <|.. SurplusProduct
     PricedProduct --> Money
     ProductView --> SupplierSummary
-    Reservation --> ProductView
     Reservation --> ReservationStatus
-    Reservation ..> ReservationStateMachine
     ReservationStateMachine ..> ReservationEvent
+    ReservationStateMachine ..> ReservationStatus
     PickupWindowCalculator ..> OpeningHours
+    PickupWindowCalculator ..> PickupWindowResult
+    PickupWindowResult <|.. Found
+    PickupWindowResult <|.. Expired
+    PickupWindowResult <|.. NeverOpen
 ```
 
 Het diagram toont de kernklassen van de drie features, niet alle klassen. Services, repositories en DTO's die geen OO-concept laten zien, staan alleen in de verdelingsmatrix (§11).
 
+**Naast de code gelegd in v3.0.** Op 24 oktober 2026 is elke klasse, property, function en pijl in het diagram vergeleken met de code in `../server/src`. Waar ze verschilden, volgt het diagram nu de code:
+
+- `ReservationStateMachine` is een `object` met één function: `transition(event, productStatus, reservationStatus)` geeft beide nieuwe statussen terug als `To` (§9.5). `allowedEvents` bestaat niet.
+- `Reservation` is een data class en heeft ook `expiresAt`. Zij kent een partij alleen via `productId`; de pijl naar `ProductView` is daarom weg.
+- Niet `Reservation` maar `ReservationStateMachine` gebruikt `ReservationStatus` en `ReservationEvent`.
+- `PickupWindowCalculator` is een `object` zonder velden. `calculate` geeft een `PickupWindowResult` en geen `PickupWindow?` (B-61).
+- `PricingService` heeft geen veld voor `DiscountPolicyResolver`, maar roept het object aan. Die pijl is dus een afhankelijkheid (stippellijn).
+- Nieuw in het diagram is `ProductFactory`, het companion object van `SurplusProduct`. Zijn `create` krijgt de categorie en de tien velden van een partij.
+
+De functions van `Repository<T>` zijn `suspend` (B-21); een klassendiagram in Mermaid kan dat niet tonen.
+
 **Waar de abstractie zit** (r.165): `SurplusProduct` is een abstracte, `sealed` class. Wat voor elke soort gelijk is, staat in de basisklasse: de gedeelde velden, `shelfLifeRemaining()`, `isExpired()` en de controle bij het plaatsen, `validateForListing()`. Wat per soort verschilt, vullen de drie subklassen in: de properties `category` en `maxShelfLife`, de langste houdbaarheid die voor die soort nog geloofwaardig is (§9.10). Een `*` in het diagram betekent abstract. Tot v2.1 was `category()` een function; het contract `PricedProduct` maakt er een property van, en `SurplusProduct` volgt het contract (B-23). Sinds v2.4 is ook `maxShelfLife` een property (B-45): de waarde heeft geen parameters, gooit niets, is goedkoop en blijft altijd gelijk, en dan kiest de Kotlin-conventie een property boven een function (JetBrains s.r.o., z.j.-p). Het polymorfisme blijft gelijk: elke subklasse overschrijft de property met de eigen waarde. Dat is ook het antwoord op de vraag waarom dit een abstracte class is en geen interface: er is gedeelde toestand en gedeelde implementatie. Omdat de class `sealed` is, controleert de compiler dat de factory elke soort afhandelt. `DiscountPolicy` is een interface met drie implementaties. Sinds v1.1 levert elke implementatie alleen de eigen staffels via `tiers()`; `discountPercentage()` en `maxDiscount()` staan als default implementatie in de interface zelf, zodat de opzoeklogica op één plek staat. Sinds v2.2 is een korting een heel percentage (`Int`), geen factor; daarom heet de function `discountPercentage()` en niet meer `discountFactor()` (ADR-07). `Repository<T>` is een generieke interface. Tot v2.2 had hij één `save()`; sinds v2.3 zijn dat `create()` en `update()`, zodat "niet gevonden" bij het bijwerken een eigen antwoord heeft (B-33). `DiscountPolicyResolver` is een object declaration (singleton). Vindt `resolve()` geen policy voor een categorie, dan gooit het met `error(...)` een `IllegalStateException`, en `StatusPages` maakt daar een `500` van. Dat is een bewuste keuze: elke waarde van `ProductCategory` heeft een policy, en een test controleert dat. Een ontbrekende policy is dus een programmeerfout en geen fout van de gebruiker, en een `4xx` zou de aanroeper ten onrechte de schuld geven. Daarmee zijn overerving, interfaces, abstracte classes, polymorfisme, generics en het singleton-patroon alle zes aanwijsbaar in het diagram. `PricedProduct`, `ProductView` en `PriceProvider` zijn contracten uit §12.1: de features zien elkaar alleen door deze interfaces. `Money` en `SupplierSummary` staan in `shared`, omdat ze in een contract voorkomen. `PriceProvider` geeft `null` terug als een partij verlopen is (B-18): geen prijs is een gewone toestand en geen fout, en de compiler dwingt elke aanroeper dat geval af te handelen.
 
-`OpeningHours` en `PickupWindowCalculator` horen bij US-10 (§9.9). De calculator kent geen repository en geen HTTP: hij krijgt openingstijden en twee tijdstippen en geeft een afhaalvenster terug, of `null` als de aanbieder vóór `bestBeforeAt` niet meer open is.
+`OpeningHours` en `PickupWindowCalculator` horen bij US-10 (§9.9). De calculator is een `object` zonder toestand en kent geen repository en geen HTTP. Hij krijgt de openingstijden, het moment van nu en `bestBeforeAt`, en geeft een `PickupWindowResult`: `Found` met het afhaalvenster, `Expired` als `bestBeforeAt` niet na nu ligt, of `NeverOpen` als de aanbieder in die tijd geen moment open is. `ProductService` maakt van `Expired` en `NeverOpen` een `422` (B-61). Omdat nu een parameter is, blijft de berekening puur en is zij met vaste tijdstippen te testen (GI-6).
 
 **Hoe de klassen samenwerken.** `PricingService` kent alleen interfaces. Van een partij ziet hij `PricedProduct`, en de korting vraagt hij aan een `DiscountPolicy`. Welke policy dat is, bepaalt `DiscountPolicyResolver` aan de hand van de categorie. Een vierde productsoort betekent dus een subklasse en een policy erbij, zonder dat `PricingService` verandert. F2 ziet een partij alleen als `ProductView`, zonder setters. Elke statuswijziging rond een reservering gaat langs `ReservationStateMachine` (§9.5).
 
