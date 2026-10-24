@@ -41,7 +41,7 @@ class RegistrationServiceTest {
         val user = service.register(
             email = email,
             password = "a".repeat(RegistrationValidator.PASSWORD_MIN_LENGTH),
-            display_name = "TestName",
+            displayName = "TestName",
         )
 
         // Assert: the role is COLLECTOR and the user is really stored
@@ -61,7 +61,7 @@ class RegistrationServiceTest {
         service.register(
             email = email,
             password = password,
-            display_name = displayName,
+            displayName = displayName,
         )
 
         // Assert
@@ -76,7 +76,7 @@ class RegistrationServiceTest {
         service.register(
             email = "mail@test.com",
             password = "testPassword",
-            display_name = "TestName",
+            displayName = "TestName",
         )
 
         // Act + Assert: a second user with the same email
@@ -84,7 +84,7 @@ class RegistrationServiceTest {
             service.register(
                 email = "mail@test.com",
                 password = "testPassword123",
-                display_name = "TestNameAnother",
+                displayName = "TestNameAnother",
             )
         }
     }
@@ -95,7 +95,7 @@ class RegistrationServiceTest {
         service.register(
             email = "mail@test.com",
             password = "testPassword",
-            display_name = "TestName",
+            displayName = "TestName",
         )
 
         // Act + Assert: same email, different casing
@@ -103,7 +103,7 @@ class RegistrationServiceTest {
             service.register(
                 email = "maIL@teSt.cOm",
                 password = "testPassword123",
-                display_name = "TestNameAnother",
+                displayName = "TestNameAnother",
             )
         }
     }
@@ -118,7 +118,7 @@ class RegistrationServiceTest {
             service.register(
                 email = "test@mail.com",
                 password = tooShort,
-                display_name = "TestName",
+                displayName = "TestName",
             )
         }
 
@@ -133,7 +133,7 @@ class RegistrationServiceTest {
         val user = service.register(
             email = "test@mail.com",
             password = "a".repeat(RegistrationValidator.PASSWORD_MIN_LENGTH),
-            display_name = "TestName",
+            displayName = "TestName",
         )
 
         // Assert: createdAt is exactly the fixed moment, in the returned user and in the stored one
@@ -151,7 +151,7 @@ class RegistrationServiceTest {
                 id = 0,
                 email = "test@mail.com",
                 passwordHash = "existingHash",
-                display_name = "Existing",
+                displayName = "Existing",
                 role = Role.COLLECTOR,
                 createdAt = fixedNow,
             ),
@@ -168,7 +168,7 @@ class RegistrationServiceTest {
             raceService.register(
                 email = "test@mail.com",
                 password = "MyTestPassword123",
-                display_name = "TestName",
+                displayName = "TestName",
             )
         }
     }

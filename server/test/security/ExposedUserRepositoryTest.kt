@@ -28,7 +28,7 @@ class ExposedUserRepositoryTest {
         id = 0,
         email = "testmail@mail.com",
         passwordHash = "passwordHash",
-        display_name = "TestName",
+        displayName = "TestName",
         role = Role.COLLECTOR,
         createdAt = fixedNow,
     )
@@ -128,7 +128,7 @@ class ExposedUserRepositoryTest {
             id = 0,
             email = "test@example.nl",
             passwordHash = passwordHash,
-            display_name = "Test User",
+            displayName = "Test User",
             role = Role.COLLECTOR,
             createdAt = fixedNow,
         )

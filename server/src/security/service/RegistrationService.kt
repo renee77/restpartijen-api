@@ -16,8 +16,8 @@ class RegistrationService(
         const val EMAIL_TAKEN = "Email is already registered"
     }
 
-    suspend fun register(email: String, password: String, display_name: String): User {
-        RegistrationValidator.validate(email, password, display_name)
+    suspend fun register(email: String, password: String, displayName: String): User {
+        RegistrationValidator.validate(email, password, displayName)
 
         // Fast path: gives a clear conflict without touching the insert.
         if (userRepository.findByEmail(email) != null) {
@@ -28,7 +28,7 @@ class RegistrationService(
             id = 0,
             email = email,
             passwordHash = passwordHasher.hashPassword(password),
-            display_name = display_name,
+            displayName = displayName,
             role = Role.COLLECTOR,
             createdAt = clock.now(),
         )

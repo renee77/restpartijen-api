@@ -12,12 +12,12 @@ class FakeUserRepository : UserRepository {
 
     private fun normalize(email: String) = email.trim().lowercase()
 
-    override suspend fun findById(id: Long): User? = users.find { it.id == id && it.deleted_at == null }
+    override suspend fun findById(id: Long): User? = users.find { it.id == id && it.deletedAt == null }
 
     override suspend fun findByEmail(email: String): User? =
-        users.find { it.email == normalize(email) && it.deleted_at == null }
+        users.find { it.email == normalize(email) && it.deletedAt == null }
 
-    override suspend fun findAll(): List<User> = users.filter { it.deleted_at == null }
+    override suspend fun findAll(): List<User> = users.filter { it.deletedAt == null }
 
     override suspend fun create(item: User): User {
         val saved = item.copy(id = nextId++, email = normalize(item.email))
@@ -29,9 +29,9 @@ class FakeUserRepository : UserRepository {
 
     // Soft delete, like the real repository: the user stays, but is invisible.
     override suspend fun delete(id: Long): Boolean {
-        val index = users.indexOfFirst { it.id == id && it.deleted_at == null }
+        val index = users.indexOfFirst { it.id == id && it.deletedAt == null }
         if (index == -1) return false
-        users[index] = users[index].copy(deleted_at = clock.now())
+        users[index] = users[index].copy(deletedAt = clock.now())
         return true
     }
 }

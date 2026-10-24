@@ -23,7 +23,7 @@ fun Application.configureAuthRouting() {
             val user = service.register(
                 email = request.email,
                 password = request.password,
-                display_name = request.displayName,
+                displayName = request.displayName,
             )
 
             call.respond(

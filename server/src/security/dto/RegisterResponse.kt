@@ -16,6 +16,6 @@ data class UserResponse(val id: Long, val email: String, val displayName: String
 fun User.toResponse(): UserResponse = UserResponse(
     id = id,
     email = email,
-    displayName = display_name,
+    displayName = displayName,
     role = role,
 )

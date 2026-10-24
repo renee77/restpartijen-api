@@ -8,8 +8,8 @@ data class User(
     val id: Long,
     val email: String,
     val passwordHash: String,
-    val display_name: String,
+    val displayName: String,
     val role: Role,
     val createdAt: Instant,
-    val deleted_at: Instant? = null,
+    val deletedAt: Instant? = null,
 )

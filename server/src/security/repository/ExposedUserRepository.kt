@@ -45,7 +45,7 @@ class ExposedUserRepository(private val clock: Clock = Clock.System) : UserRepos
             val newId = UsersTable.insert {
                 it[UsersTable.email] = email
                 it[passwordHash] = item.passwordHash
-                it[displayName] = item.display_name
+                it[displayName] = item.displayName
                 it[role] = item.role
                 it[createdAt] = item.createdAt
             }[UsersTable.id]
@@ -62,7 +62,7 @@ class ExposedUserRepository(private val clock: Clock = Clock.System) : UserRepos
         UsersTable.update({ (UsersTable.id eq item.id) and notRemoved() }) {
             it[email] = normalizeEmail(item.email)
             it[passwordHash] = item.passwordHash
-            it[displayName] = item.display_name
+            it[displayName] = item.displayName
             it[role] = item.role
             it[createdAt] = item.createdAt
         } > 0
@@ -87,8 +87,8 @@ private fun ResultRow.toUser(): User = User(
     id = this[UsersTable.id],
     email = this[UsersTable.email],
     passwordHash = this[UsersTable.passwordHash],
-    display_name = this[UsersTable.displayName],
+    displayName = this[UsersTable.displayName],
     role = this[UsersTable.role],
     createdAt = this[UsersTable.createdAt],
-    deleted_at = this[UsersTable.deletedAt],
+    deletedAt = this[UsersTable.deletedAt],
 )

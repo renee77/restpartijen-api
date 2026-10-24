@@ -41,7 +41,7 @@ class LoginServiceTest {
             id = 0,
             email = email,
             passwordHash = storedHash,
-            display_name = "TestName",
+            displayName = "TestName",
             role = role,
             createdAt = Instant.parse("2026-01-15T10:30:00Z"),
         ),
