@@ -2,7 +2,6 @@ package com.restpartijen.api.product.service
 
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
-import com.restpartijen.api.shared.PickupWindow
 import kotlin.time.Instant
 
 /**
@@ -11,6 +10,7 @@ import kotlin.time.Instant
  * The same fields as [PlaceProductCommand] except category: the category decides the subclass, the
  * longest shelf life and the discount rules, so another category would be another product.
  * The route builds this from UpdateProductRequest; the service never sees the JSON format.
+ * There is no pickup window: the service derives it again with the moment of updating (US-10).
  */
 data class UpdateProductCommand(
     val name: String,
@@ -18,6 +18,5 @@ data class UpdateProductCommand(
     val bestBeforeAt: Instant,
     val quantity: Int,
     val barcode: String? = null,
-    val pickupWindow: PickupWindow? = null,
     val allergens: Set<Allergen> = emptySet(),
 )

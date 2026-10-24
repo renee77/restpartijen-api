@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.days
 class PlaceProductCommandTest {
 
     @Test
-    fun `a command with only the required values has no barcode, no pickup window and no allergens`() {
+    fun `a command with only the required values has no barcode and no allergens`() {
         // Act
         val command = PlaceProductCommand(
             category = ProductCategory.FRESH,
@@ -24,7 +24,6 @@ class PlaceProductCommandTest {
 
         // Assert
         assertNull(command.barcode)
-        assertNull(command.pickupWindow)
         assertEquals(emptySet(), command.allergens)
     }
 }

@@ -7,8 +7,10 @@ import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.product.dto.ProductResponse
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
+import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Role
@@ -27,6 +29,8 @@ import io.ktor.http.contentType
 import io.ktor.server.application.Application
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalTime
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -52,11 +56,10 @@ class PlaceProductRouteTest {
 
     private fun tokenFor(role: Role, userId: Long = supplierUserId) = productToken(role, tokenClock, userId)
 
-    // A valid body: best-before three days after testNow, pickup window inside it.
+    // A valid body: best-before three days after testNow. No pickup window: the API derives it (US-10).
     private val validBody = """
         {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-         "bestBeforeAt": "2026-10-04T00:00:00Z", "quantity": 2,
-         "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
+         "bestBeforeAt": "2026-10-04", "quantity": 2,
          "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
     """
 
@@ -128,7 +131,6 @@ class PlaceProductRouteTest {
         val body = """
       {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
        "quantity": 2,
-       "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
        "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
   """
 
@@ -147,10 +149,22 @@ class PlaceProductRouteTest {
         application { testApp() }
         val body = """
             {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-             "bestBeforeAt": "2026-10-04T00:00:00Z", "quantity": 2,
-             "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
+             "bestBeforeAt": "2026-10-04", "quantity": 2,
              "allergens": ["CHOCOLATE"]}
         """
+
+        // Act
+        val response = place(body = body, token = tokenFor(Role.SUPPLIER))
+
+        // Assert
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `a best-before moment instead of a date gives 400`() = testApplication {
+        // Arrange: a label shows a date, so the API only accepts a date (decision 23 Oct 2026)
+        application { testApp() }
+        val body = validBody.replace("\"2026-10-04\"", "\"2026-10-04T00:00:00Z\"")
 
         // Act
         val response = place(body = body, token = tokenFor(Role.SUPPLIER))
@@ -196,8 +210,7 @@ class PlaceProductRouteTest {
         application { testApp() }
         val body = """
             {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-             "bestBeforeAt": "2026-10-04T00:00:00Z", "quantity": 2,
-             "pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},
+             "bestBeforeAt": "2026-10-04", "quantity": 2,
              "allergens": []}
         """
 
@@ -211,14 +224,40 @@ class PlaceProductRouteTest {
     }
 
     @Test
-    fun `without a pickup window the answer is 422`() = testApplication {
-        // Arrange: no pickupWindow, and opening hours (US-10) do not exist yet
+    fun `the API derives the pickup window from the opening hours`() = testApplication {
+        // Arrange: the fake supplier is open every day 08:00-21:00 (US-10)
         application { testApp() }
-        val body = """
-            {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-             "bestBeforeAt": "2026-10-04T00:00:00Z", "quantity": 2,
-             "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
-        """
+
+        // Act
+        val response = place(token = tokenFor(Role.SUPPLIER))
+
+        // Assert: from Thu 1 Oct 08:00 to Sun 4 Oct 21:00 in Amsterdam; the date counts up to Mon 5 Oct 00:00
+        assertEquals(HttpStatusCode.Created, response.status)
+        val window = Json.decodeFromString<ProductResponse>(response.bodyAsText()).pickupWindow
+        assertEquals("2026-10-01T06:00:00Z", window.from)
+        assertEquals("2026-10-04T19:00:00Z", window.until)
+    }
+
+    @Test
+    fun `a body with a pickupWindow gives 400, because the API derives the window`() = testApplication {
+        // Arrange: the field no longer exists (US-10); the JSON reader refuses an unknown field (B-49)
+        application { testApp() }
+        val window = """"pickupWindow": {"from": "2026-10-01T09:00:00Z", "until": "2026-10-01T17:00:00Z"},"""
+        val body = validBody.replace("\"quantity\": 2,", "\"quantity\": 2, $window")
+
+        // Act
+        val response = place(body = body, token = tokenFor(Role.SUPPLIER))
+
+        // Assert
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `a supplier that is not open before bestBeforeAt gives 422`() = testApplication {
+        // Arrange: open on Saturday only, and the product expires on Thursday 1 October (§5.10)
+        val saturday = OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0))
+        application { testApp(suppliers = fakeSupplierRepository(aSupplier, supplierUserId, listOf(saturday))) }
+        val body = validBody.replace("\"2026-10-04\"", "\"2026-10-01\"")
 
         // Act
         val response = place(body = body, token = tokenFor(Role.SUPPLIER))
@@ -226,18 +265,16 @@ class PlaceProductRouteTest {
         // Assert
         assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
         val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
-        assertEquals("pickupWindow", error.field)
+        assertEquals("bestBeforeAt", error.field)
     }
 
     @Test
     fun `a best-before date in the past gives 422`() = testApplication {
-        // Arrange: best-before one day before testNow; the window still ends before it,
-        // so only the expiry rule is broken
+        // Arrange: best-before one day before testNow, so there is no time left for a window
         application { testApp() }
         val body = """
             {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
-             "bestBeforeAt": "2026-09-30T00:00:00Z", "quantity": 2,
-             "pickupWindow": {"from": "2026-09-29T09:00:00Z", "until": "2026-09-29T17:00:00Z"},
+             "bestBeforeAt": "2026-09-30", "quantity": 2,
              "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
         """
 
@@ -265,9 +302,12 @@ class PlaceProductRouteTest {
     @Test
     fun `the price in euros is stored in cents`() = testApplication {
         // Arrange: a real database with a supplier, and the Exposed repositories behind the service
-        createEmptyTestDatabase(UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable)
+        createEmptyTestDatabase(
+            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, SupplierOpeningHoursTable,
+        )
         val userId = insertUser(Role.SUPPLIER)
-        insertSupplier(userId)
+        // A supplier always has opening hours (US-10); without them the product gets no pickup window.
+        ExposedSupplierRepository().updateOpeningHours(insertSupplier(userId), anOpenWeek)
         application {
             testApp(products = ExposedProductRepository(FixedClock(testNow)), suppliers = ExposedSupplierRepository())
         }

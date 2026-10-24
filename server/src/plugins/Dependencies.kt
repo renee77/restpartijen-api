@@ -13,6 +13,7 @@ import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
 import com.restpartijen.api.product.service.OwnershipGuard
+import com.restpartijen.api.product.service.OpeningHoursService
 import com.restpartijen.api.product.service.ProductLookupService
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
@@ -48,6 +49,7 @@ fun Application.configureDependencies() {
         provide<ProductRepository>(::ExposedProductRepository)
         provide(::OwnershipGuard)
         provide(::ProductService)
+        provide(::OpeningHoursService)
         provide<ProductReader>(::ExposedProductReader)
         provide<ProductStatusUpdater>(::ExposedProductStatusUpdater)
         provide<SupplierRepository>(::ExposedSupplierRepository)
