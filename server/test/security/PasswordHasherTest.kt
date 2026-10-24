@@ -6,6 +6,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
+/** PasswordHasher: hashing, verifying and salting with Argon2id (decision 3.4). */
 class PasswordHasherTest {
     // Happy path: Hash a password and it gets verified succesfully.
     @Test

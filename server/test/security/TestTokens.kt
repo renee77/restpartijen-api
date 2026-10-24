@@ -15,6 +15,7 @@ import kotlin.time.Instant
  * Default JWT settings for tests, so tokens can be created without providing settings every time.
  */
 object TestJwtSettings {
+    /** Test values for every setting; tokens are valid for 24 hours, like in production. */
     val default = JwtSettings(
         secret = "test-secret-that-is-long-enough-to-work-in-production",
         issuer = "test-issuer",

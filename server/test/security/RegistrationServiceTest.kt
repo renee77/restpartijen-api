@@ -23,6 +23,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import kotlin.time.Instant
 
+/** RegistrationService with an in-memory repository: the role, the hash, the clock and the e-mail conflicts. */
 class RegistrationServiceTest {
     private val fixedNow = Instant.parse("2026-01-15T10:30:00Z")
     private val repository = FakeUserRepository()

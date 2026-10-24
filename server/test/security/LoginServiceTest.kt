@@ -18,6 +18,10 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Instant
 
+/**
+ * LoginService with an in-memory repository and a fake supplier lookup: the token, the shared error for
+ * wrong credentials, and the supplier id per role.
+ */
 class LoginServiceTest {
 
     private val email = "login@mail.com"
@@ -33,9 +37,10 @@ class LoginServiceTest {
         supplierIdLookup = supplierLookup,
     )
 
-    // Argon2id is slow, so hash once and reuse the hash in every test.
+    /** Argon2id is slow, so hash once and reuse the hash in every test. */
     private val storedHash = passwordHasher.hashPassword(password)
 
+    /** Stores a user with [email] and the hash of [password], with the given role. */
     private suspend fun saveUser(role: Role = Role.COLLECTOR): User = repository.create(
         User(
             id = 0,

@@ -28,22 +28,27 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Instant
 
+/** POST /api/v1/auth/register through the real routes and services on an empty H2 database. */
 class RegisterEndpointTest {
 
+    /** Reads the error body of a refused request. */
     private suspend fun HttpResponse.errorBody(): ErrorResponse = Json.decodeFromString<ErrorResponse>(bodyAsText())
 
     // Set up the test app: same plugins as production, real service on an empty H2 database.
     private val jwtConfig = JwtConfig(TestJwtSettings.default, TestClock.fixed)
 
+    /** Starts the auth routes with the real services. */
     private fun ApplicationTestBuilder.setUpRegisterApp() {
         application { setUpAuthTestApp(jwtConfig) }
     }
 
+    /** POST /api/v1/auth/register with this raw JSON body. */
     private suspend fun HttpClient.register(json: String): HttpResponse = post("/api/v1/auth/register") {
         contentType(ContentType.Application.Json)
         setBody(json)
     }
 
+    /** A valid register body as JSON; [extra] adds raw JSON fields, for example an unknown role field. */
     private fun body(
         email: String = "test@mail.com",
         password: String = "MyTestPassword123",

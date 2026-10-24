@@ -6,6 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+/** RegistrationValidator: the limits of every field, with the boundary values on both sides (A11). */
 class RegistrationValidatorTest {
 
     // Password tests

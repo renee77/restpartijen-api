@@ -11,6 +11,7 @@ import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+/** requireRole and currentUser() on the test app: unknown roles, allowed and refused roles, and the current user. */
 class RoleAuthTests {
     // Test with a token that has a role not defined in the Role enum. This should also result in a 401 Unauthorized
     // response.

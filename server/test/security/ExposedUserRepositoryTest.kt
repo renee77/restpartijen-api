@@ -24,6 +24,8 @@ import kotlin.time.Instant
 
 class ExposedUserRepositoryTest {
     private val fixedNow = Instant.parse("2026-01-15T10:30:00Z")
+
+    /** A new COLLECTOR that is not stored yet (id 0). */
     val newUser = User(
         id = 0,
         email = "testmail@mail.com",

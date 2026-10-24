@@ -13,6 +13,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.hours
 
+/** Token validation on a protected route: a valid token passes; no token, another secret or expiry gives 401. */
 class ValidationTests {
     // Happy path
     @Test
@@ -55,6 +56,8 @@ class ValidationTests {
     }
 
     // Sad path: expired token
+
+    /** Stands still from the real "now", because the verifier checks expiry against the real time. */
     private val testClock = TestClock.fixedNow()
 
     @Test

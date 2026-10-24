@@ -12,11 +12,15 @@ import kotlin.test.assertFailsWith
 import kotlin.time.Duration
 import kotlin.time.Instant
 
+/** TestTokens: its tokens pass the real verification, are valid for 24 hours, and fail with another secret. */
 class TestTokensTest {
-    // Getting the test settings from the TestJwtSettings, which provides default values for testing purposes.
+    /** Getting the test settings from the TestJwtSettings, which provides default values for testing purposes. */
     private val testSettings = TestJwtSettings.default
 
-    // Verifies the token the way the real application will, using  the same settings and algorithm.
+    /**
+     * Verifies the token the way the real application will, using the same settings and algorithm.
+     * Throws when the token is invalid or expired.
+     */
     private fun verifyToken(token: String, secret: String = testSettings.secret) {
         // Create an algorithm instance using the HMAC256 algorithm with the provided secret.
         val algorithm = Algorithm.HMAC256(secret)

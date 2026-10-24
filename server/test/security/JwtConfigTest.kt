@@ -8,6 +8,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Instant
 
+/** JwtConfig.createToken: the token carries the user id and the role, and nothing else of our own. */
 class JwtConfigTest {
     @Test
     fun `token only contains userId and role`() {

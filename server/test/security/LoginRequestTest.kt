@@ -5,6 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+/** LoginRequest.toString keeps the password out of logs. */
 class LoginRequestTest {
     @Test
     fun `toString does not show the password`() {
