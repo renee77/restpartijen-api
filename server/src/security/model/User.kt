@@ -1,7 +1,6 @@
 package com.restpartijen.api.security.model
 
 import com.restpartijen.api.shared.Role
-import kotlinx.datetime.LocalDateTime
 import kotlin.time.Instant
 
 data class User(
