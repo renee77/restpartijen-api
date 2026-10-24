@@ -21,7 +21,8 @@ fun ApplicationConfig.jwtProperties(): JwtProperties {
     val jwtSecret = propertyOrNull("jwt.secret")?.getString()?.trim()?.ifBlank { null }
 
     val secret = when {
-        jwtSecret == null -> fallbackSecret()
+        jwtSecret == null ->
+            error("JWT_SECRET is not set. Set it before starting the application; see README, section Configuration.")
         jwtSecret.toByteArray().size < MIN_SECRET_BYTES ->
             error("JWT_SECRET is too short: use at least $MIN_SECRET_BYTES bytes, for example: openssl rand -base64 32")
         else -> jwtSecret
@@ -47,6 +48,3 @@ fun ApplicationConfig.jwtProperties(): JwtProperties {
 private fun ApplicationConfig.requiredJwtValue(key: String): String =
     propertyOrNull("jwt.$key")?.getString()?.trim()?.ifBlank { null }
         ?: error("jwt.$key is not set. Add it to the jwt section of application.yaml.")
-
-private fun fallbackSecret(): Nothing =
-    error("JWT_SECRET is not set. Set it before starting the application; see README, section Configuration.")
