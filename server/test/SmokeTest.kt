@@ -4,7 +4,7 @@ package com.restpartijen.api
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
-// Smoke test: proves that the test setup of the Kotlin Toolchain finds and runs tests in test/.
+/** Smoke test: proves that the test setup of the Kotlin Toolchain finds and runs tests in test/. */
 class SmokeTest {
 
     @Test
