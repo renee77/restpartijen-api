@@ -41,7 +41,11 @@ import kotlin.time.Clock
  */
 class OpeningHoursRoutesTest {
 
-    /** GET needs no token, but productRoutesTestApp also starts the security plugin. */
+    /**
+     * Signs the PUT tokens through [tokenFor]. productRoutesTestApp also hands it to the security plugin,
+     * so the GET tests pass it too, although they send no token. Starts at the real "now", because the
+     * JWT verifier checks expiry against the real time (#62).
+     */
     private val tokenClock = FixedClock(Clock.System.now())
 
     // --- GET /api/v1/suppliers/{id}/opening-hours ---

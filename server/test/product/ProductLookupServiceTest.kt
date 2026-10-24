@@ -294,6 +294,8 @@ class ProductLookupServiceTest {
     /**
      * Plays Open Food Facts with one fixed answer and counts how often it was asked.
      *
+     * @param status the HTTP status of every answer
+     * @param body the JSON body of every answer
      * @property count how many calls reached Open Food Facts
      * @property client the OpenFoodFactsClient that counts its calls
      */
