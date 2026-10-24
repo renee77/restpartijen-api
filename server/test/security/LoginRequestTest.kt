@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-/** LoginRequest.toString keeps the password out of logs. */
+/** LoginRequest.toString names the class and keeps the password out of logs. */
 class LoginRequestTest {
     @Test
     fun `toString does not show the password`() {
@@ -21,5 +21,22 @@ class LoginRequestTest {
         // Assert: the password is hidden, the other fields are still readable
         assertFalse(text.contains("SuperSecret123"))
         assertTrue(text.contains("test@mail.com"))
+    }
+
+    @Test
+    fun `toString names LoginRequest and masks the password`() {
+        // Arrange: a request with a recognizable password
+        val request = LoginRequest(
+            email = "test@mail.com",
+            password = "SuperSecret123",
+        )
+
+        // Act
+        val text = request.toString()
+
+        // Assert: the log shows the right class, and the password only as ***
+        assertTrue(text.startsWith("LoginRequest("), text)
+        assertTrue(text.contains("password=***"), text)
+        assertFalse(text.contains("SuperSecret123"), text)
     }
 }
