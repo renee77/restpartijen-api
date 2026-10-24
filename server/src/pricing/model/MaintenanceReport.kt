@@ -10,6 +10,5 @@ import kotlinx.serialization.Serializable
  * @property expiredProducts number of listed products whose best-before moment
  * had passed and that were marked as expired.
  */
-
 @Serializable
 data class MaintenanceReport(val lapsedReservations: Int, val expiredProducts: Int)
