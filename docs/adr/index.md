@@ -3,12 +3,12 @@ type: Index
 title: "Architectuurbeslissingen (ADR's) — Restpartijenplatform Web API"
 description: "Overzicht van alle architectuurbeslissingen van de Web API, met per ADR de status, de eigenaar en een korte samenvatting."
 tags: [adr, restpartijen, index]
-timestamp: 2026-10-04T00:00:00
+timestamp: 2026-10-24T00:00:00
 ---
 
 # Architectuurbeslissingen
 
-Elk ADR legt één besluit vast: de context, het besluit, de status, de gevolgen en de alternatieven. Tot en met v2.3 stonden de ADR's in §8.6 van het [FTD](../FTD-restpartijen-webapi-v2_4.md). Wat er sinds het begin aan de ADR's is veranderd, staat in het [log](log.md).
+Elk ADR legt één besluit vast: de context, het besluit, de status, de gevolgen en de alternatieven. Tot en met v2.3 stonden de ADR's in §8.6 van het [FTD](../FTD-restpartijen-webapi-v3_0.md). Wat er sinds het begin aan de ADR's is veranderd, staat in het [log](log.md).
 
 | ADR | Titel | Status | Eigenaar | Samenvatting |
 |-----|-------|--------|----------|--------------|
