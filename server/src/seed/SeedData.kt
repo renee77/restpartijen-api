@@ -28,7 +28,7 @@ import kotlin.time.Duration.Companion.hours
  *
  * @property email the login name, in lower case; suppliers, products and reservations refer to the account by it.
  * @property displayName the name shown for the account.
- * @property role the one role of the account.
+ * @property role the role of the account; it decides which endpoints the account may use.
  */
 private data class SeedUser(val email: String, val displayName: String, val role: Role)
 
@@ -336,8 +336,8 @@ object SeedData {
         SeedReservation("supermarkt-kip", "afhaler-a@mail.com", priceCents = 809, reservedAgo = 2.hours),
         // Collector B, fixed price: reserved 20 hours ago at 10%, the product is now at 60% (€5,40 against €2,40).
         SeedReservation("groothandel-soep", "afhaler-b@mail.com", priceCents = 540, reservedAgo = 20.hours),
-        // lapseOverdue: one past its pickup window, one older than 24 hours,
-        // and the one of the RESERVED product past its date, whose pickup window has ended too.
+        // lapseOverdue: the wraps are past their pickup window, the yoghurt was reserved more than 24 hours ago,
+        // and the bread is past its date while still RESERVED, and its pickup window has ended too.
         SeedReservation("supermarkt-wraps", "afhaler-a@mail.com", priceCents = 239, reservedAgo = 3.hours),
         SeedReservation("groothandel-yoghurt", "afhaler-b@mail.com", priceCents = 250, reservedAgo = 25.hours),
         SeedReservation("supermarkt-brood", "afhaler-a@mail.com", priceCents = 120, reservedAgo = 6.hours),
