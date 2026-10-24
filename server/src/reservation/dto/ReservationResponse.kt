@@ -2,7 +2,6 @@ package com.restpartijen.api.reservation.dto
 
 import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationStatus
-import com.restpartijen.api.shared.Money
 import kotlinx.serialization.Serializable
 
 /**
