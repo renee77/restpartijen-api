@@ -29,17 +29,21 @@ import kotlin.time.Instant
  */
 class SeedDataTest {
 
-    // Whole hours: the database may store fewer digits than Instant has.
+    /** The fixed moment of seeding. Whole hours: the database may store fewer digits than Instant has. */
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
-    // The one demo password of all six accounts; README.md and requests.http name it too.
+    /** The one demo password of all six accounts; README.md and requests.http name it too. */
     private val demoPassword = "Demo-Restpartij-2026"
 
     private val hasher = PasswordHasher()
 
-    // The rows as plain values, so the tests can filter and count them without Exposed.
+    /** A user row as plain values, so the tests can filter and count rows without Exposed. */
     private data class UserRow(val id: Long, val email: String, val role: Role, val passwordHash: String)
+
+    /** A supplier row as plain values; see [UserRow]. */
     private data class SupplierRow(val id: Long, val userId: Long)
+
+    /** A product row as plain values; see [UserRow]. */
     private data class ProductRow(
         val id: Long,
         val supplierId: Long,
@@ -50,6 +54,8 @@ class SeedDataTest {
         val pickupFrom: Instant,
         val pickupUntil: Instant,
     )
+
+    /** A reservation row as plain values; see [UserRow]. */
     private data class ReservationRow(
         val productId: Long,
         val collectorId: Long,
@@ -60,16 +66,19 @@ class SeedDataTest {
         val collectedAt: Instant?,
     )
 
+    /** All stored users. */
     private fun users() = transaction {
         UsersTable.selectAll().map {
             UserRow(it[UsersTable.id], it[UsersTable.email], it[UsersTable.role], it[UsersTable.passwordHash])
         }
     }
 
+    /** All stored suppliers. */
     private fun suppliers() = transaction {
         SuppliersTable.selectAll().map { SupplierRow(it[SuppliersTable.id], it[SuppliersTable.userId]) }
     }
 
+    /** All stored products. */
     private fun products() = transaction {
         ProductsTable.selectAll().map {
             ProductRow(
@@ -85,6 +94,7 @@ class SeedDataTest {
         }
     }
 
+    /** All stored reservations. */
     private fun reservations() = transaction {
         ReservationsTable.selectAll().map {
             ReservationRow(
@@ -99,18 +109,23 @@ class SeedDataTest {
         }
     }
 
+    /** The id of the user with [email]. */
     private fun userId(email: String) = users().single { it.email == email }.id
 
+    /** The id of the supplier that belongs to the account with [email]. */
     private fun supplierIdOf(email: String) = suppliers().single { it.userId == userId(email) }.id
 
+    /** The discount of this product at [now], computed by the real pricing policy. */
     private fun ProductRow.discountPercentage() =
         DiscountPolicyResolver.resolve(category).discountPercentage(bestBeforeAt - now)
 
-    // Integer division is precise enough: the tests only compare this price with a limit.
+    /** The price at [now]. Integer division is precise enough: the tests only compare this price with a limit. */
     private fun ProductRow.currentPriceCents() = priceCents * (100 - discountPercentage()) / 100
 
+    /** Whether the pickup window is open at [now]. */
     private fun ProductRow.windowIsOpen() = pickupFrom <= now && now < pickupUntil
 
+    /** Whether the best-before moment is still after [now]. */
     private fun ProductRow.isFresh() = bestBeforeAt > now
 
     @BeforeTest
