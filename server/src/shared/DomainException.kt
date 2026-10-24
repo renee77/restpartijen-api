@@ -25,17 +25,37 @@ class ValidationException(message: String, val field: String? = null) : DomainEx
  */
 class DomainRuleException(message: String, val field: String? = null) : DomainException(message)
 
-/** 404 Not Found — the requested resource does not exist. */
+/**
+ * 404 Not Found — the requested resource does not exist.
+ *
+ * @param message the text StatusPages puts in the error response
+ */
 class NotFoundException(message: String) : DomainException(message)
 
-/** 401 Unauthorized — missing or invalid token. */
+/**
+ * 401 Unauthorized — missing or invalid token.
+ *
+ * @param message the text StatusPages puts in the error response
+ */
 class UnauthorizedException(message: String) : DomainException(message)
 
-/** 403 Forbidden — valid token, but wrong role or not the owner. */
+/**
+ * 403 Forbidden — valid token, but wrong role or not the owner.
+ *
+ * @param message the text StatusPages puts in the error response
+ */
 class ForbiddenException(message: String) : DomainException(message)
 
-/** 409 Conflict — status transition not allowed. */
+/**
+ * 409 Conflict — status transition not allowed.
+ *
+ * @param message the text StatusPages puts in the error response
+ */
 class IllegalStateTransitionException(message: String) : DomainException(message)
 
-/** 409 Conflict — the request clashes with existing data, e.g. registering an e-mail address that is taken (#47). */
+/**
+ * 409 Conflict — the request clashes with existing data, e.g. registering an e-mail address that is taken (#47).
+ *
+ * @param message the text StatusPages puts in the error response
+ */
 class ConflictException(message: String) : DomainException(message)
