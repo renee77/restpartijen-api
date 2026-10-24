@@ -7,8 +7,6 @@ import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.security.service.RegistrationService
 import com.restpartijen.api.security.service.RegistrationValidator
 import com.restpartijen.api.shared.ConflictException
-import com.restpartijen.api.shared.DomainRuleException
-import com.restpartijen.api.shared.IllegalStateTransitionException
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.shared.ValidationException
 import com.restpartijen.api.testsupport.FakeUserRepository
