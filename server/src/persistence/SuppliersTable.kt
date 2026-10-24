@@ -23,7 +23,7 @@ object SuppliersTable : Table("suppliers") {
     /** Company name as shown in search results. */
     val name = varchar("name", length = 255)
 
-    /** Street address of the supplier. Stored, but no endpoint returns it yet. */
+    /** Street address of the supplier. Stored, but no endpoint returns it. */
     val address = varchar("address", length = 255)
 
     /** Latitude of the supplier; the app computes the distance to the collector (§18.1). */
