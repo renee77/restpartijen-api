@@ -4,7 +4,7 @@ import com.restpartijen.api.shared.Role
 import kotlinx.serialization.Serializable
 
 /**
- * Body of POST /auth/login (decision 3.8)
+ * Response body of POST /api/v1/auth/login (decision 3.8).
  */
 
 @Serializable

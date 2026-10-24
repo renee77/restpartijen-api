@@ -32,8 +32,8 @@ fun Application.configureSecurity(jwtConfig: JwtConfig) {
                     null
                 }
             }
-            // If the token is invalid or expired, respond with a 401 Unauthorized status and a message indicating
-            // the issue.
+            // If the token is missing, invalid or expired, throw UnauthorizedException; StatusPages turns it
+            // into a 401 with the error body.
             challenge { _, _ ->
                 throw UnauthorizedException("Authentication required")
             }
