@@ -128,6 +128,7 @@ class SeedDataTest {
     /** Whether the best-before moment is still after [now]. */
     private fun ProductRow.isFresh() = bestBeforeAt > now
 
+    /** Fills a fresh, empty database with the seed data at [now] before every test. */
     @BeforeTest
     fun seedAnEmptyDatabase() {
         createEmptyTestDatabase(
