@@ -18,6 +18,7 @@ class DatabaseFactoryTest {
     /** A fresh temporary folder per test, so the test never touches the real data/ folder. */
     private val tempDir = createTempDirectory("restpartijen-test")
 
+    /** Deletes the temporary folder with its database files after every test. */
     @AfterTest
     fun removeTempDir() {
         tempDir.toFile().deleteRecursively()

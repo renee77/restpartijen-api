@@ -18,6 +18,7 @@ class DbQueryTest {
     /** A fresh file database per test, so no other test can leave rows behind. */
     private val tempDir = createTempDirectory("restpartijen-test")
 
+    /** Deletes the temporary folder with its database files after every test. */
     @AfterTest
     fun removeTempDir() {
         tempDir.toFile().deleteRecursively()
