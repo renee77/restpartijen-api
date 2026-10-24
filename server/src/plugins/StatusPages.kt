@@ -25,7 +25,7 @@ import kotlinx.serialization.MissingFieldException
  */
 fun Application.configureStatusPages() {
     install(StatusPages) {
-        // 400: the only rule that fills `field`
+        // 400: a broken input rule; `field` names the input when the exception knows it
         exception<ValidationException> { call, cause ->
             call.respondError(HttpStatusCode.BadRequest, ErrorCode.VALIDATION_ERROR, cause.message, cause.field)
         }
