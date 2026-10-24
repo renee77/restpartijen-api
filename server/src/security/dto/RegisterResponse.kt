@@ -15,7 +15,6 @@ import kotlinx.serialization.Serializable
  * @property displayName the name shown for the account
  * @property role the role of the account
  */
-
 @Serializable
 data class UserResponse(val id: Long, val email: String, val displayName: String, val role: Role)
 
