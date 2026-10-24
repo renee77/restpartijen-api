@@ -58,4 +58,31 @@ class ReservationService(
 
     /** The collector's own reservations (§10.1). Who it is comes from the token, never from the request. */
     suspend fun findOwn(collectorId: Long): List<Reservation> = reservations.findByCollectorId(collectorId)
+
+    /** Cancels an own reservation (US-06, §5.6): the product goes back to LISTED, the reservation to CANCELLED. */
+    suspend fun cancel(reservationId: Long, collectorId: Long) = dbQuery {
+        val reservation = reservations.findById(reservationId)
+            ?: throw NotFoundException("Reservation $reservationId not found")
+
+        if (reservation.collectorId != collectorId) {
+            throw ForbiddenException("Reservation $reservationId is not allowed")
+        }
+
+        // The product is needed for the state machine; a REMOVED product has no active reservation left
+        val product = productReader.findById(reservation.productId)
+            ?: throw NotFoundException("Product ${reservation.productId} not found")
+
+        // 409 for COLLECTED, CANCELLED or LAPSED; the state machine decides (§9.5)
+        val to = ReservationStateMachine.transition(ReservationEvent.CANCEL, product.status, reservation.status)
+
+        // 409: the product changed just now (markListed only succeeds while still RESERVED)
+        if (!statusUpdater.markListed(product.id)) {
+            throw IllegalStateTransitionException("Product ${product.id} is no longer reserved")
+        }
+
+        // After a write: throwing rolls back markListed too
+        check(reservations.update(reservation.copy(status = to.reservation))) {
+            "Reservation $reservationId disappeared while cancelling"
+        }
+    }
 }

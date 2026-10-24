@@ -6,11 +6,13 @@ import com.restpartijen.api.reservation.service.ReservationService
 import com.restpartijen.api.security.service.currentUser
 import com.restpartijen.api.security.service.requireRole
 import com.restpartijen.api.shared.Role
+import com.restpartijen.api.shared.ValidationException
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
@@ -32,7 +34,13 @@ fun Application.configureReservationRouting() {
                 val response = reservations.map { it.toResponse() }
                 call.respond(response)
             }
-        }
 
+            delete("/api/v1/reservations/{id}") {
+                val id = call.parameters["id"]?.toLongOrNull()
+                    ?: throw ValidationException("Reservation id must be a number", field = "id")
+                service.cancel(id, collectorId = call.currentUser().id)
+                call.respond(HttpStatusCode.NoContent)
+            }
+        }
     }
 }
