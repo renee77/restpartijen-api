@@ -11,5 +11,6 @@ data class DiscountTier(val appliesFrom: Duration, val percentage: Int)
  * so on a boundary the higher discount applies.
  * Returns null when no staffel applies yet. The order of the list does not matter.
  */
-fun List<DiscountTier>.tierFor(remaining: Duration): DiscountTier? = this.filter { remaining <= it.appliesFrom }
+fun List<DiscountTier>.tierFor(remaining: Duration): DiscountTier? = this
+    .filter { remaining <= it.appliesFrom }
     .minByOrNull { it.appliesFrom }
