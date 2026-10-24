@@ -11,6 +11,7 @@ import org.springframework.security.crypto.argon2.Argon2PasswordEncoder
  * Each hash gets its own random salt, so the same password never gives the same hash.
  */
 class PasswordHasher {
+    /** Spring Security's Argon2id encoder with the OWASP parameters from the class KDoc. */
     private val encoder = Argon2PasswordEncoder(
         // salt length in bytes
         16,

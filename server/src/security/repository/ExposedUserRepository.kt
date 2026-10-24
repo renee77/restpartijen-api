@@ -16,7 +16,16 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.time.Clock
 
+/** The SQL state that tells [ExposedUserRepository.create] the e-mail address is already taken. */
 private const val UNIQUE_VIOLATION = "23505" // H2 SQL state for a unique index violation
+
+/**
+ * User accounts in the database.
+ * E-mail addresses are stored and compared trimmed and lowercased; a removed user stays as a row
+ * with deleted_at set and is invisible to every function.
+ *
+ * @property clock decides the deleted_at moment of a soft delete
+ */
 class ExposedUserRepository(private val clock: Clock = Clock.System) : UserRepository {
 
     override suspend fun findById(id: Long): User? = dbQuery {
@@ -39,6 +48,11 @@ class ExposedUserRepository(private val clock: Clock = Clock.System) : UserRepos
             .map { it.toUser() }
     }
 
+    /**
+     * Stores a new user with a normalized e-mail address.
+     *
+     * @throws ConflictException when the e-mail address is already registered (409)
+     */
     override suspend fun create(item: User): User = dbQuery {
         try {
             val email = normalizeEmail(item.email)
@@ -57,6 +71,7 @@ class ExposedUserRepository(private val clock: Clock = Clock.System) : UserRepos
         }
     }
 
+    /** Replaces the stored fields of an active user, with the e-mail address normalized. */
     override suspend fun update(item: User): Boolean = dbQuery {
         // 0 changed rows means: nothing found, or nothing to change.
         UsersTable.update({ (UsersTable.id eq item.id) and notRemoved() }) {
@@ -68,6 +83,7 @@ class ExposedUserRepository(private val clock: Clock = Clock.System) : UserRepos
         } > 0
     }
 
+    /** Soft-deletes the user: sets deleted_at to now, so every query skips it from then on. */
     override suspend fun delete(id: Long): Boolean = dbQuery {
         // Soft delete: the row stays, but gets a deleted_at timestamp and is invisible to every query.
         UsersTable.update({ (UsersTable.id eq id) and notRemoved() }) {
@@ -76,13 +92,15 @@ class ExposedUserRepository(private val clock: Clock = Clock.System) : UserRepos
     }
 }
 
-// The one place where an email is normalized, so lookups and saves always agree.
+/** The one place where an email is normalized, so lookups and saves always agree. */
 private fun normalizeEmail(email: String): String = email.trim().lowercase()
 
-// The condition every query shares: a removed user (deleted_at is set) is invisible to the rest of the application.
+/**
+ * The condition every query shares: a removed user (deleted_at is set) is invisible to the rest of the application.
+ */
 private fun notRemoved(): Op<Boolean> = UsersTable.deletedAt.isNull()
 
-// Translates a database row into a User.
+/** Translates a database row into a User. */
 private fun ResultRow.toUser(): User = User(
     id = this[UsersTable.id],
     email = this[UsersTable.email],

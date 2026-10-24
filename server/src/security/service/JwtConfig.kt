@@ -8,18 +8,27 @@ import kotlin.time.toJavaInstant
 
 /**
  * Builds and verifies JWT tokens.
+ *
+ * @property settings the secret, issuer, audience and validity of every token
+ * @property clock decides the issued-at and expiry moments of a new token
  */
 class JwtConfig(private val settings: JwtSettings, private val clock: Clock) {
-    // The algorithm used to sign the JWT tokens. It uses HMAC with SHA-256 and the secret from the settings.
+    /** The algorithm used to sign the JWT tokens. It uses HMAC with SHA-256 and the secret from the settings. */
     private val algorithm = Algorithm.HMAC256(settings.secret)
 
-    // Used by the JWT provider in configureSecurity() to check incoming tokens.
+    /**
+     * Used by the JWT provider in configureSecurity() to check incoming tokens:
+     * the signature, the issuer, the audience and the expiry.
+     */
     val verifier = JWT.require(algorithm)
         .withIssuer(settings.issuer)
         .withAudience(settings.audience)
         .build()
 
-    // Only the user id and the role go into the token: no password, no e-mail.
+    /**
+     * Creates a signed token for this user, valid for the validity in the settings from now on.
+     * Only the user id and the role go into the token: no password, no e-mail.
+     */
     fun createToken(userId: Long, role: Role): String {
         val now = clock.now()
         return JWT.create()

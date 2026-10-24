@@ -24,8 +24,10 @@ class LoginService(
     private val supplierIdLookup: SupplierIdLookup,
 ) {
     companion object {
-        // One shared message for every failed login. Never make this depend on whether the email exists, or the error
-        // would leak that information.
+        /**
+         * One shared message for every failed login. Never make this depend on whether the email exists, or the
+         * error would leak that information.
+         */
         const val INVALID_CREDENTIALS = "Invalid email or password"
     }
 

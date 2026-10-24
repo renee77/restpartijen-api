@@ -6,16 +6,30 @@ import com.restpartijen.api.shared.ConflictException
 import com.restpartijen.api.shared.Role
 import kotlin.time.Clock
 
+/**
+ * Registers new accounts (GI-3). Every new account is a COLLECTOR.
+ *
+ * @property userRepository checks whether the e-mail address is taken and stores the new user
+ * @property passwordHasher hashes the password with Argon2id, so only the hash is stored
+ * @property clock decides the createdAt moment of a new account
+ */
 class RegistrationService(
     private val userRepository: UserRepository,
     private val passwordHasher: PasswordHasher,
     private val clock: Clock,
 ) {
     companion object {
-        // Same message for the fast path here and the unique index check in the repository.
+        /** Same message for the fast path here and the unique index check in the repository. */
         const val EMAIL_TAKEN = "Email is already registered"
     }
 
+    /**
+     * Validates the input, hashes the password and stores a new COLLECTOR account.
+     *
+     * @return the stored user, with its generated id and normalized e-mail address
+     * @throws com.restpartijen.api.shared.ValidationException when an input rule is broken (400)
+     * @throws ConflictException when the e-mail address is already registered (409)
+     */
     suspend fun register(email: String, password: String, displayName: String): User {
         RegistrationValidator.validate(email, password, displayName)
 

@@ -13,6 +13,10 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 
+/**
+ * GI-3 routes, open without a token: registering a collector account (201 with the new user)
+ * and logging in (200 with a token).
+ */
 fun Application.configureAuthRouting() {
     val service: RegistrationService by dependencies
     val loginService: LoginService by dependencies

@@ -3,11 +3,21 @@ package com.restpartijen.api.security.service
 import com.restpartijen.api.shared.DomainRuleException
 import com.restpartijen.api.shared.ValidationException
 
+/**
+ * The input rules for registering an account (A11). Every broken rule throws a ValidationException
+ * that names the field.
+ */
 object RegistrationValidator {
-    // All the limits for the input
+    /** Longest accepted e-mail address, after trimming. */
     const val EMAIL_MAX_LENGTH = 254
+
+    /** Shortest accepted password. */
     const val PASSWORD_MIN_LENGTH = 8
+
+    /** Longest accepted password. */
     const val PASSWORD_MAX_LENGTH = 64
+
+    /** Longest accepted display name, after trimming. */
     const val DISPLAY_NAME_MAX_LENGTH = 50
 
     /** Validates registration input (A11). Stops at the first broken rule. */
@@ -17,6 +27,7 @@ object RegistrationValidator {
         validateDisplayName(displayName.trim())
     }
 
+    /** Required, at most [EMAIL_MAX_LENGTH] characters and a simple e-mail format. */
     private fun validateEmail(email: String) {
         if (email.isEmpty()) fail("email", "Email is required")
         if (email.length > EMAIL_MAX_LENGTH) {
@@ -25,6 +36,7 @@ object RegistrationValidator {
         if (!isSimpleEmailFormat(email)) fail("email", "Email format is invalid")
     }
 
+    /** Between [PASSWORD_MIN_LENGTH] and [PASSWORD_MAX_LENGTH] characters. */
     private fun validatePassword(password: String) {
         if (password.length < PASSWORD_MIN_LENGTH) {
             fail("password", "Password must be at least $PASSWORD_MIN_LENGTH characters")
@@ -34,6 +46,7 @@ object RegistrationValidator {
         }
     }
 
+    /** Required and at most [DISPLAY_NAME_MAX_LENGTH] characters. */
     private fun validateDisplayName(displayName: String) {
         if (displayName.isEmpty()) fail("displayName", "Display name is required")
         if (displayName.length > DISPLAY_NAME_MAX_LENGTH) {
@@ -41,7 +54,7 @@ object RegistrationValidator {
         }
     }
 
-    // Exactly one @, text before and after it, a dot inside the domain, no spaces.
+    /** Exactly one @, text before and after it, a dot inside the domain, no spaces. */
     private fun isSimpleEmailFormat(email: String): Boolean {
         if (email.any { it.isWhitespace() }) return false
         if (email.count { it == '@' } != 1) return false
@@ -51,5 +64,6 @@ object RegistrationValidator {
         return dot > 0 && dot < domain.length - 1
     }
 
+    /** Throws the ValidationException for one broken rule; StatusPages turns it into a 400 that names [field]. */
     private fun fail(field: String, message: String): Nothing = throw ValidationException(message, field)
 }

@@ -8,9 +8,13 @@ import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 
-// Name of the JWT provider; routes refer to it via authenticate(PROVIDER_NAME).
+/** Name of the JWT provider; routes refer to it via authenticate(PROVIDER_NAME). */
 const val PROVIDER_NAME = "jwt-auth"
 
+/**
+ * Installs the Authentication plugin with the JWT provider (GI-3).
+ * A token is accepted only when [jwtConfig] verifies it and it has a user id and a known role.
+ */
 fun Application.configureSecurity(jwtConfig: JwtConfig) {
     install(Authentication) {
         jwt(PROVIDER_NAME) {
