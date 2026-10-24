@@ -33,8 +33,10 @@ class ReservationMaintenanceService(
     }
 
     /**
-     * Lapses one reservation. Returns false if it could not lapse, and never throws (K-5, issue #48);
-     * the caller decides what false means. On false nothing of this lapse is left in the database.
+     * Lapses one reservation. Returns false if it could not lapse (K-5, issue #48): a missing product,
+     * a refused transition or a failing write gives false instead of an exception, and the caller decides
+     * what false means. Coroutine cancellation is still rethrown. On false nothing of this lapse is left
+     * in the database.
      */
     private suspend fun lapse(reservation: Reservation): Boolean = dbQuery {
         val product = productReader.findById(reservation.productId) ?: return@dbQuery false
