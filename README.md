@@ -60,6 +60,8 @@ There are two ways to set them:
 
 `.env.example` lists the variables. You can copy it to `.env` (ignored by git) to keep your values in one place, but **the application does not read `.env` by itself**: load it into the terminal first, as shown below. If a value in `.env` is empty, the variable counts as not set and the application stops.
 
+Write each value in `.env` without quotes: `JWT_SECRET=abc...`. Bash reads `.env` as a script, so save it with Unix line endings (LF).
+
 To fill in `OFF_CONTACT_EMAIL` in `.env`, enter a real e-mail address after the `=`: `OFF_CONTACT_EMAIL=you@example.com`. Open Food Facts uses it to contact you if your app causes problems.
 
 To fill in `JWT_SECRET`, generate a random secret and copy the line it prints. In `.env`, paste it after `JWT_SECRET=`; in the terminal, use it as shown below.
