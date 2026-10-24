@@ -1,8 +1,6 @@
 package com.restpartijen.api.config
 
-import io.ktor.server.config.ApplicationConfig
-import java.security.SecureRandom
-import kotlin.io.encoding.Base64
+import io.ktor.server.config.*
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
@@ -49,11 +47,6 @@ fun ApplicationConfig.jwtProperties(): JwtProperties {
 private fun ApplicationConfig.requiredJwtValue(key: String): String =
     propertyOrNull("jwt.$key")?.getString()?.trim()?.ifBlank { null }
         ?: error("jwt.$key is not set. Add it to the jwt section of application.yaml.")
-//TIJDELIJKE FALLBACKFUNCTIE
-//private fun fallbackSecret(): String {
-//    val bytes = ByteArray(MIN_SECRET_BYTES).also { SecureRandom().nextBytes(it) }
-//    return Base64.encode(bytes)
-//}
 
 private fun fallbackSecret(): Nothing =
     error("JWT_SECRET is not set. Set it before starting the application; see README, section Configuration.")
