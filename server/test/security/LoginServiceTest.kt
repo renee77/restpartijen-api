@@ -13,8 +13,10 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Instant
+import com.restpartijen.api.testsupport.FakeSupplierIdLookup
 
 class LoginServiceTest {
 
@@ -23,23 +25,25 @@ class LoginServiceTest {
 
     private val repository = FakeUserRepository()
     private val passwordHasher = PasswordHasher()
+    private val supplierLookup = FakeSupplierIdLookup()
     private val service = LoginService(
         userRepository = repository,
         passwordHasher = passwordHasher,
         jwtConfig = JwtConfig(TestJwtSettings.default, TestClock.fixed),
-    )
+        supplierIdLookup = supplierLookup
+        )
 
     // Argon2id is slow, so hash once and reuse the hash in every test.
     private val storedHash = passwordHasher.hashPassword(password)
 
-    private suspend fun saveUser(): User =
+    private suspend fun saveUser(role: Role = Role.COLLECTOR): User =
         repository.create(
             User(
                 id = 0,
                 email = email,
                 passwordHash = storedHash,
                 display_name = "TestName",
-                role = Role.COLLECTOR,
+                role = role,
                 createdAt = Instant.parse("2026-01-15T10:30:00Z"),
             )
         )
@@ -107,5 +111,44 @@ class LoginServiceTest {
         repository.delete(saved.id)
 
         assertFailsWith<UnauthorizedException> { service.login(email, password) }
+    }
+
+    @Test
+    fun `a supplier gets the supplier id`() = runTest {
+        val saved = saveUser(Role.SUPPLIER)
+        supplierLookup.supplierIds[saved.id] = 7L
+
+        val response = service.login(email, password)
+
+        assertEquals(7L, response.supplierId)
+    }
+
+    @Test
+    fun `a supplier without a supplier gets null`() = runTest {
+        saveUser(Role.SUPPLIER)
+
+        val response = service.login(email, password)
+
+        assertNull(response.supplierId)
+    }
+
+    @Test
+    fun `a collector gets null and the lookup is never asked`() = runTest {
+        saveUser(Role.COLLECTOR)
+
+        val response = service.login(email, password)
+
+        assertNull(response.supplierId)
+        assertTrue(supplierLookup.asked.isEmpty())
+    }
+
+    @Test
+    fun `an admin gets null and the lookup is never asked`() = runTest {
+        saveUser(Role.ADMIN)
+
+        val response = service.login(email, password)
+
+        assertNull(response.supplierId)
+        assertTrue(supplierLookup.asked.isEmpty())
     }
 }

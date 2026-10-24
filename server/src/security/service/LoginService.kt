@@ -3,6 +3,8 @@ package com.restpartijen.api.security.service
 import com.restpartijen.api.security.dto.LoginResponse
 import com.restpartijen.api.security.repository.UserRepository
 import com.restpartijen.api.shared.UnauthorizedException
+import com.restpartijen.api.shared.SupplierIdLookup
+import com.restpartijen.api.shared.Role
 
 /**
  * Checks a user's credentials and issues a JWT (decision 3.8).
@@ -18,7 +20,8 @@ class LoginService(
     private val userRepository: UserRepository,
     private val passwordHasher: PasswordHasher,
     private val jwtConfig: JwtConfig,
-) {
+    private val supplierIdLookup: SupplierIdLookup
+    ) {
     companion object {
         // One shared message for every failed login. Never make this depend on whether the email exists, or the error would leak that information.
         const val INVALID_CREDENTIALS = "Invalid email or password"
@@ -43,10 +46,14 @@ class LoginService(
             throw UnauthorizedException(INVALID_CREDENTIALS)
         }
 
+        // Only a supplier has a supplier id. For everyone else the lookup is not asked at all.
+        val supplierId = if (user.role == Role.SUPPLIER) supplierIdLookup.lookupSupplierId(user.id) else null
+
         // Only the id and the role go into the token: no password, no email (section 16.1).
         return LoginResponse(
             token = jwtConfig.createToken(user.id, user.role),
             role = user.role,
+            supplierId = supplierId,
         )
     }
 }
