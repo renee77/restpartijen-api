@@ -10,10 +10,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Instant
 
-class FakeProductView(
-    override val id: Long,
-    override val status: ProductStatus = ProductStatus.LISTED,
-) : ProductView {
+class FakeProductView(override val id: Long, override val status: ProductStatus = ProductStatus.LISTED) : ProductView {
     override val supplier = SupplierSummary(id = 1, name = "Fake supplier", latitude = 0.0, longitude = 0.0)
     override val name = "Fake product"
     override val pickupWindow = PickupWindow(

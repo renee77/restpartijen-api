@@ -29,6 +29,5 @@ class PasswordHasher {
         requireNotNull(encoder.encode(password)) { "Hashing returned no result" }
 
     /** Returns true when the plain password belongs to the given hash. */
-    fun verifyPassword(password: String, hashedPassword: String): Boolean =
-        encoder.matches(password, hashedPassword)
+    fun verifyPassword(password: String, hashedPassword: String): Boolean = encoder.matches(password, hashedPassword)
 }

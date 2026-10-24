@@ -23,12 +23,11 @@ internal fun notRemoved(): Op<Boolean> = ProductsTable.status neq ProductStatus.
 
 // The allergens of one product. They live in their own table, one row per allergen (§9.8).
 // No dbQuery here: the caller already runs inside a transaction.
-internal fun allergensOfProduct(productId: Long): Set<Allergen> =
-    ProductAllergensTable
-        .selectAll()
-        .where { ProductAllergensTable.productId eq productId }
-        .map { it[ProductAllergensTable.allergen] }
-        .toSet()
+internal fun allergensOfProduct(productId: Long): Set<Allergen> = ProductAllergensTable
+    .selectAll()
+    .where { ProductAllergensTable.productId eq productId }
+    .map { it[ProductAllergensTable.allergen] }
+    .toSet()
 
 // The one place that turns a row into the domain model, so every query builds a product the same way.
 // The row must come from a join with SuppliersTable; the allergens live in another table, so the caller passes them.

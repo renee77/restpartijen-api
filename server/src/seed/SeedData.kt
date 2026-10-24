@@ -24,11 +24,7 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 /** One account to seed; every account gets the demo password. */
-private data class SeedUser(
-    val email: String,
-    val displayName: String,
-    val role: Role,
-)
+private data class SeedUser(val email: String, val displayName: String, val role: Role)
 
 /**
  * One supplier to seed, linked to its account by [ownerEmail].
@@ -105,21 +101,40 @@ object SeedData {
     // Each has its own opening hours with closed days, so the derived pickup window has something to skip (§9.7).
     private val suppliers = listOf(
         SeedSupplier(
-            "supermarkt@mail.com", "Supermarkt Breda Centrum", "Grote Markt 5, Breda", 51.5890, 4.7760,
+            "supermarkt@mail.com",
+            "Supermarkt Breda Centrum",
+            "Grote Markt 5, Breda",
+            51.5890,
+            4.7760,
             // Mon to Fri 08:00-21:00, Sat 09:00-18:00, Sun closed.
             openingHours = openOn(mondayToFriday, LocalTime(8, 0), LocalTime(21, 0)) +
                 OpeningHours(DayOfWeek.SATURDAY, LocalTime(9, 0), LocalTime(18, 0)),
         ),
         SeedSupplier(
-            "bakker@mail.com", "Bakkerij De Korenschoof", "Ginnekenweg 12, Breda", 51.5795, 4.7820,
+            "bakker@mail.com",
+            "Bakkerij De Korenschoof",
+            "Ginnekenweg 12, Breda",
+            51.5795,
+            4.7820,
             // Tue to Sat 07:00-17:00, Sun and Mon closed.
             openingHours = openOn(
-                listOf(DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY),
-                LocalTime(7, 0), LocalTime(17, 0),
+                listOf(
+                    DayOfWeek.TUESDAY,
+                    DayOfWeek.WEDNESDAY,
+                    DayOfWeek.THURSDAY,
+                    DayOfWeek.FRIDAY,
+                    DayOfWeek.SATURDAY,
+                ),
+                LocalTime(7, 0),
+                LocalTime(17, 0),
             ),
         ),
         SeedSupplier(
-            "groothandel@mail.com", "Groothandel Vers & Vries", "Minervum 7001, Breda", 51.6020, 4.7350,
+            "groothandel@mail.com",
+            "Groothandel Vers & Vries",
+            "Minervum 7001, Breda",
+            51.6020,
+            4.7350,
             // Mon to Fri 06:00-16:00, weekend closed.
             openingHours = openOn(mondayToFriday, LocalTime(6, 0), LocalTime(16, 0)),
         ),
@@ -286,15 +301,25 @@ object SeedData {
         SeedReservation("supermarkt-brood", "afhaler-a@mail.com", priceCents = 120, reservedAgo = 6.hours),
         // History of collector A. The COLLECTED one was picked up after reserving and inside its pickup window (issue #42).
         SeedReservation(
-            "bakker-appeltaart", "afhaler-a@mail.com", priceCents = 390, reservedAgo = 5.hours,
-            status = ReservationStatus.COLLECTED, collectedAgo = 4.hours,
+            "bakker-appeltaart",
+            "afhaler-a@mail.com",
+            priceCents = 390,
+            reservedAgo = 5.hours,
+            status = ReservationStatus.COLLECTED,
+            collectedAgo = 4.hours,
         ),
         SeedReservation(
-            "supermarkt-melk", "afhaler-a@mail.com", priceCents = 249, reservedAgo = 10.hours,
+            "supermarkt-melk",
+            "afhaler-a@mail.com",
+            priceCents = 249,
+            reservedAgo = 10.hours,
             status = ReservationStatus.CANCELLED,
         ),
         SeedReservation(
-            "groothandel-groente", "afhaler-a@mail.com", priceCents = 382, reservedAgo = 30.hours,
+            "groothandel-groente",
+            "afhaler-a@mail.com",
+            priceCents = 382,
+            reservedAgo = 30.hours,
             status = ReservationStatus.LAPSED,
         ),
     )

@@ -20,11 +20,7 @@ val authTestNow: Instant = Instant.parse("2026-01-15T10:30:00Z")
  * Same plugin chain as production for the auth routes, with the real services on the test database.
  * Call createEmptyTestDatabase(UsersTable) first.
  */
-fun Application.setUpAuthTestApp(
-    jwtConfig: JwtConfig,
-    supplierIdLookup: SupplierIdLookup = FakeSupplierIdLookup()
-
-    ) {
+fun Application.setUpAuthTestApp(jwtConfig: JwtConfig, supplierIdLookup: SupplierIdLookup = FakeSupplierIdLookup()) {
     configureSerialization()
     configureStatusPages()
     dependencies {

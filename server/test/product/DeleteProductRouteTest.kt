@@ -55,7 +55,9 @@ class DeleteProductRouteTest {
         val (userId, productId) = databaseWithProduct()
         application {
             productRoutesTestApp(
-                tokenClock, ExposedProductRepository(FixedClock(testNow)), ExposedSupplierRepository(),
+                tokenClock,
+                ExposedProductRepository(FixedClock(testNow)),
+                ExposedSupplierRepository(),
             )
         }
 
@@ -74,7 +76,9 @@ class DeleteProductRouteTest {
         setStatus(productId, ProductStatus.REMOVED)
         application {
             productRoutesTestApp(
-                tokenClock, ExposedProductRepository(FixedClock(testNow)), ExposedSupplierRepository(),
+                tokenClock,
+                ExposedProductRepository(FixedClock(testNow)),
+                ExposedSupplierRepository(),
             )
         }
 

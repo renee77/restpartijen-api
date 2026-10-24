@@ -15,15 +15,16 @@ class ProductSearchService(
     private val clock: Clock,
 ) {
     /** LISTED products that are not expired, filtered on [criteria] (AND), soonest best-before first. */
-    suspend fun search(criteria: SearchCriteria): List<SearchResult> =
-        productReader.findAvailable(clock.now())
-            // A product without a price expired just now (B-18): leave it out, it is not an error
-            .mapNotNull { product ->
-                priceProvider.priceBreakdown(product)?.let { price -> SearchResult(product, price, product.shelfLifeRemaining(clock)) }
+    suspend fun search(criteria: SearchCriteria): List<SearchResult> = productReader.findAvailable(clock.now())
+        // A product without a price expired just now (B-18): leave it out, it is not an error
+        .mapNotNull { product ->
+            priceProvider.priceBreakdown(product)?.let { price ->
+                SearchResult(product, price, product.shelfLifeRemaining(clock))
             }
-            .filter { criteria.category == null || it.product.category == criteria.category }
-            // Compares with the current, discounted price, not the original one (§5.4)
-            .filter { criteria.maxPrice == null || it.price.currentPrice.cents <= criteria.maxPrice.cents }
-            .filter { criteria.minShelfLife == null || it.shelfLifeRemaining >= criteria.minShelfLife }
-            .sortedBy { it.shelfLifeRemaining }
+        }
+        .filter { criteria.category == null || it.product.category == criteria.category }
+        // Compares with the current, discounted price, not the original one (§5.4)
+        .filter { criteria.maxPrice == null || it.price.currentPrice.cents <= criteria.maxPrice.cents }
+        .filter { criteria.minShelfLife == null || it.shelfLifeRemaining >= criteria.minShelfLife }
+        .sortedBy { it.shelfLifeRemaining }
 }

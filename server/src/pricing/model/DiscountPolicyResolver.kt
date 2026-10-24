@@ -17,7 +17,7 @@ object DiscountPolicyResolver {
         mapOf(
             ProductCategory.FRESH to FreshDiscountPolicy(),
             ProductCategory.FROZEN to FrozenDiscountPolicy(),
-            ProductCategory.AMBIENT to AmbientDiscountPolicy()
+            ProductCategory.AMBIENT to AmbientDiscountPolicy(),
         )
     }
 

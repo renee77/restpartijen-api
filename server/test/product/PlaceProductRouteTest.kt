@@ -5,9 +5,9 @@ import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.product.dto.ProductResponse
+import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
-import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
@@ -34,9 +34,9 @@ import kotlinx.datetime.LocalTime
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import kotlin.test.assertTrue
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.time.Clock
 
 /**
@@ -303,7 +303,11 @@ class PlaceProductRouteTest {
     fun `the price in euros is stored in cents`() = testApplication {
         // Arrange: a real database with a supplier, and the Exposed repositories behind the service
         createEmptyTestDatabase(
-            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, SupplierOpeningHoursTable,
+            UsersTable,
+            SuppliersTable,
+            ProductsTable,
+            ProductAllergensTable,
+            SupplierOpeningHoursTable,
         )
         val userId = insertUser(Role.SUPPLIER)
         // A supplier always has opening hours (US-10); without them the product gets no pickup window.

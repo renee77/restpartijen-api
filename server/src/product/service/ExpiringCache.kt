@@ -13,11 +13,7 @@ import kotlin.time.Instant
  *
  * @param clock decides when an entry has expired (GI-6)
  */
-class ExpiringCache<V : Any>(
-    private val clock: Clock,
-    private val timeToLive: Duration,
-    private val maxEntries: Int,
-) {
+class ExpiringCache<V : Any>(private val clock: Clock, private val timeToLive: Duration, private val maxEntries: Int) {
     // Keeps the order in which keys came in, so the first key is always the oldest.
     private val entries = LinkedHashMap<String, Entry<V>>()
 
@@ -26,10 +22,12 @@ class ExpiringCache<V : Any>(
         val entry = entries[key]
         when {
             entry == null -> null
+
             clock.now() >= entry.storedAt + timeToLive -> {
                 entries.remove(key)
                 null
             }
+
             else -> entry.value
         }
     }

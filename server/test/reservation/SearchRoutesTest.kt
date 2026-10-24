@@ -83,7 +83,11 @@ class SearchRoutesTest {
         // Assert
         assertEquals(HttpStatusCode.BadRequest, response.status)
         assertEquals(
-            ErrorResponse(ErrorCode.VALIDATION_ERROR, "Unknown category 'fresh'. Allowed values: FRESH, FROZEN, AMBIENT", "category"),
+            ErrorResponse(
+                ErrorCode.VALIDATION_ERROR,
+                "Unknown category 'fresh'. Allowed values: FRESH, FROZEN, AMBIENT",
+                "category",
+            ),
             Json.decodeFromString<ErrorResponse>(response.bodyAsText()),
         )
     }

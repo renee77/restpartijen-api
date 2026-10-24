@@ -12,7 +12,4 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-data class MaintenanceReport(
-    val lapsedReservations: Int,
-    val expiredProducts: Int
-)
+data class MaintenanceReport(val lapsedReservations: Int, val expiredProducts: Int)

@@ -30,7 +30,6 @@ class RoleAuthTests {
         assertEquals("Authentication required", error.message)
     }
 
-
     // Happy path -> Someone with a valid role for the route get access (in this case, a collector).
     @Test
     fun `token with valid role for route gets access`() = testApplication {
@@ -71,7 +70,6 @@ class RoleAuthTests {
         val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText()).message
         assertEquals("Insufficient role", error)
     }
-
 
     // Happy path -> Current user information can be retrieved from a valid token.
     @Test

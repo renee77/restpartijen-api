@@ -39,7 +39,7 @@ class ExposedSupplierRepository : SupplierRepository {
                 OpeningHours(
                     day = it[SupplierOpeningHoursTable.dayOfWeek],
                     opensAt = it[SupplierOpeningHoursTable.opensAt],
-                    closesAt = it[SupplierOpeningHoursTable.closesAt]
+                    closesAt = it[SupplierOpeningHoursTable.closesAt],
                 )
             }
             // In Kotlin, not in SQL: the column holds day names, so SQL would sort them alphabetically.

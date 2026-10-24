@@ -23,13 +23,11 @@ interface DiscountPolicy {
      * On a boundary the higher discount applies.
      * Returns 0 when no staffel applies yet.
      */
-    fun discountPercentage(remaining: Duration): Int =
-        tiers().tierFor(remaining)?.percentage ?: 0
+    fun discountPercentage(remaining: Duration): Int = tiers().tierFor(remaining)?.percentage ?: 0
 
     /**
      * The highest discount percentage this policy can ever give.
      * Returns 0 when the policy has no staffels.
      */
-    fun maxDiscount(): Int =
-        tiers().maxOfOrNull { it.percentage } ?: 0
+    fun maxDiscount(): Int = tiers().maxOfOrNull { it.percentage } ?: 0
 }

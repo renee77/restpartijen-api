@@ -28,10 +28,7 @@ private const val MAX_BARCODES = 1_000
  * @param openFoodFacts fetches the name and allergen tags for a barcode (§10.3)
  * @param clock decides when a cached answer expires and when a call leaves the limit window (GI-6)
  */
-class ProductLookupService(
-    private val openFoodFacts: OpenFoodFactsClient,
-    clock: Clock,
-) {
+class ProductLookupService(private val openFoodFacts: OpenFoodFactsClient, clock: Clock) {
     private val found = ExpiringCache<ProductLookup>(clock, FOUND_TIME_TO_LIVE, MAX_BARCODES)
 
     // Nothing to store but the fact that the barcode is unknown.
@@ -63,11 +60,13 @@ class ProductLookupService(
                 found.put(barcode, lookup)
                 lookup
             }
+
             // Only briefly remembered: someone may add the product to Open Food Facts later.
             LookupResult.NotFound -> {
                 notFound.put(barcode, Unit)
                 throw NotFoundException(NOT_FOUND_MESSAGE)
             }
+
             // Not cached, or a time-out or rate limit would stick.
             LookupResult.Unavailable -> ProductLookup.MANUAL_ENTRY
         }

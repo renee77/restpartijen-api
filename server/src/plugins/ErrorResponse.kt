@@ -7,13 +7,13 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 enum class ErrorCode {
-    VALIDATION_ERROR,       // 400 – ValidationException, BadRequestException, RequestValidationException
-    UNAUTHORIZED,           // 401 – UnauthorizedException
-    FORBIDDEN,              // 403 – ForbiddenException
-    NOT_FOUND,              // 404 – NotFoundException
-    CONFLICT,               // 409 – IllegalStateTransitionException, ConflictException
-    DOMAIN_RULE_VIOLATION,  // 422 – DomainRuleException
-    INTERNAL_ERROR          // 500 – any other exception
+    VALIDATION_ERROR, // 400 – ValidationException, BadRequestException, RequestValidationException
+    UNAUTHORIZED, // 401 – UnauthorizedException
+    FORBIDDEN, // 403 – ForbiddenException
+    NOT_FOUND, // 404 – NotFoundException
+    CONFLICT, // 409 – IllegalStateTransitionException, ConflictException
+    DOMAIN_RULE_VIOLATION, // 422 – DomainRuleException
+    INTERNAL_ERROR, // 500 – any other exception
 }
 
 /**
@@ -21,8 +21,4 @@ enum class ErrorCode {
  * Created only by StatusPages; features throw a DomainException instead.
  */
 @Serializable
-data class ErrorResponse(
-    val code: ErrorCode,
-    val message: String,
-    val field: String? = null,
-)
+data class ErrorResponse(val code: ErrorCode, val message: String, val field: String? = null)

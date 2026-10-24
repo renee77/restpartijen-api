@@ -41,12 +41,23 @@ class SeedDataTest {
     private data class UserRow(val id: Long, val email: String, val role: Role, val passwordHash: String)
     private data class SupplierRow(val id: Long, val userId: Long)
     private data class ProductRow(
-        val id: Long, val supplierId: Long, val category: ProductCategory, val priceCents: Long,
-        val bestBeforeAt: Instant, val status: ProductStatus, val pickupFrom: Instant, val pickupUntil: Instant,
+        val id: Long,
+        val supplierId: Long,
+        val category: ProductCategory,
+        val priceCents: Long,
+        val bestBeforeAt: Instant,
+        val status: ProductStatus,
+        val pickupFrom: Instant,
+        val pickupUntil: Instant,
     )
     private data class ReservationRow(
-        val productId: Long, val collectorId: Long, val priceCents: Long,
-        val reservedAt: Instant, val expiresAt: Instant, val status: ReservationStatus, val collectedAt: Instant?,
+        val productId: Long,
+        val collectorId: Long,
+        val priceCents: Long,
+        val reservedAt: Instant,
+        val expiresAt: Instant,
+        val status: ReservationStatus,
+        val collectedAt: Instant?,
     )
 
     private fun users() = transaction {
@@ -62,9 +73,14 @@ class SeedDataTest {
     private fun products() = transaction {
         ProductsTable.selectAll().map {
             ProductRow(
-                it[ProductsTable.id], it[ProductsTable.supplierId], it[ProductsTable.category],
-                it[ProductsTable.originalPriceCents], it[ProductsTable.bestBeforeAt], it[ProductsTable.status],
-                it[ProductsTable.pickupFrom], it[ProductsTable.pickupUntil],
+                it[ProductsTable.id],
+                it[ProductsTable.supplierId],
+                it[ProductsTable.category],
+                it[ProductsTable.originalPriceCents],
+                it[ProductsTable.bestBeforeAt],
+                it[ProductsTable.status],
+                it[ProductsTable.pickupFrom],
+                it[ProductsTable.pickupUntil],
             )
         }
     }
@@ -72,8 +88,12 @@ class SeedDataTest {
     private fun reservations() = transaction {
         ReservationsTable.selectAll().map {
             ReservationRow(
-                it[ReservationsTable.productId], it[ReservationsTable.collectorId], it[ReservationsTable.reservedPriceCents],
-                it[ReservationsTable.reservedAt], it[ReservationsTable.expiresAt], it[ReservationsTable.status],
+                it[ReservationsTable.productId],
+                it[ReservationsTable.collectorId],
+                it[ReservationsTable.reservedPriceCents],
+                it[ReservationsTable.reservedAt],
+                it[ReservationsTable.expiresAt],
+                it[ReservationsTable.status],
                 it[ReservationsTable.collectedAt],
             )
         }
@@ -96,7 +116,11 @@ class SeedDataTest {
     @BeforeTest
     fun seedAnEmptyDatabase() {
         createEmptyTestDatabase(
-            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, ReservationsTable,
+            UsersTable,
+            SuppliersTable,
+            ProductsTable,
+            ProductAllergensTable,
+            ReservationsTable,
             SupplierOpeningHoursTable,
         )
         SeedData.seedIfEmpty(FixedClock(now), hasher)
@@ -198,9 +222,26 @@ class SeedDataTest {
         products().forEach { product ->
             val statuses = reservationsByProduct[product.id].orEmpty().map { it.status }
             when (product.status) {
-                ProductStatus.RESERVED -> assertEquals(1, statuses.count { it == ReservationStatus.ACTIVE }, "Product ${product.id}")
-                ProductStatus.COLLECTED -> assertEquals(1, statuses.count { it == ReservationStatus.COLLECTED }, "Product ${product.id}")
-                else -> assertTrue(ReservationStatus.ACTIVE !in statuses, "Product ${product.id} has an ACTIVE reservation")
+                ProductStatus.RESERVED -> assertEquals(
+                    1,
+                    statuses.count {
+                        it == ReservationStatus.ACTIVE
+                    },
+                    "Product ${product.id}",
+                )
+
+                ProductStatus.COLLECTED -> assertEquals(
+                    1,
+                    statuses.count {
+                        it == ReservationStatus.COLLECTED
+                    },
+                    "Product ${product.id}",
+                )
+
+                else -> assertTrue(
+                    ReservationStatus.ACTIVE !in statuses,
+                    "Product ${product.id} has an ACTIVE reservation",
+                )
             }
         }
     }
@@ -232,7 +273,7 @@ class SeedDataTest {
         assertTrue(
             products().any {
                 it.status == ProductStatus.LISTED && it.isFresh() && it.priceCents > 300 && it.currentPriceCents() < 300
-            }
+            },
         )
     }
 
@@ -263,7 +304,10 @@ class SeedDataTest {
                 continue
             }
             val product = productById.getValue(reservation.productId)
-            assertTrue(collectedAt != null, "COLLECTED reservation of product ${reservation.productId} has no collectedAt")
+            assertTrue(
+                collectedAt != null,
+                "COLLECTED reservation of product ${reservation.productId} has no collectedAt",
+            )
             assertTrue(collectedAt >= reservation.reservedAt, "Collected before it was reserved")
             assertTrue(collectedAt in product.pickupFrom..product.pickupUntil, "Collected outside the pickup window")
         }
@@ -283,7 +327,7 @@ class SeedDataTest {
             reservations().any {
                 it.status == ReservationStatus.ACTIVE && it.reservedAt == now - 20.hours &&
                     it.priceCents > productById.getValue(it.productId).currentPriceCents()
-            }
+            },
         )
     }
 
@@ -294,8 +338,18 @@ class SeedDataTest {
         val products = products()
         val reservations = reservations()
 
-        assertTrue(products.any { it.status == ProductStatus.LISTED && !it.isFresh() }, "No listed product past its date")
-        assertTrue(products.any { it.status == ProductStatus.RESERVED && !it.isFresh() }, "No reserved product past its date")
+        assertTrue(
+            products.any {
+                it.status == ProductStatus.LISTED && !it.isFresh()
+            },
+            "No listed product past its date",
+        )
+        assertTrue(
+            products.any {
+                it.status == ProductStatus.RESERVED && !it.isFresh()
+            },
+            "No reserved product past its date",
+        )
         // lapseOverdue: one past its pickup window, one older than 24 hours.
         val overdue = reservations.filter { it.status == ReservationStatus.ACTIVE && it.expiresAt <= now }
         assertTrue(overdue.any { it.reservedAt > now - 24.hours }, "No reservation past its pickup window")

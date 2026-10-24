@@ -6,14 +6,10 @@ import com.restpartijen.api.shared.Role
 import kotlin.time.Clock
 import kotlin.time.toJavaInstant
 
-
 /**
  * Builds and verifies JWT tokens.
  * */
-class JwtConfig(
-    private val settings: JwtSettings,
-    private val clock: Clock,
-) {
+class JwtConfig(private val settings: JwtSettings, private val clock: Clock) {
     // The algorithm used to sign the JWT tokens. It uses HMAC with SHA-256 and the secret from the settings.
     private val algorithm = Algorithm.HMAC256(settings.secret)
 

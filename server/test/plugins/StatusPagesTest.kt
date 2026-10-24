@@ -44,8 +44,7 @@ class StatusPagesTest {
 
     private fun ApplicationTestBuilder.setUp() = application { testApp() }
 
-    private suspend fun HttpResponse.errorBody(): ErrorResponse =
-        Json.decodeFromString<ErrorResponse>(bodyAsText())
+    private suspend fun HttpResponse.errorBody(): ErrorResponse = Json.decodeFromString<ErrorResponse>(bodyAsText())
 
     @Test
     fun `ValidationException gives 400 with the field`() = testApplication {

@@ -30,13 +30,11 @@ data class UpdateProductRequest(
  * The shape was already checked by validateUpdateProductRequest in RequestValidation (400), so Money
  * receives a valid value here.
  */
-fun UpdateProductRequest.toCommand(): UpdateProductCommand {
-    return UpdateProductCommand(
-        name = name,
-        originalPrice = Money.fromEuros(originalPrice),
-        bestBeforeAt = bestBeforeAt.toBestBeforeAt(),
-        quantity = quantity,
-        barcode = barcode,
-        allergens = allergens,
-    )
-}
+fun UpdateProductRequest.toCommand(): UpdateProductCommand = UpdateProductCommand(
+    name = name,
+    originalPrice = Money.fromEuros(originalPrice),
+    bestBeforeAt = bestBeforeAt.toBestBeforeAt(),
+    quantity = quantity,
+    barcode = barcode,
+    allergens = allergens,
+)

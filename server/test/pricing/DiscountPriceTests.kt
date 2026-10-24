@@ -9,15 +9,14 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.time.Instant
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
+import kotlin.time.Instant
 
 class DiscountPriceTests {
     val fakeClock = FixedClock(Instant.parse("2026-10-11T12:00:00Z"))
     val service = PricingService(fakeClock)
-
 
     // Price and corner cases
     @Test
@@ -26,7 +25,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FRESH,
-            remaining = 48.hours
+            remaining = 48.hours,
         )
 
         // Act
@@ -37,12 +36,12 @@ class DiscountPriceTests {
     }
 
     @Test
-    fun `fresh at 48 hours and one second gives 0` () {
+    fun `fresh at 48 hours and one second gives 0`() {
         // Arrange
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FRESH,
-            remaining = 48.hours + 1.seconds
+            remaining = 48.hours + 1.seconds,
         )
 
         // Act
@@ -58,7 +57,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FRESH,
-            remaining = 24.hours
+            remaining = 24.hours,
         )
 
         // Act
@@ -69,12 +68,12 @@ class DiscountPriceTests {
     }
 
     @Test
-    fun `fresh at 24 hours and one second gives 10` () {
+    fun `fresh at 24 hours and one second gives 10`() {
         // Arrange
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FRESH,
-            remaining = 24.hours + 1.seconds
+            remaining = 24.hours + 1.seconds,
         )
 
         // Act
@@ -90,7 +89,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FRESH,
-            remaining = 12.hours
+            remaining = 12.hours,
         )
 
         // Act
@@ -101,12 +100,12 @@ class DiscountPriceTests {
     }
 
     @Test
-    fun `fresh at 12 hours and one second gives 40` () {
+    fun `fresh at 12 hours and one second gives 40`() {
         // Arrange
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FRESH,
-            remaining = 12.hours + 1.seconds
+            remaining = 12.hours + 1.seconds,
         )
 
         // Act
@@ -122,7 +121,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FROZEN,
-            remaining = 7.days
+            remaining = 7.days,
         )
 
         // Act
@@ -138,7 +137,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FROZEN,
-            remaining = 7.days + 1.seconds
+            remaining = 7.days + 1.seconds,
         )
 
         // Act
@@ -154,7 +153,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FROZEN,
-            remaining = 24.hours
+            remaining = 24.hours,
         )
 
         // Act
@@ -170,7 +169,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FROZEN,
-            remaining = 24.hours + 1.seconds
+            remaining = 24.hours + 1.seconds,
         )
 
         // Act
@@ -186,7 +185,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.AMBIENT,
-            remaining = 14.days
+            remaining = 14.days,
         )
 
         // Act
@@ -202,7 +201,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.AMBIENT,
-            remaining = 14.days + 1.seconds
+            remaining = 14.days + 1.seconds,
         )
 
         // Act
@@ -218,7 +217,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.AMBIENT,
-            remaining = 7.days
+            remaining = 7.days,
         )
 
         // Act
@@ -234,7 +233,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.AMBIENT,
-            remaining = 7.days + 1.seconds
+            remaining = 7.days + 1.seconds,
         )
 
         // Act
@@ -244,14 +243,13 @@ class DiscountPriceTests {
         assertEquals(15, result?.discountPercentage)
     }
 
-
     @Test
     fun `current price is never negative`() {
         // Arrange
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FRESH,
-            remaining = 12.hours
+            remaining = 12.hours,
         )
 
         // Act
@@ -268,7 +266,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FRESH,
-            remaining = 48.hours
+            remaining = 48.hours,
         )
 
         // Act
@@ -277,7 +275,7 @@ class DiscountPriceTests {
         // Assert
         assertNotNull(result)
         assertTrue(
-            result.currentPrice.cents <= result.originalPrice.cents
+            result.currentPrice.cents <= result.originalPrice.cents,
         )
     }
 
@@ -287,7 +285,7 @@ class DiscountPriceTests {
         val product = FakePricedProduct(
             originalPrice = Money.fromCents(1000),
             category = ProductCategory.FRESH,
-            remaining = 0.seconds
+            remaining = 0.seconds,
         )
 
         // Act

@@ -9,7 +9,7 @@ import com.restpartijen.api.persistence.Repository
 class FakeRepository<T>(
     private val idOf: (T) -> Long,
     private val withId: (T, Long) -> T,
-    initialItems: List<T> = emptyList()
+    initialItems: List<T> = emptyList(),
 ) : Repository<T> {
 
     private val items = initialItems.toMutableList()

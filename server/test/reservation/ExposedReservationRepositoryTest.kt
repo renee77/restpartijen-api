@@ -1,12 +1,12 @@
 package com.restpartijen.api.reservation
 
+import com.restpartijen.api.persistence.ProductsTable
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationsTable
 import com.restpartijen.api.shared.Money
-import com.restpartijen.api.persistence.ProductsTable
-import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.insertProduct
 import com.restpartijen.api.testsupport.insertUser
@@ -31,8 +31,13 @@ class ExposedReservationRepositoryTest {
 
     private fun reservation(productId: Long, expiresAt: Instant, status: ReservationStatus = ReservationStatus.ACTIVE) =
         Reservation(
-            id = 0, productId = productId, collectorId = collectorId, reservedPrice = Money.fromCents(199),
-            reservedAt = expiresAt - 24.hours, expiresAt = expiresAt, status = status
+            id = 0,
+            productId = productId,
+            collectorId = collectorId,
+            reservedPrice = Money.fromCents(199),
+            reservedAt = expiresAt - 24.hours,
+            expiresAt = expiresAt,
+            status = status,
         )
 
     @Test
@@ -75,7 +80,9 @@ class ExposedReservationRepositoryTest {
         val repository = ExposedReservationRepository()
         val firstRow = repository.create(reservation(productId = insertProduct(), expiresAt = now))
         repository.create(reservation(productId = insertProduct(), expiresAt = now + 1.hours))
-        repository.create(reservation(productId = insertProduct(), expiresAt = now - 1.hours, status = ReservationStatus.LAPSED))
+        repository.create(
+            reservation(productId = insertProduct(), expiresAt = now - 1.hours, status = ReservationStatus.LAPSED),
+        )
 
         // Act
         val overdue = repository.findOverdue(now)
@@ -136,7 +143,9 @@ class ExposedReservationRepositoryTest {
         val older = repository.create(reservation(productId = insertProduct(), expiresAt = now))
         val newer = repository.create(reservation(productId = insertProduct(), expiresAt = now + 2.hours))
         val otherCollectorId = insertUser()
-        repository.create(reservation(productId = insertProduct(), expiresAt = now + 1.hours).copy(collectorId = otherCollectorId))
+        repository.create(
+            reservation(productId = insertProduct(), expiresAt = now + 1.hours).copy(collectorId = otherCollectorId),
+        )
 
         // Act
         val found = repository.findByCollectorId(collectorId)

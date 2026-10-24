@@ -26,21 +26,20 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `password of 8 characters is accepted` () {
+    fun `password of 8 characters is accepted`() {
         // Arrange: a password that is exactly 8 characters
         val justRight = "justrigh"
-
 
         // Act + Assert: no exception means the input is valid
         RegistrationValidator.validate(
             email = "test@mail.com",
             password = justRight,
-            displayName = "TestName"
-            )
+            displayName = "TestName",
+        )
     }
 
     @Test
-    fun `password of 64 characters is accepted` () {
+    fun `password of 64 characters is accepted`() {
         // Arrange: A password that is exactly 64 characters.
         val justRightLong = "a".repeat(RegistrationValidator.PASSWORD_MAX_LENGTH)
 
@@ -48,7 +47,7 @@ class RegistrationValidatorTest {
         RegistrationValidator.validate(
             email = "test@mail.com",
             password = justRightLong,
-            displayName = "TesterTime"
+            displayName = "TesterTime",
         )
     }
 
@@ -69,7 +68,7 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `password does not get trimmed` () {
+    fun `password does not get trimmed`() {
         // Arrange: A password that is exactly 64 characters.
         val justSpaces = " ".repeat(12)
 
@@ -77,13 +76,13 @@ class RegistrationValidatorTest {
         RegistrationValidator.validate(
             email = "test@mail.com",
             password = justSpaces,
-            displayName = "TesterTime"
+            displayName = "TesterTime",
         )
     }
 
     // Email Tests
     @Test
-    fun `blank e-mail is rejected` () {
+    fun `blank e-mail is rejected`() {
         // Arrange: an email without any input, just blank
         val emptyMail = ""
 
@@ -99,7 +98,7 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `email without @ is rejected` () {
+    fun `email without @ is rejected`() {
         // Arrange: an email without an @
         val mail = "NotReallyAMail.com"
 
@@ -115,7 +114,7 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `email without dot is rejected` () {
+    fun `email without dot is rejected`() {
         // Arrange: an email without a .
         val mail = "NotReally@AMail"
 
@@ -131,7 +130,7 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `e-mail with spaces is rejected` () {
+    fun `e-mail with spaces is rejected`() {
         // Arrange: an email with spaces
         val spaceMail = "ThisIs NotAMail"
 
@@ -147,7 +146,7 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `email of 254 characters is accepted` () {
+    fun `email of 254 characters is accepted`() {
         // Arrange: An email that is exactly 254 characters.
         val domain = "@mail.com"
         val justRightLong = "a".repeat(RegistrationValidator.EMAIL_MAX_LENGTH - domain.length) + domain
@@ -156,7 +155,7 @@ class RegistrationValidatorTest {
         RegistrationValidator.validate(
             email = justRightLong,
             password = "TestPassword",
-            displayName = "TesterTime"
+            displayName = "TesterTime",
         )
     }
 
@@ -178,7 +177,7 @@ class RegistrationValidatorTest {
 
     // Username Tests
     @Test
-    fun `blank username is rejected` () {
+    fun `blank username is rejected`() {
         // Arrange: an email without any input, just blank
         val emptyName = ""
 
@@ -203,7 +202,7 @@ class RegistrationValidatorTest {
             RegistrationValidator.validate(
                 email = "test@mailtest.com",
                 password = "TestPassword",
-                displayName = tooLong
+                displayName = tooLong,
             )
         }
         assertEquals("displayName", exception.field)
@@ -215,11 +214,10 @@ class RegistrationValidatorTest {
         val justRight = "a".repeat(RegistrationValidator.DISPLAY_NAME_MAX_LENGTH - 1)
 
         // Act and Assert: No exception
-            RegistrationValidator.validate(
-                email = "test@mailtest.com",
-                password = "TestPassword",
-                displayName = justRight
-            )
-
+        RegistrationValidator.validate(
+            email = "test@mailtest.com",
+            password = "TestPassword",
+            displayName = justRight,
+        )
     }
 }

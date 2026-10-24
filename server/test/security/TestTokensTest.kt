@@ -5,12 +5,12 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.SignatureVerificationException
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.restpartijen.api.shared.Role
+import com.restpartijen.api.testsupport.FixedClock
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import com.restpartijen.api.testsupport.FixedClock
-import kotlin.time.Instant
 import kotlin.time.Duration
+import kotlin.time.Instant
 
 class TestTokensTest {
     // Getting the test settings from the TestJwtSettings, which provides default values for testing purposes.
@@ -32,7 +32,7 @@ class TestTokensTest {
 
     // Happy path, token is valid and uses verification on role and userId. No exception is thrown.
     @Test
-    fun `token carries the userId and role and passes verificiation` () {
+    fun `token carries the userId and role and passes verificiation`() {
         // Arrange. Nothing needs to be arranged, it uses the predefined defaults and clock.
         // Act. Creating and a test token
         val token = TestTokens().createTestToken(
@@ -46,7 +46,6 @@ class TestTokensTest {
         assertEquals(Role.COLLECTOR.name, decoded.getClaim("role").asString())
     }
 
-
     // Happy path, token is valid for 24 hours and no exception is thrown.
     @Test
     fun `token is valid for 24 hours`() {
@@ -57,7 +56,7 @@ class TestTokensTest {
             userId = 1L,
             role = Role.COLLECTOR,
             settings = testSettings,
-            clock = testClock
+            clock = testClock,
         )
         val decoded = JWT.decode(token)
 
@@ -72,11 +71,11 @@ class TestTokensTest {
 
     // Sad path. The token is signed with another secret, so it should fail verification and throw a SignatureVerificationException.
     @Test
-    fun `token signed with another secret fails` () {
+    fun `token signed with another secret fails`() {
         // Arange. Create a test token with the default settings and clock.
         val token = TestTokens().createTestToken(
             userId = 1L,
-            role = Role.COLLECTOR
+            role = Role.COLLECTOR,
         )
         // Act. We define the other secret.
         val otherSecret = "this-is-another-test-secret-that-is-long-enough"
@@ -87,14 +86,14 @@ class TestTokensTest {
 
     // Sad path. The token is expired, so it should fail verification and throw a TokenExpiredException.
     @Test
-    fun `token is expired and rejected` () {
+    fun `token is expired and rejected`() {
         // Arrange. Create the clock with a time in the past, so the token will be expired when we verify it.
         val pastClock = FixedClock(Instant.parse("2026-09-25T12:00:00Z")) // 24 hours in the past
         val testToken = TestTokens().createTestToken(
             userId = 1L,
             role = Role.COLLECTOR,
             settings = testSettings,
-            clock = pastClock
+            clock = pastClock,
         )
         // Act and Assert. We expect it will throw a TokenExpiredException, because the token was created with a past expiration time.
         assertFailsWith<TokenExpiredException> { verifyToken(testToken, testSettings.secret) }

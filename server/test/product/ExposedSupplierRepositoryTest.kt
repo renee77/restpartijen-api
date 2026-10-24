@@ -87,7 +87,10 @@ class ExposedSupplierRepositoryTest {
         val found = repository.findByUserId(userId)
 
         // Assert: the values insertSupplier stores
-        assertEquals(SupplierSummary(id = supplierId, name = "Bakkerij Test", latitude = 51.59, longitude = 4.78), found)
+        assertEquals(
+            SupplierSummary(id = supplierId, name = "Bakkerij Test", latitude = 51.59, longitude = 4.78),
+            found,
+        )
     }
 
     @Test

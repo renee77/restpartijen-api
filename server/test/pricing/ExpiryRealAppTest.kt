@@ -89,7 +89,7 @@ class ExpiryRealAppTest {
         assertEquals(HttpStatusCode.OK, second.status)
         assertEquals(
             MaintenanceReport(lapsedReservations = 0, expiredProducts = 0),
-            Json.decodeFromString<MaintenanceReport>(second.bodyAsText())
+            Json.decodeFromString<MaintenanceReport>(second.bodyAsText()),
         )
     }
 }

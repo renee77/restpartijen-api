@@ -43,7 +43,9 @@ class ReservationConcurrencyTest {
         val collectors = listOf(insertUser(), insertUser())
         // The fake reader always says LISTED, so both pass the state machine: only the database can stop one
         val service = ReservationService(
-            FakeProductReader(listOf(FakeProduct(id = productId, pickupWindow = PickupWindow(now - 1.hours, now + 1.days)))),
+            FakeProductReader(
+                listOf(FakeProduct(id = productId, pickupWindow = PickupWindow(now - 1.hours, now + 1.days))),
+            ),
             TableStatusUpdater(),
             FakePriceProvider(Money.fromCents(199)),
             ExposedReservationRepository(),
@@ -60,8 +62,11 @@ class ReservationConcurrencyTest {
         // Assert: one winner, one stored reservation, product RESERVED
         assertEquals(1, results.count { it.isSuccess }, "results: $results")
         assertEquals(1L, transaction { ReservationsTable.selectAll().count() })
-        assertEquals(ProductStatus.RESERVED, transaction {
-            ProductsTable.selectAll().where { ProductsTable.id eq productId }.single()[ProductsTable.status]
-        })
+        assertEquals(
+            ProductStatus.RESERVED,
+            transaction {
+                ProductsTable.selectAll().where { ProductsTable.id eq productId }.single()[ProductsTable.status]
+            },
+        )
     }
 }

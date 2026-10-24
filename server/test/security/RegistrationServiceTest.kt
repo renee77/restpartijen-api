@@ -1,21 +1,21 @@
 package com.restpartijen.api.security
 
+import com.restpartijen.api.persistence.UsersTable
+import com.restpartijen.api.security.model.User
+import com.restpartijen.api.security.repository.ExposedUserRepository
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.security.service.RegistrationService
 import com.restpartijen.api.security.service.RegistrationValidator
 import com.restpartijen.api.shared.ConflictException
-import com.restpartijen.api.shared.Role
-import com.restpartijen.api.security.model.User
 import com.restpartijen.api.shared.DomainRuleException
-import com.restpartijen.api.testsupport.FakeUserRepository
-import com.restpartijen.api.testsupport.createEmptyTestDatabase
-import com.restpartijen.api.testsupport.FixedClock
-import com.restpartijen.api.persistence.UsersTable
-import com.restpartijen.api.security.repository.ExposedUserRepository
-import com.restpartijen.api.testsupport.RaceUserRepository
-import kotlinx.coroutines.test.runTest
 import com.restpartijen.api.shared.IllegalStateTransitionException
+import com.restpartijen.api.shared.Role
 import com.restpartijen.api.shared.ValidationException
+import com.restpartijen.api.testsupport.FakeUserRepository
+import com.restpartijen.api.testsupport.FixedClock
+import com.restpartijen.api.testsupport.RaceUserRepository
+import com.restpartijen.api.testsupport.createEmptyTestDatabase
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -51,7 +51,7 @@ class RegistrationServiceTest {
     }
 
     @Test
-    fun `stored password is a hash, not the plain password` () = runTest {
+    fun `stored password is a hash, not the plain password`() = runTest {
         // Arrange: Arranging valid input
         val email = "test@mail.com"
         val display_name = "TestName"
@@ -61,7 +61,7 @@ class RegistrationServiceTest {
         service.register(
             email = email,
             password = password,
-            display_name = display_name
+            display_name = display_name,
         )
 
         // Assert
@@ -141,7 +141,6 @@ class RegistrationServiceTest {
         assertEquals(fixedNow, repository.users.single().createdAt)
     }
 
-
     @Test
     fun `concurrent registration with the same email is rejected as a conflict`() = runTest {
         // Arrange: a real empty database where the email is already taken
@@ -155,7 +154,7 @@ class RegistrationServiceTest {
                 display_name = "Existing",
                 role = Role.COLLECTOR,
                 createdAt = fixedNow,
-            )
+            ),
         )
         val raceService = RegistrationService(
             userRepository = RaceUserRepository(real),

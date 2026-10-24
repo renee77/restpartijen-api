@@ -25,8 +25,7 @@ class ReservationMaintenanceService(
 
     private val log = LoggerFactory.getLogger(ReservationMaintenanceService::class.java)
 
-    override suspend fun lapseOverdue(now: Instant): Int =
-        reservations.findOverdue(now).count { lapse(it) }
+    override suspend fun lapseOverdue(now: Instant): Int = reservations.findOverdue(now).count { lapse(it) }
 
     override suspend fun lapseActiveFor(productId: Long): Boolean {
         val reservation = reservations.findActiveByProductId(productId) ?: return false

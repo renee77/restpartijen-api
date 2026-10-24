@@ -9,11 +9,7 @@ import kotlinx.datetime.LocalTime
  *
  * A closed day has no OpeningHours at all, so every instance describes an open day.
  */
-data class OpeningHours(
-    val day: DayOfWeek,
-    val opensAt: LocalTime,
-    val closesAt: LocalTime,
-) {
+data class OpeningHours(val day: DayOfWeek, val opensAt: LocalTime, val closesAt: LocalTime) {
     init {
         // A domain rule, so DomainRuleException (422) instead of require (IllegalArgumentException).
         // The message names the day, because a week has up to seven of these.

@@ -224,8 +224,10 @@ class SurplusProductTest {
     ): SurplusProduct = when (category) {
         ProductCategory.FRESH ->
             FreshProduct(id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens)
+
         ProductCategory.FROZEN ->
             FrozenProduct(id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens)
+
         ProductCategory.AMBIENT ->
             AmbientProduct(id, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens)
     }

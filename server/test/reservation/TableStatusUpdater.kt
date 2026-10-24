@@ -16,11 +16,14 @@ internal class TableStatusUpdater : ProductStatusUpdater {
     val reserved = mutableListOf<Long>()
 
     override suspend fun markReserved(productId: Long): Boolean = dbQuery {
-        val changed = ProductsTable.update({ (ProductsTable.id eq productId) and (ProductsTable.status eq ProductStatus.LISTED) }) {
-            it[ProductsTable.status] = ProductStatus.RESERVED
-        } > 0
+        val changed =
+            ProductsTable.update({
+                (ProductsTable.id eq productId) and (ProductsTable.status eq ProductStatus.LISTED)
+            }) {
+                it[ProductsTable.status] = ProductStatus.RESERVED
+            } > 0
         if (changed) reserved.add(productId)
-       changed
+        changed
     }
 
     override suspend fun markListed(productId: Long): Boolean = dbQuery {
@@ -28,7 +31,6 @@ internal class TableStatusUpdater : ProductStatusUpdater {
             it[ProductsTable.status] = ProductStatus.LISTED
         } > 0
     }
-
 
     override suspend fun markCollected(productId: Long): Boolean = TODO("not needed here")
     override suspend fun markExpired(productIds: List<Long>): Int = TODO("not needed here")

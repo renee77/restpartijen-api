@@ -13,8 +13,8 @@ import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationsTable
 import com.restpartijen.api.reservation.service.ReservationMaintenanceService
-import com.restpartijen.api.seed.SeedData
 import com.restpartijen.api.security.service.PasswordHasher
+import com.restpartijen.api.seed.SeedData
 import com.restpartijen.api.shared.IllegalStateTransitionException
 import com.restpartijen.api.shared.NotFoundException
 import com.restpartijen.api.shared.ProductStatus
@@ -53,7 +53,11 @@ class ExposedAdminProductIntegrationTest {
     fun setUp() {
         // SupplierOpeningHoursTable too: the seed writes the opening hours of every supplier (US-10).
         createEmptyTestDatabase(
-            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, ReservationsTable,
+            UsersTable,
+            SuppliersTable,
+            ProductsTable,
+            ProductAllergensTable,
+            ReservationsTable,
             SupplierOpeningHoursTable,
         )
         SeedData.seedIfEmpty(clock, PasswordHasher())
@@ -61,7 +65,9 @@ class ExposedAdminProductIntegrationTest {
         productReader = ExposedProductReader(ExposedProductRepository(clock))
         statusUpdater = ExposedProductStatusUpdater()
         reservationMaintenance = ReservationMaintenanceService(
-            productReader, statusUpdater, ExposedReservationRepository()
+            productReader,
+            statusUpdater,
+            ExposedReservationRepository(),
         )
         service = AdminProductService(productReader, statusUpdater, reservationMaintenance)
     }
@@ -105,7 +111,9 @@ class ExposedAdminProductIntegrationTest {
     fun `a failing removal rolls the lapse back`() = runTest {
         // Arrange: the lapse works, but the removal after it fails
         val failingService = AdminProductService(
-            productReader, FailingRemoveUpdater(statusUpdater), reservationMaintenance
+            productReader,
+            FailingRemoveUpdater(statusUpdater),
+            reservationMaintenance,
         )
         val id = idOf("Roomboter croissants")
 

@@ -14,11 +14,7 @@ import kotlinx.serialization.Serializable
  * or a time that is not ISO 8601 cannot be read, so the JSON reader already gives a 400.
  */
 @Serializable
-data class OpeningHoursRequest(
-    val day: DayOfWeek,
-    val opensAt: LocalTime,
-    val closesAt: LocalTime,
-)
+data class OpeningHoursRequest(val day: DayOfWeek, val opensAt: LocalTime, val closesAt: LocalTime)
 
 /**
  * Turns the request into a command; it only translates. The service builds OpeningHours from it after the

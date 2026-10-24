@@ -89,8 +89,12 @@ class ReservationLapseRollbackTest {
     private fun serviceWith(productIds: List<Long>, failingReservationIds: Set<Long>): ReservationMaintenanceService {
         val stored = productIds.mapIndexed { index, productId ->
             Reservation(
-                index + 1L, productId, collectorId = 7, reservedPrice = Money.fromCents(199),
-                reservedAt = now - 25.hours, expiresAt = now - 1.hours,
+                index + 1L,
+                productId,
+                collectorId = 7,
+                reservedPrice = Money.fromCents(199),
+                reservedAt = now - 25.hours,
+                expiresAt = now - 1.hours,
             )
         }
         val fake = FakeReservationRepository(stored)
@@ -98,9 +102,15 @@ class ReservationLapseRollbackTest {
             override suspend fun update(item: Reservation): Boolean =
                 if (item.id in failingReservationIds) false else fake.update(item)
         }
-        val reader = FakeProductReader(productIds.map {
-            FakeProduct(id = it, status = ProductStatus.RESERVED, pickupWindow = PickupWindow(now - 2.days, now + 2.days))
-        })
+        val reader = FakeProductReader(
+            productIds.map {
+                FakeProduct(
+                    id = it,
+                    status = ProductStatus.RESERVED,
+                    pickupWindow = PickupWindow(now - 2.days, now + 2.days),
+                )
+            },
+        )
         return ReservationMaintenanceService(reader, TableStatusUpdater(), reservations)
     }
 

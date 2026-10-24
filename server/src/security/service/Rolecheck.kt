@@ -31,12 +31,13 @@ private val RoleCheck = createRouteScopedPlugin("RoleCheck", ::RoleCheckConfig) 
         }
     }
 }
+
 // A function to require a role on a route.
 // It wraps the route in an authenticate block and installs the RoleCheck plugin.
 // A vararg is used because a route can require multiple roles. The build block is the route's content.
 fun Route.requireRole(vararg roles: Role, build: Route.() -> Unit) {
     // Wrap the route in an authenticate block and install the RoleCheck plugin with the required roles.
-    authenticate (PROVIDER_NAME) {
+    authenticate(PROVIDER_NAME) {
         install(RoleCheck) {
             this.roles = roles.toSet()
         }

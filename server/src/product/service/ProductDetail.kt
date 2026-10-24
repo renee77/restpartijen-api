@@ -14,8 +14,4 @@ import com.restpartijen.api.shared.ProductStatus
  * @property status the status to show; an expired product that is still LISTED shows as EXPIRED (SD-3),
  *   because the status updater (US-08) may not have run yet
  */
-data class ProductDetail(
-    val product: SurplusProduct,
-    val price: PriceBreakdown?,
-    val status: ProductStatus,
-)
+data class ProductDetail(val product: SurplusProduct, val price: PriceBreakdown?, val status: ProductStatus)

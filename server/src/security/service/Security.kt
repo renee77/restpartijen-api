@@ -3,8 +3,8 @@ package com.restpartijen.api.security.service
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.shared.UnauthorizedException
 import io.ktor.server.application.Application
-import io.ktor.server.auth.Authentication
 import io.ktor.server.application.install
+import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 
@@ -33,7 +33,6 @@ fun Application.configureSecurity(jwtConfig: JwtConfig) {
             // If the token is invalid or expired, respond with a 401 Unauthorized status and a message indicating the issue.
             challenge { _, _ ->
                 throw UnauthorizedException("Authentication required")
-
             }
         }
     }

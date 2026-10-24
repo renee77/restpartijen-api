@@ -68,30 +68,28 @@ class OpenFoodFactsClient(engine: HttpClientEngine, settings: OpenFoodFactsSetti
      *
      * @return Found with the name and the tags as sent, NotFound for a 404, or Unavailable
      */
-    suspend fun fetchProduct(barcode: String): LookupResult {
-        return try {
-            // prepareGet + execute streams the body: get() would first load all of it into memory,
-            // so the 64 KiB limit below would come too late (code and security review, round 2).
-            httpClient.prepareGet("https://world.openfoodfacts.org/api/v3/product") {
-                // Encodes the barcode as one path segment, so it can never change the path or the query;
-                // encodeSlash, because by default a "/" would split it into more segments.
-                url { appendPathSegments(barcode, encodeSlash = true) }
-                // Only the fields we use, so the answer stays small (§10.3).
-                parameter("fields", "product_name,allergens_tags")
-            }.execute { response -> response.toLookupResult() }
-        } catch (e: IOException) {
-            // No connection or no answer within the time-out; HttpRequestTimeoutException is an IOException.
-            log.warn("Open Food Facts could not be reached: {}", e.javaClass.simpleName)
-            LookupResult.Unavailable
-        } catch (e: UnresolvedAddressException) {
-            // No DNS, for example offline; CIO throws this IllegalArgumentException instead of an IOException.
-            log.warn("The host of Open Food Facts could not be resolved")
-            LookupResult.Unavailable
-        } catch (e: SerializationException) {
-            // A 200 with a body that is not valid JSON or has no product.
-            log.warn("Open Food Facts sent a body that could not be read")
-            LookupResult.Unavailable
-        }
+    suspend fun fetchProduct(barcode: String): LookupResult = try {
+        // prepareGet + execute streams the body: get() would first load all of it into memory,
+        // so the 64 KiB limit below would come too late (code and security review, round 2).
+        httpClient.prepareGet("https://world.openfoodfacts.org/api/v3/product") {
+            // Encodes the barcode as one path segment, so it can never change the path or the query;
+            // encodeSlash, because by default a "/" would split it into more segments.
+            url { appendPathSegments(barcode, encodeSlash = true) }
+            // Only the fields we use, so the answer stays small (§10.3).
+            parameter("fields", "product_name,allergens_tags")
+        }.execute { response -> response.toLookupResult() }
+    } catch (e: IOException) {
+        // No connection or no answer within the time-out; HttpRequestTimeoutException is an IOException.
+        log.warn("Open Food Facts could not be reached: {}", e.javaClass.simpleName)
+        LookupResult.Unavailable
+    } catch (e: UnresolvedAddressException) {
+        // No DNS, for example offline; CIO throws this IllegalArgumentException instead of an IOException.
+        log.warn("The host of Open Food Facts could not be resolved")
+        LookupResult.Unavailable
+    } catch (e: SerializationException) {
+        // A 200 with a body that is not valid JSON or has no product.
+        log.warn("Open Food Facts sent a body that could not be read")
+        LookupResult.Unavailable
     }
 
     // Picks the LookupResult from the status; only a 200 is read, and never more than MAX_BODY_BYTES of it.
@@ -106,7 +104,9 @@ class OpenFoodFactsClient(engine: HttpClientEngine, settings: OpenFoodFactsSetti
                 LookupResult.Found(body.product.productName, body.product.allergensTags)
             }
         }
+
         HttpStatusCode.NotFound -> LookupResult.NotFound
+
         // Rate limit (429), server errors (5xx), redirects and every other status: no usable answer.
         else -> {
             log.warn("Open Food Facts answered {}", status.value)

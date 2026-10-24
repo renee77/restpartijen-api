@@ -12,11 +12,11 @@ class DiscountTierTest {
     val tiers = listOf(
         DiscountTier(48.hours, 10),
         DiscountTier(24.hours, 40),
-        DiscountTier(12.hours, 60)
+        DiscountTier(12.hours, 60),
     )
 
     @Test
-    fun `tierfor returns null at 60 hours` () {
+    fun `tierfor returns null at 60 hours`() {
         // Act
         val result = tiers.tierFor(60.hours)
 
@@ -25,7 +25,7 @@ class DiscountTierTest {
     }
 
     @Test
-    fun `tierFor returns null at 48 hours and 1 second` () {
+    fun `tierFor returns null at 48 hours and 1 second`() {
         // Act
         val result = tiers.tierFor(48.hours + 1.seconds)
 

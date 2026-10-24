@@ -106,11 +106,13 @@ sealed class SurplusProduct(
                 bestBeforeAt = bestBeforeAt, quantity = quantity, status = status,
                 pickupWindow = pickupWindow, allergens = allergens,
             )
+
             ProductCategory.FROZEN -> FrozenProduct(
                 id = id, supplier = supplier, name = name, barcode = barcode, originalPrice = originalPrice,
                 bestBeforeAt = bestBeforeAt, quantity = quantity, status = status,
                 pickupWindow = pickupWindow, allergens = allergens,
             )
+
             ProductCategory.AMBIENT -> AmbientProduct(
                 id = id, supplier = supplier, name = name, barcode = barcode, originalPrice = originalPrice,
                 bestBeforeAt = bestBeforeAt, quantity = quantity, status = status,

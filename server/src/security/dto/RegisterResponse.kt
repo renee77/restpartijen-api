@@ -11,17 +11,11 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-data class UserResponse (
-    val id: Long,
-    val email: String,
-    val displayName: String,
-    val role: Role
-
-    )
+data class UserResponse(val id: Long, val email: String, val displayName: String, val role: Role)
 
 fun User.toResponse(): UserResponse = UserResponse(
     id = id,
     email = email,
     displayName = display_name,
-    role = role
+    role = role,
 )

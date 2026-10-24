@@ -59,8 +59,7 @@ class ProductPriceRealAppTest {
         }
     }
 
-    private suspend fun ApplicationTestBuilder.detail(name: String) =
-        client.get("/api/v1/products/${idOf(name)}")
+    private suspend fun ApplicationTestBuilder.detail(name: String) = client.get("/api/v1/products/${idOf(name)}")
 
     // Euros in the answer, whole cents inside (B-25)
     private fun Double.toCents(): Long = (this * 100).roundToLong()

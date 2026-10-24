@@ -11,11 +11,7 @@ import kotlinx.serialization.Serializable
  * manualEntryRequired is true only when Open Food Facts gave no answer; the app then asks for everything.
  */
 @Serializable
-data class ProductLookupResponse(
-    val name: String?,
-    val allergens: Set<Allergen>,
-    val manualEntryRequired: Boolean,
-)
+data class ProductLookupResponse(val name: String?, val allergens: Set<Allergen>, val manualEntryRequired: Boolean)
 
 /** Maps the suggestion of the service to the API response; it only translates. */
 fun ProductLookup.toResponse() = ProductLookupResponse(name, allergens, manualEntryRequired)

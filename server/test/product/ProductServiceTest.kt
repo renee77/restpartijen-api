@@ -46,7 +46,10 @@ class ProductServiceTest {
     fun `getProduct throws NotFoundException when the id does not exist`() = runTest {
         // Arrange
         val service = productService(
-            fakeProductRepository(), fakeSupplierRepository(), FixedPriceProvider(), FixedClock(testNow),
+            fakeProductRepository(),
+            fakeSupplierRepository(),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act + Assert
@@ -60,7 +63,10 @@ class ProductServiceTest {
         // Arrange: SD-3, F1 asks F3 for the price instead of knowing the discount rules
         val repository = fakeProductRepository(aProduct(id = 1))
         val service = productService(
-            repository, fakeSupplierRepository(), FixedPriceProvider(aBreakdown), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(),
+            FixedPriceProvider(aBreakdown),
+            FixedClock(testNow),
         )
 
         // Act
@@ -76,7 +82,10 @@ class ProductServiceTest {
         // Arrange: no price means expired (B-18); the status updater may not have run yet (SD-3)
         val repository = fakeProductRepository(aProduct(id = 1, status = ProductStatus.LISTED))
         val service = productService(
-            repository, fakeSupplierRepository(), FixedPriceProvider(breakdown = null), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(),
+            FixedPriceProvider(breakdown = null),
+            FixedClock(testNow),
         )
 
         // Act
@@ -92,7 +101,10 @@ class ProductServiceTest {
         // Arrange: only a LISTED product turns EXPIRED (§9.5); a reservation is handled by F2
         val repository = fakeProductRepository(aProduct(id = 1, status = ProductStatus.RESERVED))
         val service = productService(
-            repository, fakeSupplierRepository(), FixedPriceProvider(breakdown = null), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(),
+            FixedPriceProvider(breakdown = null),
+            FixedClock(testNow),
         )
 
         // Act
@@ -108,7 +120,10 @@ class ProductServiceTest {
         // Arrange
         val repository = fakeProductRepository()
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act
@@ -124,7 +139,10 @@ class ProductServiceTest {
     fun `createProduct includes the price breakdown, like every product answer`() = runTest {
         // Arrange: §10.1, the price belongs to the product and is in every answer with a product
         val service = productService(
-            fakeProductRepository(), fakeSupplierRepository(), FixedPriceProvider(aBreakdown), FixedClock(testNow),
+            fakeProductRepository(),
+            fakeSupplierRepository(),
+            FixedPriceProvider(aBreakdown),
+            FixedClock(testNow),
         )
 
         // Act
@@ -139,7 +157,10 @@ class ProductServiceTest {
         // Arrange: user 8 has a SUPPLIER token but no supplier row
         val repository = fakeProductRepository()
         val service = productService(
-            repository, fakeSupplierRepository(ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(ownerUserId = 7),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act + Assert
@@ -151,7 +172,9 @@ class ProductServiceTest {
     fun `createProduct derives the pickup window from the opening hours of the supplier`() = runTest {
         // Arrange: open every day 08:00-21:00; testNow is Thu 1 Oct 02:00 in Amsterdam, best-before Sun 4 Oct 02:00
         val service = productService(
-            fakeProductRepository(), fakeSupplierRepository(openingHours = anOpenWeek), FixedPriceProvider(),
+            fakeProductRepository(),
+            fakeSupplierRepository(openingHours = anOpenWeek),
+            FixedPriceProvider(),
             FixedClock(testNow),
         )
 
@@ -171,7 +194,9 @@ class ProductServiceTest {
         val repository = fakeProductRepository()
         val saturday = OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0))
         val service = productService(
-            repository, fakeSupplierRepository(openingHours = listOf(saturday)), FixedPriceProvider(),
+            repository,
+            fakeSupplierRepository(openingHours = listOf(saturday)),
+            FixedPriceProvider(),
             FixedClock(testNow),
         )
 
@@ -189,7 +214,9 @@ class ProductServiceTest {
     fun `createProduct says the supplier has no opening hours instead of blaming the date`() = runTest {
         // Arrange: a supplier from before US-10 has no week; NeverOpen, but the date is not the problem
         val service = productService(
-            fakeProductRepository(), fakeSupplierRepository(openingHours = emptyList()), FixedPriceProvider(),
+            fakeProductRepository(),
+            fakeSupplierRepository(openingHours = emptyList()),
+            FixedPriceProvider(),
             FixedClock(testNow),
         )
 
@@ -244,7 +271,10 @@ class ProductServiceTest {
             aProduct(id = 3, supplier = otherSupplier),
         )
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier), FixedPriceProvider(aBreakdown), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier),
+            FixedPriceProvider(aBreakdown),
+            FixedClock(testNow),
         )
 
         // Act
@@ -260,7 +290,10 @@ class ProductServiceTest {
     fun `getSupplierProducts throws NotFoundException for an unknown supplier`() = runTest {
         // Arrange
         val service = productService(
-            fakeProductRepository(), fakeSupplierRepository(aSupplier), FixedPriceProvider(), FixedClock(testNow),
+            fakeProductRepository(),
+            fakeSupplierRepository(aSupplier),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act + Assert
@@ -292,7 +325,10 @@ class ProductServiceTest {
     fun `getSupplierProducts returns an empty list for a supplier without products`() = runTest {
         // Arrange
         val service = productService(
-            fakeProductRepository(), fakeSupplierRepository(aSupplier), FixedPriceProvider(), FixedClock(testNow),
+            fakeProductRepository(),
+            fakeSupplierRepository(aSupplier),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act
@@ -308,7 +344,10 @@ class ProductServiceTest {
         // Arrange
         val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier))
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act
@@ -322,7 +361,9 @@ class ProductServiceTest {
     fun `deleteProduct throws NotFoundException for an unknown product, before the ownership check`() = runTest {
         // Arrange: user 8 has no supplier, so a 403 here would mean the order of the checks is wrong
         val service = productService(
-            fakeProductRepository(), fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(),
+            fakeProductRepository(),
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(),
             FixedClock(testNow),
         )
 
@@ -337,7 +378,10 @@ class ProductServiceTest {
         // Arrange
         val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier.copy(id = 2)))
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act + Assert
@@ -353,7 +397,10 @@ class ProductServiceTest {
         // Arrange
         val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier, status = ProductStatus.RESERVED))
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act + Assert
@@ -379,7 +426,9 @@ class ProductServiceTest {
             aProduct(id = 1, category = ProductCategory.FROZEN, supplier = aSupplier, name = "Diepvries spinazie"),
         )
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(aBreakdown),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(aBreakdown),
             FixedClock(testNow),
         )
         val command = anUpdateCommand(name = "Diepvries erwten", originalPrice = Money.fromCents(199), quantity = 5)
@@ -405,7 +454,9 @@ class ProductServiceTest {
     fun `updateProduct throws NotFoundException for an unknown product, before the ownership check`() = runTest {
         // Arrange: user 8 has no supplier, so a 403 here would mean the order of the checks is wrong
         val service = productService(
-            fakeProductRepository(), fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(),
+            fakeProductRepository(),
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(),
             FixedClock(testNow),
         )
 
@@ -420,7 +471,10 @@ class ProductServiceTest {
         // Arrange
         val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier.copy(id = 2), name = "Croissant"))
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act + Assert
@@ -438,7 +492,10 @@ class ProductServiceTest {
             aProduct(id = 1, supplier = aSupplier, status = ProductStatus.RESERVED, name = "Croissant"),
         )
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
         val command = anUpdateCommand(name = "Wit brood", bestBeforeAt = testNow - 1.days)
 
@@ -455,8 +512,10 @@ class ProductServiceTest {
         val stored = PickupWindow(from = testNow, until = testNow + 2.days)
         val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier, pickupWindow = stored))
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7, openingHours = anOpenWeek),
-            FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7, openingHours = anOpenWeek),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act
@@ -478,8 +537,10 @@ class ProductServiceTest {
         val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier, name = "Croissant"))
         val saturday = OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0))
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7, openingHours = listOf(saturday)),
-            FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7, openingHours = listOf(saturday)),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act
@@ -498,7 +559,10 @@ class ProductServiceTest {
         // Arrange: the calculator reports Expired before it looks at the opening hours
         val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier, name = "Croissant"))
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act
@@ -518,7 +582,10 @@ class ProductServiceTest {
         // Arrange: a quantity of 0 breaks validateForListing (422); the window itself is fine
         val repository = fakeProductRepository(aProduct(id = 1, supplier = aSupplier, name = "Croissant"))
         val service = productService(
-            repository, fakeSupplierRepository(aSupplier, ownerUserId = 7), FixedPriceProvider(), FixedClock(testNow),
+            repository,
+            fakeSupplierRepository(aSupplier, ownerUserId = 7),
+            FixedPriceProvider(),
+            FixedClock(testNow),
         )
 
         // Act
@@ -544,10 +611,7 @@ class ProductServiceTest {
         quantity = quantity,
     )
 
-    private fun aCommand(
-        bestBeforeAt: kotlin.time.Instant = testNow + 3.days,
-        quantity: Int = 2,
-    ) = PlaceProductCommand(
+    private fun aCommand(bestBeforeAt: kotlin.time.Instant = testNow + 3.days, quantity: Int = 2) = PlaceProductCommand(
         category = ProductCategory.FRESH,
         name = "Volkoren brood",
         originalPrice = Money.fromCents(349),

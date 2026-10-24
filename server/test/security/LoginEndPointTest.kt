@@ -1,10 +1,11 @@
 package com.restpartijen.api.security
 
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.plugins.ErrorCode
 import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.security.dto.LoginResponse
-import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.security.service.JwtConfig
+import com.restpartijen.api.security.service.PROVIDER_NAME
 import com.restpartijen.api.security.service.configureSecurity
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
@@ -30,13 +31,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import com.restpartijen.api.security.service.PROVIDER_NAME
 
 class LoginEndpointTest {
     // Arrange: use a fixed clock for predictable token timestamps
     val testClock = TestClock.fixedNow()
-    private suspend fun HttpResponse.errorBody(): ErrorResponse =
-        Json.decodeFromString<ErrorResponse>(bodyAsText())
+    private suspend fun HttpResponse.errorBody(): ErrorResponse = Json.decodeFromString<ErrorResponse>(bodyAsText())
 
     // Testbasics
     private val email = "login@mail.com"
@@ -57,17 +56,15 @@ class LoginEndpointTest {
         }
     }
 
-    private suspend fun HttpClient.registerDefaultUser() =
-        post("/api/v1/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"email":"$email","password":"$password","displayName":"TestName"}""")
-        }
+    private suspend fun HttpClient.registerDefaultUser() = post("/api/v1/auth/register") {
+        contentType(ContentType.Application.Json)
+        setBody("""{"email":"$email","password":"$password","displayName":"TestName"}""")
+    }
 
-    private suspend fun HttpClient.login(json: String): HttpResponse =
-        post("/api/v1/auth/login") {
-            contentType(ContentType.Application.Json)
-            setBody(json)
-        }
+    private suspend fun HttpClient.login(json: String): HttpResponse = post("/api/v1/auth/login") {
+        contentType(ContentType.Application.Json)
+        setBody(json)
+    }
 
     private fun loginBody(email: String = this.email, password: String = this.password) =
         """{"email":"$email","password":"$password"}"""

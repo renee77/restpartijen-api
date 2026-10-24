@@ -1,10 +1,11 @@
 package com.restpartijen.api.pricing
 
 import com.restpartijen.api.plugins.configureSerialization
+import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.pricing.routes.configurePricingRouting
+import com.restpartijen.api.pricing.service.AdminProductService
 import com.restpartijen.api.pricing.service.ExpiryScheduler
 import com.restpartijen.api.security.TestClock
-import com.restpartijen.api.plugins.configureStatusPages
 import com.restpartijen.api.security.jwtConfig
 import com.restpartijen.api.security.service.configureSecurity
 import com.restpartijen.api.shared.ProductReader
@@ -12,7 +13,6 @@ import com.restpartijen.api.shared.ProductStatusUpdater
 import com.restpartijen.api.shared.ReservationMaintenance
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
-import com.restpartijen.api.pricing.service.AdminProductService
 
 /**
  * Test app for the pricing endpoints: real route, fakes behind the service.
@@ -24,7 +24,6 @@ fun Application.setUpPricingTestApp(
     productReader: ProductReader = FakeProductReader(),
     productStatusUpdater: ProductStatusUpdater = FakeProductStatusUpdater(),
 ) {
-
     configureStatusPages()
     // turns the MaintenanceReport into JSON
     configureSerialization()

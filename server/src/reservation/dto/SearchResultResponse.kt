@@ -26,12 +26,7 @@ data class PickupWindowResponse(val from: String, val until: String)
 
 /** Name and location of the supplier, without personal data (§15). */
 @Serializable
-data class SupplierResponse(
-    val id: Long,
-    val name: String,
-    val latitude: Double,
-    val longitude: Double,
-)
+data class SupplierResponse(val id: Long, val name: String, val latitude: Double, val longitude: Double)
 
 fun SearchResult.toResponse() = SearchResultResponse(
     id = product.id,

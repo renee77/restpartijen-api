@@ -293,10 +293,12 @@ class ProductLookupServiceTest {
         var count = 0
             private set
 
-        val client = openFoodFactsClient(MockEngine {
-            count++
-            respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
-        })
+        val client = openFoodFactsClient(
+            MockEngine {
+                count++
+                respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
+            },
+        )
     }
 
     private companion object {

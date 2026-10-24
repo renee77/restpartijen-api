@@ -30,7 +30,6 @@ class ExpiryEndpointTest {
         assertEquals(HttpStatusCode.Unauthorized, response.status)
     }
 
-
     // A Wrong role returns a 403
     @Test
     fun `unauthorized role returns a 403`() = testApplication {
@@ -86,5 +85,4 @@ class ExpiryEndpointTest {
         // Assert: StatusPages throws an OK
         assertEquals(HttpStatusCode.OK, response.status)
     }
-
 }

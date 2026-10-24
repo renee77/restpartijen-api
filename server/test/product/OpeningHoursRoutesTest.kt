@@ -106,12 +106,11 @@ class OpeningHoursRoutesTest {
         id: String = aSupplier.id.toString(),
         body: String = validBody,
         token: String? = tokenFor(Role.SUPPLIER),
-    ): HttpResponse =
-        client.put("/api/v1/suppliers/$id/opening-hours") {
-            token?.let { bearerAuth(it) }
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
+    ): HttpResponse = client.put("/api/v1/suppliers/$id/opening-hours") {
+        token?.let { bearerAuth(it) }
+        contentType(ContentType.Application.Json)
+        setBody(body)
+    }
 
     // A fake that already holds a week, so a refused request can be checked to leave it alone.
     private suspend fun suppliersWithSaturday(): SupplierRepository =

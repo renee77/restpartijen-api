@@ -8,8 +8,8 @@ import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import java.util.Date
 import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 /**
  * Default JWT settings for tests, so tokens can be created without providing settings every time.
@@ -19,7 +19,7 @@ object TestJwtSettings {
         secret = "test-secret-that-is-long-enough-to-work-in-production",
         issuer = "test-issuer",
         audience = "test-audience",
-        validity = 24.hours
+        validity = 24.hours,
     )
 }
 
@@ -47,7 +47,7 @@ class TestTokens {
         userId: Long,
         role: Role,
         settings: JwtSettings = TestJwtSettings.default,
-        clock: Clock = TestClock.fixedNow()
+        clock: Clock = TestClock.fixedNow(),
     ): String = createTestTokenWithRoleName(userId, role.name, settings, clock)
 
     /**
@@ -58,7 +58,7 @@ class TestTokens {
         userId: Long,
         roleName: String,
         settings: JwtSettings = TestJwtSettings.default,
-        clock: Clock = TestClock.fixedNow()
+        clock: Clock = TestClock.fixedNow(),
     ): String {
         val now = clock.now()
 

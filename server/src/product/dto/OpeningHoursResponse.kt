@@ -11,11 +11,7 @@ import kotlinx.serialization.Serializable
  * kotlinx.datetime serializes its types. LocalTime.toString gives ISO 8601, "08:00" without seconds.
  */
 @Serializable
-data class OpeningHoursResponse(
-    val day: String,
-    val opensAt: String,
-    val closesAt: String,
-)
+data class OpeningHoursResponse(val day: String, val opensAt: String, val closesAt: String)
 
 /** Maps one open day to the API response; it only translates. */
 fun OpeningHours.toResponse() = OpeningHoursResponse(day.name, opensAt.toString(), closesAt.toString())

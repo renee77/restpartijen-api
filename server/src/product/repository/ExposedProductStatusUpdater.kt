@@ -27,7 +27,9 @@ class ExposedProductStatusUpdater : ProductStatusUpdater {
 
     // Returns how many rows really changed: a product reserved in the meantime is no longer LISTED and is skipped.
     override suspend fun markExpired(productIds: List<Long>): Int = dbQuery {
-        ProductsTable.update({ (ProductsTable.id inList productIds) and (ProductsTable.status eq ProductStatus.LISTED) }) {
+        ProductsTable.update({
+            (ProductsTable.id inList productIds) and (ProductsTable.status eq ProductStatus.LISTED)
+        }) {
             it[ProductsTable.status] = ProductStatus.EXPIRED
         }
     }

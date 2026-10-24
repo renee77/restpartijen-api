@@ -12,7 +12,7 @@ import com.restpartijen.api.shared.ReservationMaintenance
 class AdminProductService(
     private val productReader: ProductReader,
     private val productStatusUpdater: ProductStatusUpdater,
-    private val reservationMaintenance: ReservationMaintenance
+    private val reservationMaintenance: ReservationMaintenance,
 ) {
     suspend fun delete(productId: Long) {
         dbQuery {
@@ -22,12 +22,14 @@ class AdminProductService(
 
             when (product.status) {
                 ProductStatus.LISTED -> Unit
+
                 // A reserved product first releases its reservation
                 ProductStatus.RESERVED -> reservationMaintenance.lapseActiveFor(productId)
+
                 // 409: end states cannot be removed
                 ProductStatus.COLLECTED, ProductStatus.EXPIRED, ProductStatus.REMOVED ->
                     throw IllegalStateTransitionException(
-                        "Product $productId cannot be removed in status ${product.status}"
+                        "Product $productId cannot be removed in status ${product.status}",
                     )
             }
 

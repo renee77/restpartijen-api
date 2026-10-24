@@ -13,7 +13,7 @@ class JwtConfigTest {
     fun `token only contains userId and role`() {
         // Arrange: use a fixed clock for predictable token timestamps
         val testClock = FixedClock(
-            Instant.parse("2026-10-20T12:00:00Z")
+            Instant.parse("2026-10-20T12:00:00Z"),
         )
         // Arrange the configuration with default test settings and a test clock
         val jwtConfig = JwtConfig(TestJwtSettings.default, testClock)

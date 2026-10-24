@@ -1,9 +1,9 @@
 package com.restpartijen.api.testsupport
 
-import kotlin.test.Test
-import kotlin.test.assertFailsWith
-import kotlin.test.assertEquals
 import com.restpartijen.api.shared.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class PriceBreakdownTest {
     val testPrice = Money.fromCents(349)
@@ -26,23 +26,23 @@ class PriceBreakdownTest {
     }
 
     @Test
-    fun `discount percentage below 0 is rejected` () {
+    fun `discount percentage below 0 is rejected`() {
         assertFailsWith<IllegalArgumentException> {
             PriceBreakdown(
                 originalPrice = testPrice,
                 discountPercentage = -20,
-                currentPrice = testCurrentPrice
+                currentPrice = testCurrentPrice,
             )
         }
     }
 
     @Test
-    fun `discount percentage above 100 is rejected` () {
+    fun `discount percentage above 100 is rejected`() {
         assertFailsWith<IllegalArgumentException> {
             PriceBreakdown(
                 originalPrice = testPrice,
                 discountPercentage = 120,
-                currentPrice = testCurrentPrice
+                currentPrice = testCurrentPrice,
             )
         }
     }
@@ -56,7 +56,7 @@ class PriceBreakdownTest {
         val breakdown = PriceBreakdown(
             originalPrice = price,
             discountPercentage = 0,
-            currentPrice = price
+            currentPrice = price,
         )
 
         // Assert: the values are kept as given
@@ -66,12 +66,12 @@ class PriceBreakdownTest {
     }
 
     @Test
-    fun `discount percentage of 0 is accepted` () {
+    fun `discount percentage of 0 is accepted`() {
         // Arrange and Act
         val breakdown = PriceBreakdown(
             originalPrice = testPrice,
             discountPercentage = 0,
-            currentPrice = testCurrentPrice
+            currentPrice = testCurrentPrice,
         )
 
         // Assert: The values remain the same

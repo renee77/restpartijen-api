@@ -5,12 +5,12 @@ import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import io.ktor.client.statement.bodyAsText
 import kotlin.time.Duration.Companion.hours
 
 class ValidationTests {
@@ -40,7 +40,6 @@ class ValidationTests {
         assertEquals("Authentication required", error.message)
     }
 
-
     // Sad path: signed with another secret
     @Test
     fun `token with wrong secret gets 401`() = testApplication {
@@ -57,6 +56,7 @@ class ValidationTests {
 
     // Sad path: expired token
     private val testClock = TestClock.fixedNow()
+
     @Test
     fun `expired token gets 401`() = testApplication {
         // Arrange: a token that was issued 48 hours ago, so it expired 24 hours ago

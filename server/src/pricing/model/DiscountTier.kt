@@ -3,10 +3,7 @@ package com.restpartijen.api.pricing.model
 import com.restpartijen.api.shared.ProductCategory
 import kotlin.time.Duration
 
-data class DiscountTier(
-    val appliesFrom: Duration,
-    val percentage: Int
-)
+data class DiscountTier(val appliesFrom: Duration, val percentage: Int)
 
 /**
  * Finds the staffel that applies for the given remaining shelf life.
@@ -14,6 +11,5 @@ data class DiscountTier(
  * so on a boundary the higher discount applies.
  * Returns null when no staffel applies yet. The order of the list does not matter.
  */
-fun List<DiscountTier>.tierFor(remaining: Duration): DiscountTier? =
-    this.filter { remaining <= it.appliesFrom }
-        .minByOrNull { it.appliesFrom }
+fun List<DiscountTier>.tierFor(remaining: Duration): DiscountTier? = this.filter { remaining <= it.appliesFrom }
+    .minByOrNull { it.appliesFrom }

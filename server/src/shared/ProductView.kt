@@ -10,6 +10,7 @@ package com.restpartijen.api.shared
  */
 interface ProductView : PricedProduct {
     val id: Long
+
     /** Name and coordinates of the supplier, so a search result can show them (§5.4, B-20). */
     val supplier: SupplierSummary
     val name: String

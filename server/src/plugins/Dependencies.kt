@@ -12,8 +12,8 @@ import com.restpartijen.api.product.repository.ExposedProductStatusUpdater
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierRepository
-import com.restpartijen.api.product.service.OwnershipGuard
 import com.restpartijen.api.product.service.OpeningHoursService
+import com.restpartijen.api.product.service.OwnershipGuard
 import com.restpartijen.api.product.service.ProductLookupService
 import com.restpartijen.api.product.service.ProductService
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
@@ -31,7 +31,6 @@ import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.plugins.di.provide
 import kotlin.time.Clock
-
 
 /**
  * The one place that says which implementation belongs to which contract (§12.1).
@@ -70,6 +69,5 @@ fun Application.configureDependencies() {
         provide<PriceProvider>(::PricingService)
         provide<ExpiryScheduler>(::ExpiryScheduler)
         provide<AdminProductService>(::AdminProductService)
-
     }
 }

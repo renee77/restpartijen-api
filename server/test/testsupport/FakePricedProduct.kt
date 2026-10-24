@@ -9,10 +9,8 @@ import kotlin.time.Duration
 class FakePricedProduct(
     override val originalPrice: Money,
     override val category: ProductCategory,
-    private val remaining: Duration
+    private val remaining: Duration,
 ) : PricedProduct {
 
-    override fun shelfLifeRemaining(clock: Clock): Duration {
-        return remaining
-    }
+    override fun shelfLifeRemaining(clock: Clock): Duration = remaining
 }

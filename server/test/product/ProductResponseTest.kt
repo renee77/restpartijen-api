@@ -70,7 +70,8 @@ class ProductResponseTest {
     @Test
     fun `toResponse shows the status of the detail and no price when expired`() {
         // Arrange: the product is still LISTED in storage, the service decided it shows as EXPIRED
-        val detail = ProductDetail(aProduct(status = ProductStatus.LISTED), price = null, status = ProductStatus.EXPIRED)
+        val detail =
+            ProductDetail(aProduct(status = ProductStatus.LISTED), price = null, status = ProductStatus.EXPIRED)
 
         // Act
         val response = detail.toResponse()

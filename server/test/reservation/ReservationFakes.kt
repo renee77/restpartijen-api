@@ -1,9 +1,9 @@
 package com.restpartijen.api.reservation
 
-import com.restpartijen.api.reservation.model.Reservation
-import com.restpartijen.api.reservation.repository.ReservationRepository
 import com.restpartijen.api.persistence.Repository
+import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationStatus
+import com.restpartijen.api.reservation.repository.ReservationRepository
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.PriceBreakdown
@@ -34,7 +34,10 @@ data class FakeProduct(
 }
 
 class FakeProductReader(private val products: List<ProductView>) : ProductReader {
-    override suspend fun findById(id: Long): ProductView? = products.find { it.id == id && it.status != ProductStatus.REMOVED }
+    override suspend fun findById(id: Long): ProductView? = products.find {
+        it.id == id &&
+            it.status != ProductStatus.REMOVED
+    }
     override suspend fun findAvailable(now: Instant): List<ProductView> =
         products.filter { it.status == ProductStatus.LISTED }
 
@@ -58,15 +61,16 @@ class FakeProductStatusUpdater : ProductStatusUpdater {
 /** Always returns the same price; null means "expired", as in the real contract. */
 class FakePriceProvider(private val price: Money?) : PriceProvider {
     override fun currentPrice(product: PricedProduct): Money? = price
-    override fun priceBreakdown(product: PricedProduct): PriceBreakdown? =
-        price?.let { PriceBreakdown(it, 0, it) }
+    override fun priceBreakdown(product: PricedProduct): PriceBreakdown? = price?.let { PriceBreakdown(it, 0, it) }
 }
 
 /** In-memory reservations, reusing Eva's generic FakeRepository via delegation. */
 class FakeReservationRepository(initial: List<Reservation> = emptyList()) :
     ReservationRepository,
     Repository<Reservation> by FakeRepository(
-        idOf = { it.id }, withId = { r, id -> r.copy(id = id) }, initialItems = initial,
+        idOf = { it.id },
+        withId = { r, id -> r.copy(id = id) },
+        initialItems = initial,
     ) {
 
     override suspend fun findOverdue(now: Instant): List<Reservation> =

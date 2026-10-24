@@ -39,7 +39,10 @@ class OpenFoodFactsRateLimiter(private val clock: Clock) {
         val now = clock.now()
         allCalls.dropOlderThan(now)
         // Suppliers without calls in the window are forgotten, so the map stays as small as the active suppliers.
-        callsPerUser.values.removeAll { it.dropOlderThan(now); it.isEmpty() }
+        callsPerUser.values.removeAll {
+            it.dropOlderThan(now)
+            it.isEmpty()
+        }
         val userCalls = callsPerUser.getOrPut(userId) { ArrayDeque() }
 
         val limitReached = when {

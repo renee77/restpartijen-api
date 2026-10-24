@@ -45,8 +45,11 @@ class RequestValidationTest {
                 // Throw our own exception, so StatusPages fills `field`
                 if (request.name.isBlank()) throw ValidationException("Name is required", field = "name")
                 // The Ktor way, to test the safety-net rule
-                if (request.name.length > 50) ValidationResult.Invalid("Name is too long")
-                else ValidationResult.Valid
+                if (request.name.length > 50) {
+                    ValidationResult.Invalid("Name is too long")
+                } else {
+                    ValidationResult.Valid
+                }
             }
         }
         routing {
@@ -59,14 +62,12 @@ class RequestValidationTest {
 
     private fun ApplicationTestBuilder.setUp() = application { testApp() }
 
-    private suspend fun ApplicationTestBuilder.postJson(json: String): HttpResponse =
-        client.post("/test/products") {
-            contentType(ContentType.Application.Json)
-            setBody(json)
-        }
+    private suspend fun ApplicationTestBuilder.postJson(json: String): HttpResponse = client.post("/test/products") {
+        contentType(ContentType.Application.Json)
+        setBody(json)
+    }
 
-    private suspend fun HttpResponse.errorBody(): ErrorResponse =
-        Json.decodeFromString<ErrorResponse>(bodyAsText())
+    private suspend fun HttpResponse.errorBody(): ErrorResponse = Json.decodeFromString<ErrorResponse>(bodyAsText())
 
     @Test
     fun `valid body passes and the route answers 201`() = testApplication {
@@ -135,6 +136,5 @@ class RequestValidationTest {
         // Assert
         assertEquals(HttpStatusCode.BadRequest, response.status)
         assertEquals(ErrorResponse(ErrorCode.VALIDATION_ERROR, "Name is too long"), response.errorBody())
-
     }
 }

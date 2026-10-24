@@ -11,5 +11,5 @@ data class User(
     val display_name: String,
     val role: Role,
     val createdAt: Instant,
-    val deleted_at: Instant? = null
+    val deleted_at: Instant? = null,
 )

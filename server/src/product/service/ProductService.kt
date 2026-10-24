@@ -178,12 +178,17 @@ class ProductService(
         val openingHours = suppliers.getOpeningHours(supplierId)
         return when (val result = PickupWindowCalculator.calculate(openingHours, clock.now(), bestBeforeAt)) {
             is PickupWindowResult.Found -> result.window
+
             // The same field and message as validateForListing, so the answer does not depend on the order.
             PickupWindowResult.Expired -> throw DomainRuleException(BEST_BEFORE_PASSED, field = "bestBeforeAt")
+
             // An empty week is NeverOpen too, but then the date is not the cause: say what is.
             PickupWindowResult.NeverOpen -> throw DomainRuleException(
-                if (openingHours.isEmpty()) "The supplier has no opening hours yet"
-                else "The supplier is not open before bestBeforeAt",
+                if (openingHours.isEmpty()) {
+                    "The supplier has no opening hours yet"
+                } else {
+                    "The supplier is not open before bestBeforeAt"
+                },
                 field = "bestBeforeAt",
             )
         }

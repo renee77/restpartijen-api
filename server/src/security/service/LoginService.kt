@@ -2,9 +2,9 @@ package com.restpartijen.api.security.service
 
 import com.restpartijen.api.security.dto.LoginResponse
 import com.restpartijen.api.security.repository.UserRepository
-import com.restpartijen.api.shared.UnauthorizedException
-import com.restpartijen.api.shared.SupplierIdLookup
 import com.restpartijen.api.shared.Role
+import com.restpartijen.api.shared.SupplierIdLookup
+import com.restpartijen.api.shared.UnauthorizedException
 
 /**
  * Checks a user's credentials and issues a JWT (decision 3.8).
@@ -20,8 +20,8 @@ class LoginService(
     private val userRepository: UserRepository,
     private val passwordHasher: PasswordHasher,
     private val jwtConfig: JwtConfig,
-    private val supplierIdLookup: SupplierIdLookup
-    ) {
+    private val supplierIdLookup: SupplierIdLookup,
+) {
     companion object {
         // One shared message for every failed login. Never make this depend on whether the email exists, or the error would leak that information.
         const val INVALID_CREDENTIALS = "Invalid email or password"

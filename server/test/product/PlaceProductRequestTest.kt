@@ -18,9 +18,7 @@ import kotlin.time.Instant
  */
 class PlaceProductRequestTest {
 
-    private fun aRequest(
-        originalPrice: Double = 3.49,
-    ) = PlaceProductRequest(
+    private fun aRequest(originalPrice: Double = 3.49) = PlaceProductRequest(
         category = ProductCategory.FRESH,
         name = "Volkoren brood",
         originalPrice = originalPrice,

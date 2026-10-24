@@ -1,8 +1,8 @@
 package com.restpartijen.api.security
 
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.security.model.User
 import com.restpartijen.api.security.repository.ExposedUserRepository
-import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.shared.ConflictException
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
@@ -12,9 +12,9 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
-import kotlin.test.assertFailsWith
 import kotlin.time.Instant
 
 /**
@@ -25,14 +25,16 @@ import kotlin.time.Instant
 class ExposedUserRepositoryTest {
     private val fixedNow = Instant.parse("2026-01-15T10:30:00Z")
     val newUser = User(
-        id=0,
-        email="testmail@mail.com", passwordHash="passwordHash", display_name="TestName",
-        role=Role.COLLECTOR,
+        id = 0,
+        email = "testmail@mail.com",
+        passwordHash = "passwordHash",
+        display_name = "TestName",
+        role = Role.COLLECTOR,
         createdAt = fixedNow,
     )
 
     @Test
-    fun `create stores the new User, and findById returns it` () = runTest {
+    fun `create stores the new User, and findById returns it`() = runTest {
         // Arrange: Create a test database using the Users table and use the Exposed User Repository.
         createEmptyTestDatabase(UsersTable)
         val repository = ExposedUserRepository()
@@ -59,7 +61,7 @@ class ExposedUserRepositoryTest {
     }
 
     @Test
-    fun `findByEmail return User when the email exists` () = runTest {
+    fun `findByEmail return User when the email exists`() = runTest {
         // Arrange: Create a test database using the Users table and use the Exposed User Repository.
         createEmptyTestDatabase(UsersTable)
         val repository = ExposedUserRepository()
@@ -72,7 +74,7 @@ class ExposedUserRepositoryTest {
     }
 
     @Test
-    fun `findById returns null when the id is unknown` () = runTest {
+    fun `findById returns null when the id is unknown`() = runTest {
         // Arrange: Create a test Database
         createEmptyTestDatabase(UsersTable)
         val repository = ExposedUserRepository()
@@ -85,7 +87,7 @@ class ExposedUserRepositoryTest {
     }
 
     @Test
-    fun `create rejects a duplicate emailaddress` () = runTest {
+    fun `create rejects a duplicate emailaddress`() = runTest {
         // Arrange: Create a test Database
         createEmptyTestDatabase(UsersTable)
         val repository = ExposedUserRepository()
@@ -101,7 +103,7 @@ class ExposedUserRepositoryTest {
     }
 
     @Test
-    fun `email is stored lowercase` () = runTest {
+    fun `email is stored lowercase`() = runTest {
         // Arrange
         createEmptyTestDatabase(UsersTable)
         val repository = ExposedUserRepository()

@@ -16,7 +16,7 @@ class FakeRepositoryTest {
     private fun repositoryWith(vararg items: Item) = FakeRepository<Item>(
         idOf = { it.id },
         withId = { item, id -> item.copy(id = id) },
-        initialItems = items.toList()
+        initialItems = items.toList(),
     )
 
     @Test
@@ -36,7 +36,7 @@ class FakeRepositoryTest {
         // Arrange
         val repository = repositoryWith(
             Item(id = 1, name = "Volkoren brood"),
-            Item(id = 2, name = "Aardappels")
+            Item(id = 2, name = "Aardappels"),
         )
 
         // Act
@@ -46,9 +46,9 @@ class FakeRepositoryTest {
         assertEquals(
             listOf(
                 Item(id = 1, name = "Volkoren brood"),
-                Item(id = 2, name = "Aardappels")
+                Item(id = 2, name = "Aardappels"),
             ),
-            items
+            items,
         )
     }
 
@@ -72,7 +72,7 @@ class FakeRepositoryTest {
         // Arrange
         val repository = repositoryWith(
             Item(id = 1, name = "Volkoren brood"),
-            Item(id = 2, name = "Aardappels")
+            Item(id = 2, name = "Aardappels"),
         )
 
         // Act
@@ -83,9 +83,9 @@ class FakeRepositoryTest {
         assertEquals(
             listOf(
                 Item(id = 1, name = "Volkoren brood"),
-                Item(id = 2, name = "Wit brood")
+                Item(id = 2, name = "Wit brood"),
             ),
-            repository.findAll()
+            repository.findAll(),
         )
     }
 
@@ -119,7 +119,7 @@ class FakeRepositoryTest {
         // Ids 1 and 5: the next id must be 6, not 3 (the number of items plus one).
         val repository = repositoryWith(
             Item(id = 1, name = "Volkoren brood"),
-            Item(id = 5, name = "Aardappels")
+            Item(id = 5, name = "Aardappels"),
         )
 
         // Act
@@ -147,7 +147,7 @@ class FakeRepositoryTest {
         // Arrange
         val repository = repositoryWith(
             Item(id = 1, name = "Volkoren brood"),
-            Item(id = 2, name = "Aardappels")
+            Item(id = 2, name = "Aardappels"),
         )
         repository.delete(2)
 
@@ -176,7 +176,7 @@ class FakeRepositoryTest {
         // Arrange
         val repository = repositoryWith(
             Item(id = 1, name = "Volkoren brood"),
-            Item(id = 2, name = "Aardappels")
+            Item(id = 2, name = "Aardappels"),
         )
 
         // Act

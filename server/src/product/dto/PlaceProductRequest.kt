@@ -34,14 +34,12 @@ data class PlaceProductRequest(
  * The shape was already checked by validatePlaceProductRequest in RequestValidation (400), so Money
  * receives a valid value here.
  */
-fun PlaceProductRequest.toCommand(): PlaceProductCommand {
-    return PlaceProductCommand(
-        category = category,
-        name = name,
-        originalPrice = Money.fromEuros(originalPrice),
-        bestBeforeAt = bestBeforeAt.toBestBeforeAt(),
-        quantity = quantity,
-        barcode = barcode,
-        allergens = allergens,
-    )
-}
+fun PlaceProductRequest.toCommand(): PlaceProductCommand = PlaceProductCommand(
+    category = category,
+    name = name,
+    originalPrice = Money.fromEuros(originalPrice),
+    bestBeforeAt = bestBeforeAt.toBestBeforeAt(),
+    quantity = quantity,
+    barcode = barcode,
+    allergens = allergens,
+)

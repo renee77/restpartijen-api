@@ -20,6 +20,6 @@ fun createEmptyTestDatabase(vararg tables: Table) {
         // filePath is only used in file mode, so it stays empty here.
         DatabaseSettings(mode = DbMode.MEMORY, filePath = ""),
         *tables,
-        name = "test-${databaseCount}"
+        name = "test-$databaseCount",
     )
 }

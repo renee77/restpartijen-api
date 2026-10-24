@@ -18,11 +18,11 @@ object DatabaseFactory {
     fun init(settings: DatabaseSettings, vararg tables: Table, name: String = "restpartijen") {
         val url = when (settings.mode) {
             DbMode.FILE -> "jdbc:h2:file:${settings.filePath}"
-            DbMode.MEMORY -> "jdbc:h2:mem:${name};DB_CLOSE_DELAY=-1"
+            DbMode.MEMORY -> "jdbc:h2:mem:$name;DB_CLOSE_DELAY=-1"
         }
         Database.connect(
             url = url,
-            driver = "org.h2.Driver"
+            driver = "org.h2.Driver",
         )
         transaction {
             SchemaUtils.create(*tables)

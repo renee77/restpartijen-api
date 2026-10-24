@@ -1,8 +1,14 @@
 package com.restpartijen.api.pricing
 
 import com.restpartijen.api.plugins.ErrorCode
+import com.restpartijen.api.plugins.ErrorResponse
+import com.restpartijen.api.pricing.dto.AdminProductResponse
+import com.restpartijen.api.security.TestClock
 import com.restpartijen.api.security.TestTokens
+import com.restpartijen.api.shared.ProductStatus
+import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -10,19 +16,12 @@ import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import com.restpartijen.api.plugins.ErrorResponse
-import com.restpartijen.api.pricing.dto.AdminProductResponse
-import com.restpartijen.api.security.TestClock
-import com.restpartijen.api.shared.ProductStatus
 import kotlin.test.assertTrue
-import com.restpartijen.api.testsupport.createEmptyTestDatabase
-import io.ktor.client.request.delete
 
 class AdminProductEndpointTest {
     val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN")
 
-    private fun tokenFor(role: String) =
-        TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = role)
+    private fun tokenFor(role: String) = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = role)
 
     @Test
     fun `No token gives a 401`() = testApplication {
@@ -75,8 +74,8 @@ class AdminProductEndpointTest {
         val reader = FakeProductReader(
             products = listOf(
                 FakeProductView(1, ProductStatus.LISTED),
-                FakeProductView(2, ProductStatus.REMOVED)
-            )
+                FakeProductView(2, ProductStatus.REMOVED),
+            ),
         )
         application { setUpPricingTestApp(productReader = reader) }
 
@@ -93,13 +92,13 @@ class AdminProductEndpointTest {
     }
 
     @Test
-    fun `status listed only shows the listed products` () = testApplication {
+    fun `status listed only shows the listed products`() = testApplication {
         // Arrange
         val reader = FakeProductReader(
             products = listOf(
                 FakeProductView(1, ProductStatus.LISTED),
-                FakeProductView(2, ProductStatus.COLLECTED)
-            )
+                FakeProductView(2, ProductStatus.COLLECTED),
+            ),
         )
         application { setUpPricingTestApp(productReader = reader) }
 
@@ -116,7 +115,7 @@ class AdminProductEndpointTest {
     }
 
     @Test
-    fun `Call without status shows all products save for the removed ones` () = testApplication {
+    fun `Call without status shows all products save for the removed ones`() = testApplication {
         // Arrange
         val reader = FakeProductReader(
             products = listOf(
@@ -124,8 +123,8 @@ class AdminProductEndpointTest {
                 FakeProductView(2, ProductStatus.COLLECTED),
                 FakeProductView(3, ProductStatus.REMOVED),
                 FakeProductView(4, ProductStatus.RESERVED),
-                FakeProductView(5, ProductStatus.EXPIRED)
-            )
+                FakeProductView(5, ProductStatus.EXPIRED),
+            ),
         )
         application { setUpPricingTestApp(productReader = reader) }
 
@@ -138,11 +137,14 @@ class AdminProductEndpointTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val products = Json.decodeFromString<List<AdminProductResponse>>(response.bodyAsText())
         assertEquals(listOf(1L, 2L, 4L, 5L), products.map { it.id })
-        assertEquals(setOf(ProductStatus.LISTED, ProductStatus.COLLECTED, ProductStatus.EXPIRED, ProductStatus.RESERVED), reader.requestedStatuses)
+        assertEquals(
+            setOf(ProductStatus.LISTED, ProductStatus.COLLECTED, ProductStatus.EXPIRED, ProductStatus.RESERVED),
+            reader.requestedStatuses,
+        )
     }
 
     @Test
-    fun `Calls with two statuses will show all the products that have that status` () = testApplication {
+    fun `Calls with two statuses will show all the products that have that status`() = testApplication {
         // Arrange
         val reader = FakeProductReader(
             products = listOf(
@@ -150,8 +152,8 @@ class AdminProductEndpointTest {
                 FakeProductView(2, ProductStatus.COLLECTED),
                 FakeProductView(3, ProductStatus.REMOVED),
                 FakeProductView(4, ProductStatus.RESERVED),
-                FakeProductView(5, ProductStatus.EXPIRED)
-            )
+                FakeProductView(5, ProductStatus.EXPIRED),
+            ),
         )
         application { setUpPricingTestApp(productReader = reader) }
 
@@ -296,7 +298,7 @@ class AdminProductEndpointTest {
         createEmptyTestDatabase()
         application {
             setUpPricingTestApp(
-                productReader = FakeProductReader(products = listOf(FakeProductView(1, ProductStatus.REMOVED)))
+                productReader = FakeProductReader(products = listOf(FakeProductView(1, ProductStatus.REMOVED))),
             )
         }
 

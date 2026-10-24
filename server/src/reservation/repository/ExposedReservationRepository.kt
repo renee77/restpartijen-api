@@ -59,15 +59,14 @@ class ExposedReservationRepository : ReservationRepository {
     // Required by Repository<T>, but reservations are never deleted: the history is kept through the status (§9.5).
     // This deliberately does not honour the interface's contract. No code should call it; ending a reservation
     // goes through ReservationService and the state machine. Throwing makes a mistaken call fail at once.
-    override suspend fun delete(id: Long): Boolean =
-        throw UnsupportedOperationException(
-            "Reservations are never deleted; history is kept through the status. Cancel through ReservationService (§9.5)."
-        )
+    override suspend fun delete(id: Long): Boolean = throw UnsupportedOperationException(
+        "Reservations are never deleted; history is kept through the status. Cancel through ReservationService (§9.5).",
+    )
 
     override suspend fun findOverdue(now: Instant): List<Reservation> = dbQuery {
         ReservationsTable.selectAll().where {
             (ReservationsTable.status eq ReservationStatus.ACTIVE) and
-                    (ReservationsTable.expiresAt lessEq now)
+                (ReservationsTable.expiresAt lessEq now)
         }
             .map { it.toReservation() }
     }
@@ -77,7 +76,7 @@ class ExposedReservationRepository : ReservationRepository {
             .selectAll()
             .where {
                 (ReservationsTable.productId eq productId) and
-                        (ReservationsTable.status eq ReservationStatus.ACTIVE)
+                    (ReservationsTable.status eq ReservationStatus.ACTIVE)
             }
             .singleOrNull()
             ?.toReservation()

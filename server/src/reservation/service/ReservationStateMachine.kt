@@ -24,7 +24,7 @@ object ReservationStateMachine {
     private data class From(
         val event: ReservationEvent,
         val product: ProductStatus,
-        val reservation: ReservationStatus?
+        val reservation: ReservationStatus?,
     )
 
     /** Where a transition ends: both statuses change together, in one transaction. */
@@ -34,10 +34,12 @@ object ReservationStateMachine {
         From(RESERVE, LISTED, null) to To(RESERVED, ACTIVE),
         From(COLLECT, RESERVED, ACTIVE) to To(ProductStatus.COLLECTED, ReservationStatus.COLLECTED),
         From(CANCEL, RESERVED, ACTIVE) to To(LISTED, CANCELLED),
-        From(LAPSE, RESERVED, ACTIVE) to To(LISTED, LAPSED)
+        From(LAPSE, RESERVED, ACTIVE) to To(LISTED, LAPSED),
     )
 
     fun transition(event: ReservationEvent, product: ProductStatus, reservation: ReservationStatus?): To =
         transitions[From(event, product, reservation)]
-            ?: throw IllegalStateTransitionException("$event is not allowed for product $product and reservation $reservation")
+            ?: throw IllegalStateTransitionException(
+                "$event is not allowed for product $product and reservation $reservation",
+            )
 }

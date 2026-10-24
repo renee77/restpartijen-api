@@ -9,9 +9,7 @@ import kotlin.time.Clock
 
 class PricingService(private val clock: Clock) : PriceProvider {
 
-    override fun currentPrice(product: PricedProduct): Money? {
-        return priceBreakdown(product)?.currentPrice
-    }
+    override fun currentPrice(product: PricedProduct): Money? = priceBreakdown(product)?.currentPrice
 
     override fun priceBreakdown(product: PricedProduct): PriceBreakdown? {
         // Get the remaining shelf life using the service clock.
@@ -35,7 +33,7 @@ class PricingService(private val clock: Clock) : PriceProvider {
         return PriceBreakdown(
             originalPrice = product.originalPrice,
             discountPercentage = percentage,
-            currentPrice = Money.fromCents(currentPriceCents)
+            currentPrice = Money.fromCents(currentPriceCents),
         )
     }
 }

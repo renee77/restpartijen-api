@@ -53,7 +53,9 @@ class OpeningHoursServiceTest {
     fun `replaceOpeningHours stores the week and returns it from Monday to Sunday`() = runTest {
         // Act: out of order, so the result proves the stored week is returned, not the request
         val week = service.replaceOpeningHours(
-            userId = 7, supplierId = aSupplier.id, week = listOf(saturday.asCommand(), monday.asCommand()),
+            userId = 7,
+            supplierId = aSupplier.id,
+            week = listOf(saturday.asCommand(), monday.asCommand()),
         )
 
         // Assert
@@ -62,13 +64,12 @@ class OpeningHoursServiceTest {
     }
 
     @Test
-    fun `replaceOpeningHours throws NotFoundException for an unknown supplier, before the ownership check`() =
-        runTest {
-            // Act + Assert: user 7 does not own supplier 999 either, so 404 proves the order of the checks
-            assertFailsWith<NotFoundException> {
-                service.replaceOpeningHours(userId = 7, supplierId = 999, week = listOf(monday.asCommand()))
-            }
+    fun `replaceOpeningHours throws NotFoundException for an unknown supplier, before the ownership check`() = runTest {
+        // Act + Assert: user 7 does not own supplier 999 either, so 404 proves the order of the checks
+        assertFailsWith<NotFoundException> {
+            service.replaceOpeningHours(userId = 7, supplierId = 999, week = listOf(monday.asCommand()))
         }
+    }
 
     @Test
     fun `replaceOpeningHours refuses another user and keeps the old week`() = runTest {

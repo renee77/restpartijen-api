@@ -84,7 +84,7 @@ class JwtPropertiesTest {
         for (key in listOf("jwt.issuer", "jwt.audience", "jwt.validityHours")) {
             // Arrange: a complete config with one key left out
             val config = MapApplicationConfig(
-                *completeConfig().filterKeys { it != key }.toList().toTypedArray()
+                *completeConfig().filterKeys { it != key }.toList().toTypedArray(),
             )
             // Act
             val exception = assertFailsWith<IllegalStateException> { config.jwtProperties() }

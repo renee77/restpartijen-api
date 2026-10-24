@@ -22,8 +22,8 @@ fun Reservation.toResponse() = ReservationResponse(
     id = id,
     productId = productId,
     status = status,
-    reservedPrice = reservedPrice.toEuros() ,
-    reservedAt = reservedAt.toString() ,
+    reservedPrice = reservedPrice.toEuros(),
+    reservedAt = reservedAt.toString(),
     expiresAt = expiresAt.toString(),
     collectedAt = collectedAt?.toString(),
 )

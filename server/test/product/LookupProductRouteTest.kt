@@ -39,15 +39,16 @@ class LookupProductRouteTest {
     private suspend fun ApplicationTestBuilder.lookup(
         barcode: String,
         token: String? = tokenFor(Role.SUPPLIER),
-    ): HttpResponse =
-        client.get("/api/v1/products/lookup/$barcode") { token?.let { bearerAuth(it) } }
+    ): HttpResponse = client.get("/api/v1/products/lookup/$barcode") { token?.let { bearerAuth(it) } }
 
     private fun ApplicationTestBuilder.appWithOpenFoodFacts(status: HttpStatusCode, body: String) = application {
         productRoutesTestApp(
             tokenClock,
-            openFoodFacts = openFoodFactsClient(MockEngine {
-                respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
-            }),
+            openFoodFacts = openFoodFactsClient(
+                MockEngine {
+                    respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
+                },
+            ),
         )
     }
 
@@ -126,7 +127,10 @@ class LookupProductRouteTest {
 
         // Assert: only supplier 7 reached its limit, so the route passes on the user of each token
         assertEquals(true, Json.decodeFromString<ProductLookupResponse>(sameSupplier.bodyAsText()).manualEntryRequired)
-        assertEquals(false, Json.decodeFromString<ProductLookupResponse>(otherSupplier.bodyAsText()).manualEntryRequired)
+        assertEquals(
+            false,
+            Json.decodeFromString<ProductLookupResponse>(otherSupplier.bodyAsText()).manualEntryRequired,
+        )
     }
 
     @Test

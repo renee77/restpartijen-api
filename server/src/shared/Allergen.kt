@@ -20,5 +20,5 @@ enum class Allergen {
     SESAME,
     SULPHITES,
     LUPIN,
-    MOLLUSCS
+    MOLLUSCS,
 }

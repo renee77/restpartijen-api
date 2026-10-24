@@ -15,10 +15,7 @@ import com.restpartijen.api.shared.NotFoundException
  * @param suppliers stores the opening hours and knows whether a supplier exists
  * @param ownershipGuard checks that a supplier only replaces its own opening hours (§16.2)
  */
-class OpeningHoursService(
-    private val suppliers: SupplierRepository,
-    private val ownershipGuard: OwnershipGuard,
-) {
+class OpeningHoursService(private val suppliers: SupplierRepository, private val ownershipGuard: OwnershipGuard) {
     /**
      * The opening hours of [supplierId], from Monday to Sunday; a closed day is not in the list.
      *

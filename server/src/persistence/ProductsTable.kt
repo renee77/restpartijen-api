@@ -48,5 +48,4 @@ object ProductsTable : Table("surplus_products") {
 
     // Tells Exposed (and the generated SQL) which column is the primary key.
     override val primaryKey = PrimaryKey(id)
-
 }

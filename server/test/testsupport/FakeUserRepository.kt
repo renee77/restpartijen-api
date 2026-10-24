@@ -12,8 +12,7 @@ class FakeUserRepository : UserRepository {
 
     private fun normalize(email: String) = email.trim().lowercase()
 
-    override suspend fun findById(id: Long): User? =
-        users.find { it.id == id && it.deleted_at == null }
+    override suspend fun findById(id: Long): User? = users.find { it.id == id && it.deleted_at == null }
 
     override suspend fun findByEmail(email: String): User? =
         users.find { it.email == normalize(email) && it.deleted_at == null }

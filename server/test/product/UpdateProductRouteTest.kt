@@ -58,19 +58,19 @@ class UpdateProductRouteTest {
         id: String,
         body: String = validBody,
         token: String? = null,
-    ): HttpResponse =
-        client.put("/api/v1/products/$id") {
-            token?.let { bearerAuth(it) }
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
+    ): HttpResponse = client.put("/api/v1/products/$id") {
+        token?.let { bearerAuth(it) }
+        contentType(ContentType.Application.Json)
+        setBody(body)
+    }
 
     @Test
     fun `a supplier updates an own product and gets 200 with the updated product`() = testApplication {
         // Arrange: TC-03
         application {
             productRoutesTestApp(
-                tokenClock, fakeProductRepository(aProduct(id = 1, category = ProductCategory.FROZEN)),
+                tokenClock,
+                fakeProductRepository(aProduct(id = 1, category = ProductCategory.FROZEN)),
             )
         }
 
@@ -91,7 +91,11 @@ class UpdateProductRouteTest {
     fun `the update reaches the database, with the price in cents`() = testApplication {
         // Arrange: a real database and the Exposed repositories behind the service
         createEmptyTestDatabase(
-            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, SupplierOpeningHoursTable,
+            UsersTable,
+            SuppliersTable,
+            ProductsTable,
+            ProductAllergensTable,
+            SupplierOpeningHoursTable,
         )
         val userId = insertUser(Role.SUPPLIER)
         val supplierId = insertSupplier(userId)
@@ -132,7 +136,9 @@ class UpdateProductRouteTest {
 
         // Act
         val response = update(
-            "1", body = validBody.replace("\"Wit brood\"", "\"\""), token = tokenFor(Role.SUPPLIER),
+            "1",
+            body = validBody.replace("\"Wit brood\"", "\"\""),
+            token = tokenFor(Role.SUPPLIER),
         )
 
         // Assert

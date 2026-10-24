@@ -11,7 +11,6 @@ import org.jetbrains.exposed.v1.jdbc.transactions.suspendTransaction
  * Everything in [block] commits together, or rolls back together when an exception is thrown.
  * Use it once per service call; repositories called inside it join the same transaction.
  */
-suspend fun <T> dbQuery(block: suspend () -> T): T =
-    withContext(Dispatchers.IO) {
-        suspendTransaction { block() }
-    }
+suspend fun <T> dbQuery(block: suspend () -> T): T = withContext(Dispatchers.IO) {
+    suspendTransaction { block() }
+}

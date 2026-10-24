@@ -16,10 +16,8 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.update
 import kotlin.time.Clock
 
-private const val UNIQUE_VIOLATION = "23505"  // H2 SQL state for a unique index violation
-class ExposedUserRepository(
-    private val clock: Clock = Clock.System,
-) : UserRepository {
+private const val UNIQUE_VIOLATION = "23505" // H2 SQL state for a unique index violation
+class ExposedUserRepository(private val clock: Clock = Clock.System) : UserRepository {
 
     override suspend fun findById(id: Long): User? = dbQuery {
         UsersTable.selectAll()
@@ -55,9 +53,8 @@ class ExposedUserRepository(
             item.copy(id = newId, email = email)
         } catch (e: ExposedSQLException) {
             if (e.sqlState == UNIQUE_VIOLATION) throw ConflictException(RegistrationService.EMAIL_TAKEN)
-            throw e   // any other database error stays visible
+            throw e // any other database error stays visible
         }
-
     }
 
     override suspend fun update(item: User): Boolean = dbQuery {

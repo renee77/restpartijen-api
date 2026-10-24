@@ -18,5 +18,5 @@ data class Reservation(
     val reservedAt: Instant,
     val expiresAt: Instant,
     val status: ReservationStatus = ReservationStatus.ACTIVE,
-    val collectedAt: Instant? = null
+    val collectedAt: Instant? = null,
 )

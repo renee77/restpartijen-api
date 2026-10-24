@@ -42,7 +42,9 @@ class ReservationTransactionTest {
         val productId = insertProduct()
         val unknownCollectorId = 999_999L
         val service = ReservationService(
-            FakeProductReader(listOf(FakeProduct(id = productId, pickupWindow = PickupWindow(now - 1.hours, now + 1.days)))),
+            FakeProductReader(
+                listOf(FakeProduct(id = productId, pickupWindow = PickupWindow(now - 1.hours, now + 1.days))),
+            ),
             updater,
             FakePriceProvider(Money.fromCents(199)),
             ExposedReservationRepository(),

@@ -24,23 +24,30 @@ fun Application.configureSearchRouting() {
         }
     }
 }
+
 /** Turns the query text into typed filters; wrong input gives a 400 that names the parameter. */
 private fun Parameters.toSearchCriteria() = SearchCriteria(
     category = this["category"]?.let { text ->
         ProductCategory.entries.find { it.name == text }
             ?: throw ValidationException(
                 "Unknown category '$text'. Allowed values: ${ProductCategory.entries.joinToString()}",
-                field = "category"
+                field = "category",
             )
     },
     maxPrice = this["maxPrice"]?.let { text ->
         val euros = text.toDoubleOrNull()?.takeIf { it.isFinite() && it >= 0 }
-            ?: throw ValidationException("maxPrice must be an amount in euros of 0 or more, for example 3.00", field = "maxPrice")
+            ?: throw ValidationException(
+                "maxPrice must be an amount in euros of 0 or more, for example 3.00",
+                field = "maxPrice",
+            )
         Money.fromEuros(euros)
     },
     minShelfLife = this["minShelfLifeHours"]?.let { text ->
         val hours = text.toLongOrNull()?.takeIf { it >= 0 }
-            ?: throw ValidationException("minShelfLifeHours must be a whole number of 0 or more", field = "minShelfLifeHours")
+            ?: throw ValidationException(
+                "minShelfLifeHours must be a whole number of 0 or more",
+                field = "minShelfLifeHours",
+            )
         hours.hours
-    }
+    },
 )

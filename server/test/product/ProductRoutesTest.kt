@@ -26,7 +26,9 @@ class ProductRoutesTest {
     @Test
     fun `GET existing product returns 200 with the product as JSON`() = testApplication {
         // Arrange
-        application { productRoutesTestApp(tokenClock, fakeProductRepository(aProduct(id = 1, name = "Volkoren brood"))) }
+        application {
+            productRoutesTestApp(tokenClock, fakeProductRepository(aProduct(id = 1, name = "Volkoren brood")))
+        }
 
         // Act
         val response = client.get("/api/v1/products/1")
@@ -57,7 +59,9 @@ class ProductRoutesTest {
         // Arrange: SD-3, no price means expired; the product is still LISTED in storage
         application {
             productRoutesTestApp(
-                tokenClock, fakeProductRepository(aProduct(id = 1)), priceProvider = FixedPriceProvider(breakdown = null),
+                tokenClock,
+                fakeProductRepository(aProduct(id = 1)),
+                priceProvider = FixedPriceProvider(breakdown = null),
             )
         }
 

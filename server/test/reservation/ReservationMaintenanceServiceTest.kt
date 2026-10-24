@@ -33,8 +33,13 @@ class ReservationMaintenanceServiceTest {
         reservedAt: Instant = expiresAt - 24.hours,
         status: ReservationStatus = ReservationStatus.ACTIVE,
     ) = Reservation(
-        id, productId, collectorId = 7, reservedPrice = Money.fromCents(199),
-        reservedAt = reservedAt, expiresAt = expiresAt, status = status,
+        id,
+        productId,
+        collectorId = 7,
+        reservedPrice = Money.fromCents(199),
+        reservedAt = reservedAt,
+        expiresAt = expiresAt,
+        status = status,
     )
 
     private fun reservedProduct(id: Long, window: PickupWindow = PickupWindow(now - 2.days, now + 2.days)) =
@@ -63,7 +68,7 @@ class ReservationMaintenanceServiceTest {
         // Arrange: reserved 5 hours ago, window ended 1 hour ago, so expiresAt = window.until
         val window = PickupWindow(now - 6.hours, now - 1.hours)
         val reservations = FakeReservationRepository(
-            listOf(reservation(1, productId = 10, expiresAt = window.until, reservedAt = now - 5.hours))
+            listOf(reservation(1, productId = 10, expiresAt = window.until, reservedAt = now - 5.hours)),
         )
         val updater = FakeProductStatusUpdater()
         val service =
@@ -132,7 +137,7 @@ class ReservationMaintenanceServiceTest {
     fun `lapseActiveFor returns false when the product has no active reservation`() = runTest {
         // Arrange: the product only has an old, cancelled reservation
         val reservations = FakeReservationRepository(
-            listOf(reservation(1, productId = 10, expiresAt = now + 1.hours, status = ReservationStatus.CANCELLED))
+            listOf(reservation(1, productId = 10, expiresAt = now + 1.hours, status = ReservationStatus.CANCELLED)),
         )
         val updater = FakeProductStatusUpdater()
         val service =

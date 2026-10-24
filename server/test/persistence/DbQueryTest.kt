@@ -27,7 +27,7 @@ class DbQueryTest {
         // Arrange
         val settings = DatabaseSettings(
             mode = DbMode.FILE,
-            filePath = tempDir.resolve("testdb").toString()
+            filePath = tempDir.resolve("testdb").toString(),
         )
         DatabaseFactory.init(settings, TestTable)
 

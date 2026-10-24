@@ -20,8 +20,7 @@ import kotlin.time.Instant
  * findById passes on to the repository, so both promise exactly the same.
  */
 class ExposedProductReader(private val repository: ProductRepository) : ProductReader {
-    override suspend fun findById(id: Long): ProductView? =
-        repository.findById(id)
+    override suspend fun findById(id: Long): ProductView? = repository.findById(id)
 
     override suspend fun findAvailable(now: Instant): List<ProductView> =
         productsWhere((ProductsTable.status eq ProductStatus.LISTED) and (ProductsTable.bestBeforeAt greater now))
