@@ -16,6 +16,10 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 
+/**
+ * F3 admin routes (US-08, US-09): the manual maintenance run, the product overview and removing a product.
+ * Every route requires the ADMIN role; no token gives 401, another role 403.
+ */
 fun Application.configurePricingRouting() {
     val adminProductService: AdminProductService by dependencies
     val service: ExpiryScheduler by dependencies

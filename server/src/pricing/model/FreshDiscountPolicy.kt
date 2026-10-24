@@ -8,6 +8,7 @@ import kotlin.time.Duration.Companion.hours
  * best-before date and rise in three steps to 60%.
  */
 class FreshDiscountPolicy : DiscountPolicy {
+    /** 10% from 48 hours before the best-before date, 40% from 24 hours, 60% from 12 hours. */
     private val discountTierList = listOf(
         DiscountTier(48.hours, 10),
         DiscountTier(24.hours, 40),

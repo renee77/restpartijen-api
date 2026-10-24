@@ -7,10 +7,21 @@ import com.restpartijen.api.shared.PriceProvider
 import com.restpartijen.api.shared.PricedProduct
 import kotlin.time.Clock
 
+/**
+ * F3's implementation of [PriceProvider]: the current price follows from the discount policy
+ * of the product's category and its remaining shelf life.
+ *
+ * @property clock decides what "now" is, so tests can fix the moment
+ */
 class PricingService(private val clock: Clock) : PriceProvider {
 
+    /** The current price from [priceBreakdown], or null when the product has expired. */
     override fun currentPrice(product: PricedProduct): Money? = priceBreakdown(product)?.currentPrice
 
+    /**
+     * The original price, the discount percentage and the current price, or null when the product
+     * has expired (no shelf life left). The current price is rounded down to whole cents.
+     */
     override fun priceBreakdown(product: PricedProduct): PriceBreakdown? {
         // Get the remaining shelf life using the service clock.
         val remaining = product.shelfLifeRemaining(clock)

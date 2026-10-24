@@ -2,6 +2,12 @@ package com.restpartijen.api.pricing.model
 
 import kotlin.time.Duration
 
+/**
+ * One discount step of a category.
+ *
+ * @property appliesFrom the remaining shelf life at which this tier starts; it applies at this value and below
+ * @property percentage the discount percentage of this tier
+ */
 data class DiscountTier(val appliesFrom: Duration, val percentage: Int)
 
 /**

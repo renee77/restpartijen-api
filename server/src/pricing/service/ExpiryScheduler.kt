@@ -17,6 +17,11 @@ import kotlin.time.Clock
  *
  * Both steps use the same moment from the [Clock], and the run is idempotent:
  * a second run right after the first changes nothing and reports zero.
+ *
+ * @property reservationMaintenance lapses the overdue reservations (F2's side of K-5)
+ * @property productReader finds the listed products past their best-before moment
+ * @property productStatusUpdater marks those products as EXPIRED
+ * @property clock decides what "now" is for a run
  */
 class ExpiryScheduler(
     private val reservationMaintenance: ReservationMaintenance,
@@ -24,8 +29,13 @@ class ExpiryScheduler(
     private val productStatusUpdater: ProductStatusUpdater,
     private val clock: Clock,
 ) {
+    /** Logs the result of every run. */
     private val log = LoggerFactory.getLogger(ExpiryScheduler::class.java)
 
+    /**
+     * Runs both steps once and returns how many state changes each made.
+     * Called by the periodic maintenance loop and by the admin endpoint.
+     */
     suspend fun runMaintenance(): MaintenanceReport {
         // One moment for both steps, so the result never depends on when each step happens to run.
         val now = clock.now()

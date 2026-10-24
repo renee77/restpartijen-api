@@ -9,6 +9,7 @@ import kotlin.time.Duration.Companion.hours
  * best-before date and rise in two steps to 40%.
  */
 class AmbientDiscountPolicy : DiscountPolicy {
+    /** 15% from fourteen days before the best-before date, 40% from seven days before. */
     private val discountTierList = listOf(
         DiscountTier(14.days, 15),
         DiscountTier(7.days, 40),

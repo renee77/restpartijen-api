@@ -10,8 +10,10 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.minutes
 
-// Interval between two maintenance runs; a late EXPIRED is harmless because search and reserve check the time
-// themselves.
+/**
+ * Interval between two maintenance runs; a late EXPIRED is harmless because search and reserve check the time
+ * themselves.
+ */
 private val MAINTENANCE_INTERVAL = 5.minutes
 
 /**
