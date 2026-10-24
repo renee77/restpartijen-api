@@ -150,7 +150,7 @@ B-38 tot en met B-44 volgen uit de code van F3 op `main` van 20 oktober 2026, na
 
 | # | Onderwerp | Besluit | Door | Verwerkt in | Status |
 |---|-----------|---------|------|-------------|--------|
-| B-38 | Verwijderen van een al verwijderde partij | De beheerder krijgt `404 Not Found`, niet `409 Conflict`. `findById` geeft een `REMOVED` partij niet terug (B-32), dus de service ziet haar niet en behandelt haar als onbekend. Alleen `COLLECTED` en `EXPIRED` leveren `409` | Lonneke, in de code, oktober 2026 | §5.9, §9.5, §10.1 | Vast voor de beheerder; voor de aanbieder (§5.3) open, zie issue #45 en de Opmerking v2.4 |
+| B-38 | Verwijderen van een al verwijderde partij | De beheerder krijgt `404 Not Found`, niet `409 Conflict`. `findById` geeft een `REMOVED` partij niet terug (B-32), dus de service ziet haar niet en behandelt haar als onbekend. Alleen `COLLECTED` en `EXPIRED` leveren `409` | Lonneke, in de code, oktober 2026; voor de aanbieder Eva, 20 oktober 2026, in issue #45 | §5.3, §5.9, §9.5, §10.1 | Vast voor de beheerder en, sinds v3.0, ook voor de aanbieder (§5.3); in de code |
 | B-39 | Race bij verwijderen door de beheerder | Laat de service de reservering vervallen en geeft `markRemoved` daarna `false`, omdat de status intussen is veranderd, dan gooit de service een `IllegalStateTransitionException`. De transactie draait terug, ook het vervallen, en het antwoord is `409 Conflict` | Lonneke, in de code, oktober 2026 | §5.9, §9.5 | Vast; in de code |
 | B-40 | Lager aantal bij `markExpired` | Zet `markExpired` minder partijen om dan `findExpiredListings` vond, dan is dat geen fout. Tussen de twee aanroepen kan een afhaler een partij reserveren, en `markExpired` zet alleen partijen om die nog `LISTED` zijn. Het rapport toont het werkelijke aantal | Lonneke, in de code, oktober 2026 | §5.8, §8.5 (SD-4) | Vast; in de code |
 | B-41 | Periodieke statusbewaking | De lus start bij het opstarten van de applicatie in de scope van de applicatie, wacht eerst het interval van vijf minuten af en draait dan. Een fout in één run wordt gelogd en stopt de lus niet; alleen het stoppen van de applicatie stopt de lus | Lonneke, in de code, oktober 2026 | §5.8, §11.3 | Vast; in de code |
@@ -170,13 +170,20 @@ B-38 tot en met B-44 volgen uit de code van F3 op `main` van 20 oktober 2026, na
 
 ## Besluiten in v3.0
 
-Voor v3.0 is het document op 24 oktober 2026 opnieuw naast de code gelegd. B-55 tot en met B-57 komen uit de punten van Eva, met de code als bron. Bestaande besluiten waarvan de status is veranderd, zijn in de tabellen hierboven bijgewerkt.
+Voor v3.0 is het document op 24 oktober 2026 opnieuw naast de code gelegd. B-55 tot en met B-57 komen uit de punten van Eva, met de code als bron. B-58 tot en met B-64 zijn besluiten van Eva van 21 tot en met 23 oktober 2026, genomen bij de bouw van F1 (US-02, US-03 en US-10) en verzameld na de release van v2.4. Bestaande besluiten waarvan de status is veranderd, zijn in de tabellen hierboven bijgewerkt.
 
 | # | Onderwerp | Besluit | Door | Verwerkt in | Status |
 |---|-----------|---------|------|-------------|--------|
 | B-55 | Testklok voor tokens | Een token dat in een test door de verifier van `JwtConfig` gaat, krijgt de klok `TestClock.fixedNow()`. Die leest bij het aanmaken één keer `Clock.System.now()` en staat daarna stil. De verifier van java-jwt controleert de verloopdatum tegen de echte tijd; een token met de vaste datum van `TestClock.fixed` (26 september 2026) is voor hem al verlopen. `TestClock.fixed` blijft voor testen die niet door de verifier gaan. Dit is de enige uitzondering op "nooit `Clock.System`" in testen | Profgroep, issue #62 | §13 (GI-6, besluit 6.5) | Vast; in de code: `TestClock` in `../server/test/security/TestTokens.kt` |
 | B-56 | Invoerregels bij registreren (A11) | `RegistrationService` laat de invoer van `POST /auth/register` eerst controleren door `RegistrationValidator`. E-mailadres: verplicht, na trimmen hoogstens 254 tekens, precies één `@` met tekst ervoor en erna, een punt in het domein en geen spaties. `ExposedUserRepository` slaat het adres getrimd en in kleine letters op en zoekt er ook zo op. Wachtwoord: 8 tot en met 64 tekens, en nooit getrimd. Weergavenaam: verplicht en hoogstens 50 tekens, gemeten na trimmen. Elke overtreding is een `ValidationException` met `field`, dus `400`. Registreren staat daarom niet in `RequestValidation` | Lonneke, in de code; vastgelegd door Eva, 24 oktober 2026 | §10.2, §13 (GI-3 besluit 3.12), §16.5, §18.4 | Vast; in de code |
 | B-57 | Foutmelding bij inloggen | Een onbekend e-mailadres, een verwijderd account en een fout wachtwoord geven dezelfde `401` met dezelfde melding, "Invalid email or password". Zo is via inloggen niet te zien welke adressen bestaan (OWASP Foundation, z.j.-a). `LoginService` controleert de hash alleen als het account bestaat, dus een onbekend adres krijgt sneller antwoord. Dat tijdsverschil is een bewuste keuze: de code verandert niet meer vóór de oplevering (code freeze, 24 oktober 2026), de applicatie draait alleen lokaal (§1.6), en het commentaar in `LoginService` noemt de keuze. Ook bij een onbekend adres een hash controleren staat als open punt in §21 | Lonneke, in de code; keuze vastgelegd door Eva, 24 oktober 2026 (L-12) | §16.1, §21 | Vast; in de code. Verbetering open (§21) |
+| B-58 | Vorm van een barcode (US-02) | Een geldige barcode bestaat uit 7 tot en met 14 cijfers. Dat dekt UPC-E (7), EAN-8 (8), UPC-A (12), EAN-13 (13) en GTIN-14 (14), de soorten die Open Food Facts noemt; GTIN-14 is voor een doos met losse producten, wat bij een restpartij kan voorkomen (Open Food Facts, z.j.-d). Een andere barcode levert `400` met `field` gelijk aan `barcode`, bij de lookup en bij `POST` en `PUT /products`. Bij de lookup wordt de barcode deel van de URL naar Open Food Facts; zonder vormcontrole kan tekst als `abc?x=1` dat verzoek veranderen. Het is dus een vertrouwensgrens. De regel staat op één plek, `requireBarcode` in `ProductRequestValidator.kt`. Bij `POST` en `PUT` blijft `barcode` optioneel. Open Food Facts vult een korte barcode zelf aan met nullen; wij normaliseren niet, en het controlecijfer van een EAN-13 controleren we niet | Eva, 22 oktober 2026 | §5.1, §5.2, §5.3, §10.1 | Vast; in de code |
+| B-59 | Koppeling met Open Food Facts (A5) | De client is de HTTP-client van Ktor met de engine CIO; de testen vervangen de engine door `ktor-client-mock` (past bij B-15). De client roept API v3 aan, `GET /api/v3/product/{barcode}` met de parameter `fields`, zodat alleen de nodige velden terugkomen. De documentatie noemt v2 "deprecated" en v3 "current" (Open Food Facts, z.j.-b, z.j.-c). De `User-Agent` volgt het formaat dat Open Food Facts vraagt, `AppName/Version (ContactEmail)` (Open Food Facts, z.j.-a): `restpartijen-api/0.1 (<OFF_CONTACT_EMAIL>)`. Via het e-mailadres kan Open Food Facts direct contact opnemen, bijvoorbeeld voordat een IP wordt geblokkeerd. Het adres komt uit de omgevingsvariabele `OFF_CONTACT_EMAIL`, zodat er geen persoonlijk adres in de broncode staat. Net als bij `JWT_SECRET` (B-52) stopt de applicatie bij het starten als de variabele ontbreekt of geen e-mailadres is | Eva, 22 oktober 2026; het adres uit de omgeving na de security-review van ronde 2 (M-4) | §5.2, §10.3, §16.4 | Vast; in de code |
+| B-60 | Grenzen aan de lookup (US-02) | De lookup is een eigen service, `ProductLookupService`, los van `ProductService`; de route roept `lookup(barcode, userId)` aan. Een gevonden product wordt 24 uur onthouden, een onbekende barcode (`404`) 60 seconden. Elke cache houdt hoogstens 1.000 barcodes; bij een volle cache valt de oudste eruit. Beide caches zijn een exemplaar van `ExpiringCache`, zodat de regels op één plek staan. Een time-out of een foutstatus gaat niet in de cache. Hoogstens 10 aanroepen per minuut voor de hele applicatie en 5 per aanbieder (`OpenFoodFactsRateLimiter`); daarboven geeft de lookup een lege voorzet met `manualEntryRequired`, zonder Open Food Facts aan te roepen. De client leest het antwoord als stroom en hoogstens 64 KiB, en volgt geen redirect | Eva, 22 oktober 2026, na de security-review (F-01, F-02, M-2) en de code-review van ronde 2 | §5.2, §8.5 (SD-1), §10.3, §11.1, §17 | Vast; in de code |
+| B-61 | Afhaalvenster altijd berekend (US-10) | Een aanbieder geeft geen afhaalvenster meer op. Bij elke `POST` en `PUT` van een partij berekent `PickupWindowCalculator.calculate(openingstijden, nu, bestBeforeAt)` het venster; bij `PUT` is "nu" het moment van wijzigen. Het venster wordt bij de partij opgeslagen, zodat F2 en F3 het via `ProductView` lezen; een latere wijziging van de openingstijden werkt niet terug. Een body met `pickupWindow` levert `400` (B-49). Een aanbieder heeft altijd openingstijden: `PUT /suppliers/{id}/opening-hours` weigert een lege week en een dag die twee keer voorkomt met `422`, en de seeddata geeft alle drie de aanbieders openingstijden. Een aanbieder aanmaken valt buiten deze versie | Eva, 23 oktober 2026 | §4.1, §5.1, §5.3, §5.10, §8.4, §8.5 (SD-1), §9.9 | Vast; in de code |
+| B-62 | `bestBeforeAt` is een datum | Op een etiket staat een datum, geen tijd. Het request accepteert daarom een ISO-datum, bijvoorbeeld `"bestBeforeAt": "2026-12-13"`; een tijdstip levert `400`. De DTO zet de datum om naar het begin van de volgende dag in `Europe/Amsterdam`: 13 december 2026 wordt `2026-12-13T23:00:00Z`. Dat is een exact eindpunt dat zelf niet meetelt, net als `closesAt`; 23.59 uur zou de laatste minuut laten wegvallen. Binnen de API blijft het een `Instant`, dus `shared`, F2, F3 en de calculator veranderen niet, en het antwoord geeft `bestBeforeAt` als tijdstip. De veldnaam blijft `bestBeforeAt`; een `LocalDate` in het hele domein is een wens voor na de oplevering | Eva, 23 oktober 2026 | §5.1, §9.9, §10.1 | Vast; in de code: `toBestBeforeAt()` in `../server/src/product/dto/BestBeforeDate.kt` |
+| B-63 | Een partij wijzigen (A13) | `PUT /products/{id}` wijzigt alleen een eigen partij met status `LISTED`. De body bevat alle velden van `POST` behalve `category`, want de categorie bepaalt de subklasse, de maximale houdbaarheid en de afprijsregel. Een body met `category` levert `400`. De controles lopen in deze volgorde: `404`, `403`, `409` als de partij niet `LISTED` is, en pas dan `422` voor de domeinregels. De repository wijzigt alleen een `LISTED` partij, met die voorwaarde in de `WHERE`, zodat een partij die intussen is gereserveerd niet verandert | Eva, 21 oktober 2026 | §5.3, §10.1 | Vast; in de code |
+| B-64 | Het aanbod van één aanbieder (A4) | `GET /suppliers/{id}/products` ("Mijn aanbod") is openbaar en toont de partijen met status `LISTED` en `RESERVED`, op volgorde van id. Een `LISTED` partij waarvan de houdbaarheid net verstreken is, valt weg, ook als de statusbewaking nog niet heeft gedraaid. Een onbekende aanbieder levert `404`; een aanbieder zonder aanbod levert `200` met een lege lijst | Eva, 21 oktober 2026 | §10.1, §18.4 | Vast; in de code |
 
 ---
 
@@ -250,7 +257,7 @@ Wat elke rol mag, staat hieronder per functie. De tabel vat samen; de endpoints 
 
 - Restpartijen plaatsen in drie productsoorten, met automatische productverrijking via barcode.
 - Zoeken en filteren op categorie, prijs en resterende houdbaarheid. Filteren op afstand doet de app in periode 2 zelf (§18.1).
-- Reserveren binnen een afhaalvenster dat standaard uit de openingstijden van de aanbieder volgt, met een statusmachine die de partij vasthoudt.
+- Reserveren binnen een afhaalvenster dat uit de openingstijden van de aanbieder volgt, met een statusmachine die de partij vasthoudt.
 - Een afprijzing in staffels, per productsoort verschillend, die meebeweegt met de resterende houdbaarheid.
 - Automatische statusbewaking: verlopen partijen en niet-opgehaalde reserveringen worden zonder handwerk bijgewerkt.
 
@@ -344,7 +351,7 @@ Format: "Als *rol*, wil ik *actie*, zodat *waarde*".
 ### 4.1 F1 — Aanbod en productdata (Eva Bouwman)
 
 **US-01 — Restpartij plaatsen**
-Als **aanbieder** wil ik een restpartij plaatsen met productsoort, prijs, houdbaarheidsdatum, aantal en afhaalvenster, zodat afhalers die kunnen vinden voordat de partij wordt weggegooid.
+Als **aanbieder** wil ik een restpartij plaatsen met productsoort, prijs, houdbaarheidsdatum en aantal, met een afhaalvenster dat uit mijn openingstijden volgt, zodat afhalers die kunnen vinden voordat de partij wordt weggegooid.
 *Prioriteit: Must*
 
 **US-02 — Productgegevens via barcode**
@@ -359,7 +366,7 @@ Als **aanbieder** wil ik mijn eigen aanbod kunnen wijzigen en verwijderen, zodat
 Als **aanbieder** wil ik mijn openingstijden één keer op mijn account vastleggen, zodat het afhaalvenster van een nieuwe partij automatisch wordt ingevuld en ik het niet bij elke partij opnieuw hoef in te voeren.
 *Prioriteit: Should*
 
-US-10 is in v1.1 toegevoegd op voorstel van Stefan. De story is bewust *Should*: bij tijdnood kan zij vervallen zonder dat US-01 breekt, want het afhaalvenster blijft handmatig op te geven. De profgroep heeft op 19 september 2026 besloten dat de story erin komt als Should, met Eva als eigenaar.
+US-10 is in v1.1 toegevoegd op voorstel van Stefan. De profgroep heeft op 19 september 2026 besloten dat de story erin komt als Should, met Eva als eigenaar. Tot v3.0 kon zij bij tijdnood vervallen zonder dat US-01 brak, want het afhaalvenster was ook handmatig op te geven. Sinds 23 oktober 2026 berekent de API het venster altijd uit de openingstijden (B-61). US-01 hangt daardoor van US-10 af, en US-10 is gebouwd.
 
 ### 4.2 F2 — Zoeken en reserveren (Stefan Pellikaan)
 
@@ -455,13 +462,14 @@ Elk criterium is één toetsbare uitspraak. Statuscodes zijn onderdeel van het c
 
 - Een aanbieder met een geldig JWT en rol `SUPPLIER` kan een partij plaatsen; het antwoord is `201 Created` met de aangemaakte partij en status `LISTED`.
 - Een verzoek zonder `bestBeforeAt` wordt geweigerd met `400 Bad Request` en de foutmelding benoemt het ontbrekende veld.
-- Een `bestBeforeAt` in het verleden wordt geweigerd met `422 Unprocessable Entity`.
-- Een afhaalvenster dat eindigt na `bestBeforeAt` wordt geweigerd met `422 Unprocessable Entity`.
-- Wordt er geen afhaalvenster opgegeven, dan leidt de API het af uit de openingstijden van de aanbieder (US-10, §9.9).
-- Wordt er geen afhaalvenster opgegeven en heeft de aanbieder geen openingstijden vastgelegd, dan wordt het verzoek geweigerd met `422 Unprocessable Entity`.
+- `bestBeforeAt` is een ISO-datum (`JJJJ-MM-DD`), zoals op het etiket. De partij is houdbaar tot het begin van de volgende dag in `Europe/Amsterdam` (B-62). Een tijdstip in plaats van een datum levert `400 Bad Request`.
+- Een `bestBeforeAt` die al voorbij is, wordt geweigerd met `422 Unprocessable Entity`.
+- De aanbieder geeft geen afhaalvenster op. De API berekent het uit de openingstijden van de aanbieder, `bestBeforeAt` en het moment van plaatsen (US-10, §9.9, B-61); het eindigt nooit na `bestBeforeAt`. Een body met `pickupWindow` levert `400 Bad Request` (B-49).
+- Is de aanbieder tussen het plaatsen en `bestBeforeAt` geen moment open, dan wordt het verzoek geweigerd met `422 Unprocessable Entity` (§5.10).
 - Een `quantity` kleiner dan 1 wordt geweigerd met `422 Unprocessable Entity`.
 - Een houdbaarheidsdatum die voor de productsoort onwaarschijnlijk ver weg ligt, wordt geweigerd met `422 Unprocessable Entity`; de foutmelding noemt de grens voor die soort (§9.10).
 - Een allergeen dat niet op de EU-lijst van veertien allergenen staat (§9.8), wordt geweigerd met `400 Bad Request`: de waarde staat niet in de enum `Allergen` en is dus niet te deserialiseren.
+- Een opgegeven `barcode` die niet uit 7 tot en met 14 cijfers bestaat, levert `400 Bad Request` met `field` gelijk aan `barcode` (B-58). Zonder barcode plaatsen blijft mogelijk.
 - Een gebruiker met rol `COLLECTOR` die deze endpoint aanroept krijgt `403 Forbidden`.
 
 ### 5.2 US-02 — Productgegevens via barcode
@@ -469,19 +477,21 @@ Elk criterium is één toetsbare uitspraak. Statuscodes zijn onderdeel van het c
 - De barcode opzoeken is een aparte aanroep (`GET /products/lookup/{barcode}`). Het plaatsen van een partij roept Open Food Facts niet aan.
 - Een bestaande barcode levert productnaam en allergenenlijst uit Open Food Facts, met `200 OK`.
 - Een onbekende barcode levert `404 Not Found`.
-- Als Open Food Facts niet binnen drie seconden antwoordt, levert de API `200 OK` met een leeg resultaat en een veld dat aangeeft dat handmatige invoer nodig is; het plaatsen van een partij blijft mogelijk.
-- Elke uitgaande aanroep bevat een `User-Agent`-header met applicatienaam, versie en contactadres.
-- Een allergeen-tag van Open Food Facts die niet naar de EU-lijst te vertalen is, wordt genegeerd en gelogd; dat leidt niet tot een fout.
+- Een barcode die niet uit 7 tot en met 14 cijfers bestaat, levert `400 Bad Request` met `field` gelijk aan `barcode`; Open Food Facts wordt dan niet aangeroepen (B-58).
+- Geeft Open Food Facts geen bruikbaar antwoord, dan levert de API `200 OK` met een leeg resultaat en `manualEntryRequired` gelijk aan `true`; het plaatsen van een partij blijft mogelijk. Dat geldt bij een time-out na drie seconden, geen verbinding, een foutstatus, een antwoord groter dan 64 KiB of een redirect, en als de eigen grens van 10 aanroepen per minuut, of 5 per aanbieder, bereikt is (B-60).
+- Elke uitgaande aanroep bevat een `User-Agent`-header in de vorm `restpartijen-api/<versie> (<OFF_CONTACT_EMAIL>)` (§10.3, B-59).
+- Een allergeen-tag van Open Food Facts die niet naar de EU-lijst te vertalen is, wordt overgeslagen en gelogd; dat leidt niet tot een fout. De tag `en:none` wordt zonder waarschuwing overgeslagen (§9.8).
 
 ### 5.3 US-03 — Eigen aanbod beheren
 
 - Een aanbieder kan een eigen partij wijzigen; het antwoord is `200 OK` met de bijgewerkte partij.
+- Alleen een partij met status `LISTED` kan worden gewijzigd; een andere status levert `409 Conflict`. De body bevat alle velden van `POST` behalve `category`; een body met `category` levert `400 Bad Request` (B-63).
+- Bij het wijzigen berekent de API het afhaalvenster opnieuw, met het moment van wijzigen als "nu" (B-61). Voor `barcode` en `bestBeforeAt` gelden dezelfde regels als bij plaatsen (B-58, B-62).
+- Bij wijzigen lopen de controles in deze volgorde: `404`, `403`, `409`, en pas dan `422` voor de domeinregels. Een partij die niet mag veranderen, krijgt dus `409` en geen `422` over haar datums.
 - Een aanbieder die een partij van een andere aanbieder probeert te wijzigen krijgt `403 Forbidden`.
 - Een aanbieder kan een eigen partij verwijderen; het antwoord is `204 No Content`. De partij krijgt status `REMOVED` en blijft in de database staan (§9.5).
-- Alleen een partij met status `LISTED` kan worden verwijderd. Een partij met status `RESERVED`, `COLLECTED`, `EXPIRED` of `REMOVED` levert `409 Conflict`.
+- Alleen een partij met status `LISTED` kan worden verwijderd. Een partij met status `RESERVED`, `COLLECTED` of `EXPIRED` levert `409 Conflict`. Een partij met status `REMOVED` levert `404 Not Found`, net als bij de beheerder (B-38, issue #45).
 - Een verzoek op een niet-bestaande partij levert `404 Not Found`. Een partij met status `REMOVED` telt als niet-bestaand: `GET /products/{id}` levert dan ook `404 Not Found`.
-
-> **Opmerking v2.4 — voor Eva: verwijderen van een al verwijderde partij.** Bij de beheerder levert dit `404` (B-38), omdat `findById` een `REMOVED` partij niet teruggeeft en de service haar dus niet ziet. Hierboven staat voor de aanbieder nog `409`. Dat botst met de regel dat een `REMOVED` partij als niet-bestaand telt, en het vraagt van de repository van F1 dat zij een verwijderde partij wél teruggeeft. Het voorstel is `404`, gelijk aan de beheerder. De keuze ligt bij de profgroep in issue #45; tot die tijd blijft het criterium staan.
 
 ### 5.4 US-04 — Aanbod zoeken en filteren
 
@@ -575,10 +585,14 @@ Elk criterium is één toetsbare uitspraak. Statuscodes zijn onderdeel van het c
 - Een sluitingstijd die niet na de openingstijd ligt, wordt geweigerd met `422 Unprocessable Entity`.
 - Een aanbieder die de openingstijden van een andere aanbieder probeert te wijzigen krijgt `403 Forbidden`.
 - De openingstijden van een aanbieder zijn zonder authenticatie op te vragen.
-- Het afgeleide afhaalvenster begint bij het plaatsen als de aanbieder op dat moment open is, en anders op het eerstvolgende openingsmoment.
+- Het afgeleide afhaalvenster begint bij het plaatsen of wijzigen als de aanbieder op dat moment open is, en anders op het eerstvolgende openingsmoment.
 - Het afgeleide afhaalvenster eindigt op `bestBeforeAt`, of op het laatste sluitingsmoment daarvoor als de aanbieder op `bestBeforeAt` gesloten is.
 - Een dag zonder openingstijden telt als gesloten en wordt bij het afleiden overgeslagen.
 - Is de aanbieder tussen het plaatsen en `bestBeforeAt` geen moment open, dan wordt het plaatsen van de partij geweigerd met `422 Unprocessable Entity`.
+- Een aanbieder heeft altijd openingstijden (B-61). Een lege week wordt daarom geweigerd met `422 Unprocessable Entity`. Een dag die twee keer voorkomt, levert ook `422`, met de dag in de melding.
+- Bij `PUT` lopen de controles in deze volgorde: `404` bij een onbekende aanbieder, `403` bij een andere aanbieder, dan `422`.
+- `GET` levert `404 Not Found` bij een onbekende aanbieder, zodat "bestaat niet" niet lijkt op "altijd dicht".
+- Een aanbieder aanmaken bestaat nog niet in de API: de drie aanbieders komen uit de seeddata, elk met openingstijden (§9.7). Wie die functie later bouwt, vraagt de openingstijden in hetzelfde verzoek en weigert een lege week met `422`, net als `PUT /suppliers/{id}/opening-hours`.
 
 ### 5.11 US-11 — Ophalen bevestigen
 
@@ -599,7 +613,7 @@ De aanbieder geeft de partij pas mee nadat de afhaler in de app heeft bevestigd.
 | Story | Ontwerpcomponent | API / DB-artefact | Testcase | Eigenaar |
 |-------|------------------|-------------------|----------|----------|
 | US-01 | `ProductService`, `SurplusProduct` | `POST /api/v1/products`, tabel `surplus_products` | TC-01 | Eva |
-| US-02 | `OpenFoodFactsClient`, `AllergenMapper` | `GET /api/v1/products/lookup/{barcode}` | TC-02 | Eva |
+| US-02 | `ProductLookupService`, `OpenFoodFactsClient`, `mapAllergenTags` | `GET /api/v1/products/lookup/{barcode}` | TC-02 | Eva |
 | US-03 | `ProductService`, `OwnershipGuard` | `PUT`/`DELETE /api/v1/products/{id}` | TC-03 | Eva |
 | US-04 | `ProductSearchService`, `SearchCriteria` | `GET /api/v1/products` | TC-04 | Stefan |
 | US-05 | `ReservationService`, `ReservationStateMachine` | `POST /api/v1/reservations`, tabel `reservations` | TC-05 | Stefan |
@@ -928,10 +942,11 @@ sequenceDiagram
     actor S as Aanbieder
     participant R as ProductRoutes
     participant A as RBAC-check
+    participant LS as ProductLookupService
+    participant OFC as OpenFoodFactsClient
+    participant AM as mapAllergenTags
     participant PS as ProductService
     participant P as SurplusProduct
-    participant OFC as OpenFoodFactsClient
-    participant AM as AllergenMapper
     participant PWC as PickupWindowCalculator
     participant PR as ProductRepository
     participant DB as H2
@@ -940,23 +955,28 @@ sequenceDiagram
     S->>R: GET /api/v1/products/lookup/8712345678906 (JWT)
     R->>A: rol SUPPLIER vereist?
     A-->>R: toegestaan
-    R->>PS: lookupProduct(barcode)
-    PS->>OFC: fetchProduct(barcode)
-    alt product gevonden
-        OFC-->>PS: naam + allergeen-tags
-        PS->>AM: fromTags(tags)
-        Note over AM: tags buiten de EU-lijst worden<br/>genegeerd en gelogd
-        AM-->>PS: allergenen uit de EU-lijst
-        PS-->>R: voorzet
-        R-->>S: 200 OK
-    else onbekende barcode
-        OFC-->>PS: niet gevonden
-        PS-->>R: NotFoundException
-        R-->>S: 404 Not Found
-    else time-out na 3 s
-        OFC-->>PS: leeg resultaat
-        PS-->>R: leeg resultaat, handmatige invoer nodig
-        R-->>S: 200 OK
+    alt barcode is niet 7 tot en met 14 cijfers
+        R-->>S: 400 Bad Request, Open Food Facts niet aangeroepen
+    else geldige barcode
+        R->>LS: lookup(barcode, userId)
+        Note over LS: een treffer in de cache of een bereikte grens<br/>(10 per minuut, 5 per aanbieder) antwoordt<br/>zonder Open Food Facts aan te roepen
+        LS->>OFC: fetchProduct(barcode)
+        alt product gevonden
+            OFC-->>LS: naam + allergeen-tags
+            LS->>AM: mapAllergenTags(tags)
+            Note over AM: onbekende tags worden overgeslagen<br/>en gelogd, de tag en:none zonder waarschuwing
+            AM-->>LS: allergenen uit de EU-lijst
+            LS-->>R: voorzet, 24 uur in de cache
+            R-->>S: 200 OK
+        else onbekende barcode
+            OFC-->>LS: NotFound
+            LS-->>R: NotFoundException, 60 s in de cache
+            R-->>S: 404 Not Found
+        else geen bruikbaar antwoord
+            OFC-->>LS: Unavailable (time-out na 3 s, geen verbinding,<br/>foutstatus, groter dan 64 KiB of redirect)
+            LS-->>R: leeg resultaat, manualEntryRequired
+            R-->>S: 200 OK
+        end
     end
 
     Note over S: aanbieder controleert de voorzet<br/>en vult aan
@@ -966,34 +986,38 @@ sequenceDiagram
     R->>A: rol SUPPLIER vereist?
     A-->>R: toegestaan
     alt request body klopt structureel niet
-        Note over R: bijvoorbeeld een allergeen<br/>buiten de enum Allergen
+        Note over R: bijvoorbeeld een allergeen buiten de enum Allergen,<br/>een veld pickupWindow of een ongeldige barcode
         R-->>S: 400 Bad Request
     else structuur in orde
-        R->>PS: createProduct(command)
-        opt geen afhaalvenster opgegeven
-            PS->>PWC: defaultWindow(openingstijden, nu, bestBeforeAt)
-            PWC-->>PS: afgeleid afhaalvenster
-        end
-        PS->>PS: factory kiest Fresh/Frozen/Ambient
-        PS->>P: validateForListing(clock)
-        Note over P: gedeelde regels in de basisklasse,<br/>de grens voor de datum komt uit de subklasse
-        alt domeinregel geschonden
-            P-->>PS: DomainRuleException
+        R->>PS: createProduct(userId, command)
+        PS->>PWC: calculate(openingstijden, nu, bestBeforeAt)
+        alt Expired of NeverOpen
+            PWC-->>PS: geen afhaalvenster
             PS-->>R: DomainRuleException
             R-->>S: 422 Unprocessable Entity
-        else geldig
-            P-->>PS: in orde
-            PS->>PR: create(product)
-            PR->>DB: INSERT
-            DB-->>PR: id
-            PR-->>PS: opgeslagen partij
-            PS-->>R: partij met status LISTED
-            R-->>S: 201 Created
+        else Found
+            PWC-->>PS: afhaalvenster
+            PS->>PS: factory kiest Fresh/Frozen/Ambient
+            PS->>P: validateForListing(clock)
+            Note over P: gedeelde regels in de basisklasse,<br/>de grens voor de datum komt uit de subklasse
+            alt domeinregel geschonden
+                P-->>PS: DomainRuleException
+                PS-->>R: DomainRuleException
+                R-->>S: 422 Unprocessable Entity
+            else geldig
+                P-->>PS: in orde
+                PS->>PR: create(product)
+                PR->>DB: INSERT
+                DB-->>PR: id
+                PR-->>PS: opgeslagen partij
+                PS-->>R: partij met status LISTED
+                R-->>S: 201 Created
+            end
         end
     end
 ```
 
-SD-1 heeft twee stappen. In stap 1 zoekt de aanbieder de productgegevens op via de barcode. De client haalt ze op; de `AllergenMapper` vertaalt de allergeen-tags naar de EU-lijst. Open Food Facts mag daarbij falen: na een time-out van drie seconden komt er een leeg antwoord terug en typt de aanbieder de gegevens zelf. De aanbieder controleert de voorzet altijd, want Open Food Facts wordt door vrijwilligers gevuld (§9.8). In stap 2 plaatst hij de partij. Die stap roept geen externe dienst aan en is daardoor te testen zonder Open Food Facts. Stap 2 laat ook de twee niveaus van validatie zien (§10.2). Een verzoek dat structureel niet klopt, komt niet verder dan de route en levert `400`. Een verzoek dat een domeinregel schendt, levert `422`. Is er geen afhaalvenster opgegeven, dan wordt het afgeleid uit de openingstijden. De factory kiest de subklasse die bij de categorie hoort, en de partij controleert daarna zichzelf met `validateForListing()`. Dat is de polymorfe aanroep van F1: de gedeelde regels staan in de basisklasse, en de grens voor de datum komt uit de subklasse (§9.10).
+SD-1 heeft twee stappen. In stap 1 zoekt de aanbieder de productgegevens op via de barcode. De route controleert eerst de vorm van de barcode (B-58). Daarna kijkt `ProductLookupService` in de cache en bewaakt hij de grens van het aantal aanroepen (B-60); pas dan haalt de client de gegevens op, en de functie `mapAllergenTags` vertaalt de allergeen-tags naar de EU-lijst. Open Food Facts mag daarbij falen: zonder bruikbaar antwoord komt er een leeg antwoord terug en typt de aanbieder de gegevens zelf. De aanbieder controleert de voorzet altijd, want Open Food Facts wordt door vrijwilligers gevuld (§9.8). In stap 2 plaatst hij de partij. Die stap roept geen externe dienst aan en is daardoor te testen zonder Open Food Facts. Stap 2 laat ook de twee niveaus van validatie zien (§10.2). Een verzoek dat structureel niet klopt, komt niet verder dan de route en levert `400`. Een verzoek dat een domeinregel schendt, levert `422`. Het afhaalvenster berekent `PickupWindowCalculator` altijd uit de openingstijden (B-61). Hij geeft een venster (`Found`), of de reden dat er geen is: `Expired` of `NeverOpen`. In die twee gevallen gooit `ProductService` de `422`; de calculator kent het veld en de melding niet. De factory kiest de subklasse die bij de categorie hoort, en de partij controleert daarna zichzelf met `validateForListing()`. Dat is de polymorfe aanroep van F1: de gedeelde regels staan in de basisklasse, en de grens voor de datum komt uit de subklasse (§9.10).
 
 #### SD-2 — Zoeken en reserveren met autorisatie (US-04, US-05)
 
@@ -1233,7 +1257,7 @@ erDiagram
     }
 ```
 
-Het ERD heeft zes tabellen. Een account (`USERS`) kan bij een aanbieder horen; alleen dan is er een rij in `SUPPLIERS`. Een aanbieder heeft partijen en openingstijden. De drie productsoorten staan samen in één tabel met de kolom `category` (§9.3). Allergenen staan in een eigen tabel, omdat een partij er nul tot veertien kan hebben. Een reservering verwijst naar één afhaler en één partij, geldt voor die hele partij, en bewaart de prijs van het moment van reserveren. Bedragen staan als hele centen in een `long`-kolom; de naam eindigt daarom op `_cents` (ADR-07).
+Het ERD heeft zes tabellen. Een account (`USERS`) kan bij een aanbieder horen; alleen dan is er een rij in `SUPPLIERS`. Een aanbieder heeft partijen en openingstijden. `SUPPLIER_OPENING_HOURS` heeft één rij per geopende dag, met de primaire sleutel (`supplier_id`, `day_of_week`); een gesloten dag heeft geen rij. De drie productsoorten staan samen in één tabel met de kolom `category` (§9.3). Allergenen staan in een eigen tabel, omdat een partij er nul tot veertien kan hebben. Een reservering verwijst naar één afhaler en één partij, geldt voor die hele partij, en bewaart de prijs van het moment van reserveren. Bedragen staan als hele centen in een `long`-kolom; de naam eindigt daarom op `_cents` (ADR-07).
 
 **Sleutels en toegestane waarden (B-47).** `PRODUCT_ALLERGENS` heeft een samengestelde primaire sleutel op `product_id` en `allergen`: een partij noemt elk allergeen hooguit één keer, en de database weigert een dubbele combinatie. `SUPPLIERS.user_id` is uniek, want een account hoort bij hooguit één aanbieder, en verwijst sinds issue #36 met een foreign key naar `USERS`; de tabellen waar een andere feature naar verwijst, staan daarvoor samen in `persistence`. De kolommen `status`, `category` en `role` zijn een `string`, omdat Exposed de enum als tekst opslaat (`enumerationByName`). Het ERD toont daarom de toegestane waarden als commentaar bij het attribuut; de bron van de waarden blijft de enum in de code. `RESERVATIONS.expires_at` bewaart het moment waarop de reservering vervalt (24 uur of het einde van het venster, B-4), zodat de statusbewaking niet hoeft te rekenen; `collected_at` komt met US-11 (issue #42). `USERS.deleted_at` is de soft delete van B-50: `null` betekent actief.
 
@@ -1314,7 +1338,7 @@ Het diagram toont de status van een partij (`ProductStatus`). `COLLECTED`, `EXPI
 
 **Waarom een verwijderde partij `404` levert (B-32, bevestigd in issue #16).** Zacht verwijderen, met een status in plaats van een rij die verdwijnt, is een interne boekhouding; naar buiten doet de API alsof de partij weg is. RFC 9110 past daarbij: `404` betekent dat de server de bron niet vindt, of niet wil prijsgeven dat zij bestaat; `409` gaat over een botsing met de huidige toestand van een bron die er voor de gebruiker nog is (Fielding et al., 2022, §15.5.5 en §15.5.10). `410 Gone` is preciezer, maar vraagt een zevende exceptie en laat zien dat de partij ooit bestond (§15.5.11). De uitvoering is de tweede route uit v2.2: `findById` van `ProductReader` geeft `null` bij `REMOVED`, zodat elke aanroeper het vanzelf goed doet. Dat staat nu in het contract (§12.1).
 
-**Verwijderen door de beheerder volgt dezelfde regel (B-38, B-39).** Omdat `findById` een `REMOVED` partij niet teruggeeft, ziet `AdminProductService` haar niet en is het antwoord `404`, net als bij een onbekend id. Alleen `COLLECTED` en `EXPIRED` leveren `409`. De service laat bij een `RESERVED` partij eerst de reservering vervallen met `lapseActiveFor` en roept daarna `markRemoved` aan. Geeft die `false`, omdat de status intussen is veranderd, dan gooit de service een `IllegalStateTransitionException`; de transactie draait terug, het vervallen incluis, en het antwoord is `409`. Voor de aanbieder (§5.3) is dezelfde regel nog niet besloten; zie de Opmerking v2.4 daar.
+**Verwijderen door de beheerder volgt dezelfde regel (B-38, B-39).** Omdat `findById` een `REMOVED` partij niet teruggeeft, ziet `AdminProductService` haar niet en is het antwoord `404`, net als bij een onbekend id. Alleen `COLLECTED` en `EXPIRED` leveren `409`. De service laat bij een `RESERVED` partij eerst de reservering vervallen met `lapseActiveFor` en roept daarna `markRemoved` aan. Geeft die `false`, omdat de status intussen is veranderd, dan gooit de service een `IllegalStateTransitionException`; de transactie draait terug, het vervallen incluis, en het antwoord is `409`. Voor de aanbieder geldt sinds v3.0 hetzelfde: een al verwijderde partij levert `404` (§5.3, issue #45). `ProductService` hoefde daarvoor niet te veranderen, want ook daar geeft `findById` een `REMOVED` partij niet terug.
 
 De overgangen `RESERVED → LISTED` bij een verlopen venster en `LISTED → EXPIRED` bij een verstreken datum zijn de twee automatische overgangen. Die worden niet door een gebruiker aangeroepen maar door de statusbewaking (§8.5, SD-4). Daar wordt de business logic zichtbaar. Een gereserveerde partij waarvan de datum verstrijkt, komt in dezelfde run eerst vrij en verloopt daarna (SD-4).
 
@@ -1357,12 +1381,12 @@ Een reservering is maximaal 24 uur geldig. `LAPSE` volgt dus als het afhaalvenst
 
 De seeddata wordt bij het opstarten geladen als de database leeg is (r.84, r.198):
 
-- Drie aanbieders: een supermarkt, een bakker en een groothandel, elk met een eigen locatie en eigen openingstijden.
+- Drie aanbieders: een supermarkt, een bakker en een groothandel, elk met een eigen locatie en eigen openingstijden, met verschillende gesloten dagen (B-61).
 - Per aanbieder minimaal vijf partijen. De supermarkt en de groothandel bieden alle drie de productsoorten aan; de bakker biedt vers en houdbaar aan.
 - Houdbaarheidsdatums gespreid van enkele uren tot enkele weken, zodat elke staffel van elke productsoort in de demo zichtbaar is.
 - De houdbaarheidsdatums worden bij het opstarten berekend ten opzichte van de klok ("nu plus zes uur") en staan niet als vaste datum in de seeddata. Een vaste datum is op de dag van het assessment verlopen.
 - Minstens één partij in elke status: `LISTED`, `RESERVED`, `COLLECTED`, `EXPIRED` en `REMOVED` (B-31).
-- Zes gebruikersaccounts: drie aanbieders, twee afhalers en één beheerder.
+- Zes gebruikersaccounts: drie aanbieders, twee afhalers en één beheerder. Alle zes delen één demowachtwoord. Het staat in de README en is alleen voor de demo: zo kunnen de docent en het team zonder extra stap inloggen. Het is dus geen geheim (§16.4). `SeedData` hasht het één keer per start.
 
 De spreiding van houdbaarheidsdatums is geen detail. Zonder een partij in elke staffel is de afprijslogica tijdens de demo niet te tonen. `SeedData` schrijft daarbij rechtstreeks in alle tabellen; dat is een bewuste uitzondering op de contractregel (§12.1).
 
@@ -1393,21 +1417,21 @@ Het zijn veertien groepen. Twee daarvan, glutenbevattende granen en noten, noeme
 
 Een wettelijk vastgelegde lijst heeft twee voordelen boven een eigen lijst. De validatie is een gesloten vraag: een waarde staat in de enum of niet. En de keuze is te verdedigen zonder eigen afweging over welke allergenen ertoe doen.
 
-Open Food Facts levert allergenen als tags, bijvoorbeeld `en:milk`. De `OpenFoodFactsClient` haalt ze op; de `AllergenMapper` vertaalt ze naar de enum. Een tag die niet te vertalen is, wordt genegeerd en gelogd. Dat komt vaak voor: Open Food Facts kent ook allergenen buiten de EU-lijst, zoals `en:pork` en `en:apple`, en bevat vrije tekst die niet is herkend (Open Food Facts, z.j.-b). De tags in de tabel zijn de genormaliseerde namen uit die lijst; bij de realisatie controleren we ze met één echte aanroep. De mapper is bewust een eigen klasse en geen onderdeel van de client. Vertalen is een pure functie: dezelfde tags leveren altijd dezelfde allergenen. Daardoor is zij te testen zonder netwerk en zonder Open Food Facts na te bootsen. Open Food Facts is een database die door vrijwilligers wordt gevuld. Wat eruit komt is daarom een voorzet die de aanbieder controleert, geen garantie.
+Open Food Facts levert allergenen als tags, bijvoorbeeld `en:milk`. De `OpenFoodFactsClient` haalt ze op; de functie `mapAllergenTags` in `AllergenMapper.kt` vertaalt ze naar de enum. Een tag die niet te vertalen is, wordt overgeslagen en gelogd. Dat komt vaak voor: Open Food Facts kent ook allergenen buiten de EU-lijst, zoals `en:pork` en `en:apple`, en bevat vrije tekst die niet is herkend (Open Food Facts, z.j.-g). De veertien tags in de tabel zijn op 22 oktober 2026 gecontroleerd tegen de taxonomie van Open Food Facts (Open Food Facts, z.j.-e). Die taxonomie kent ook `en:none`: iemand heeft verklaard dat het product geen allergenen heeft. Dat staat bij 4.202 producten (Open Food Facts, z.j.-f). `en:none` wordt zonder waarschuwing overgeslagen. Ook een lege lijst komt voor, bijvoorbeeld bij Coca-Cola Original. Beide leveren geen allergenen op, maar een lege lijst bewijst niet dat het product er geen heeft. Alleen een echt onbekende tag, zoals `en:kiwi`, komt in de log; een logregel noemt hoogstens vijf tags, elk ingekort tot 64 tekens. Het vertalen is bewust een eigen functie en geen onderdeel van de client. Tot v3.0 noemde dit document het een eigen klasse, `AllergenMapper`. In de code is het een functie op bestandsniveau, omdat vertalen geen toestand heeft; in Kotlin is een functie dan de gewone vorm (besluit Eva, 22 oktober 2026). Vertalen is een pure functie: dezelfde tags leveren altijd dezelfde allergenen. Daardoor is zij te testen zonder netwerk en zonder Open Food Facts na te bootsen. Open Food Facts is een database die door vrijwilligers wordt gevuld. Wat eruit komt is daarom een voorzet die de aanbieder controleert, geen garantie.
 
 ### 9.9 Openingstijden en afhaalvenster
 
-Een aanbieder legt per weekdag één openings- en één sluitingstijd vast (US-10). Een dag zonder regel is een gesloten dag. Wordt een partij geplaatst zonder afhaalvenster, dan berekent `PickupWindowCalculator` het venster. Het begint bij het plaatsen als de aanbieder dan open is, en anders op het eerstvolgende openingsmoment. Het eindigt op `bestBeforeAt`, of op het laatste sluitingsmoment daarvoor als de aanbieder op dat tijdstip gesloten is. Een koelverse partij die vandaag om 15.00 uur verloopt bij een winkel die tot 18.00 uur open is, is dus tot 15.00 uur op te halen. De uitkomst wordt als `pickup_from` en `pickup_until` bij de partij opgeslagen. Reserveren en de statusbewaking werken daardoor met hetzelfde afhaalvenster als in v1.0 en hoeven de openingstijden niet te kennen.
+Een aanbieder legt per weekdag één openings- en één sluitingstijd vast (US-10). Een dag zonder regel is een gesloten dag. Bij elke `POST` en `PUT` van een partij berekent `PickupWindowCalculator` het venster (B-61); bij `PUT` is "nu" het moment van wijzigen. Het begint nu als de aanbieder dan open is, en anders op het eerstvolgende openingsmoment. Het eindigt op `bestBeforeAt`, of op het laatste sluitingsmoment daarvoor als de aanbieder op dat tijdstip gesloten is. Een partij met als datum vandaag, bij een winkel die tot 18.00 uur open is, is dus tot 18.00 uur op te halen: de partij is houdbaar tot middernacht (B-62), en dan is de winkel al dicht. De uitkomst wordt als `pickup_from` en `pickup_until` bij de partij opgeslagen. Reserveren en de statusbewaking werken daardoor met hetzelfde afhaalvenster als in v1.0 en hoeven de openingstijden niet te kennen.
 
 De randgevallen liggen vast:
 
-- Een aanbieder kan per partij een afwijkend afhaalvenster opgeven; dat gaat voor.
 - Is de aanbieder tussen het plaatsen en `bestBeforeAt` geen moment open, dan is de partij niet op te halen en wordt het plaatsen geweigerd met `422`.
 - Een latere wijziging van de openingstijden werkt niet terug op bestaande partijen.
-- Er is één tijdvak per dag. Een middagsluiting valt buiten scope.
-- Openingstijden zijn lokale tijden. Het platform rekent met één vaste tijdzone, `Europe/Amsterdam`, en zet ze met kotlinx-datetime om naar een `Instant`. Die library is al een afhankelijkheid van `exposed-kotlin-datetime`, dus er komt geen nieuwe library bij om te verdedigen.
+- Er is één tijdvak per dag. Een middagsluiting valt buiten scope, net als feestdagen en afwijkende openingstijden op een bepaalde datum.
+- De calculator geeft een venster (`Found`) of de reden dat er geen is: `Expired` als `bestBeforeAt` niet na nu ligt, en `NeverOpen` als de aanbieder in die tijd geen moment open is, ook bij een lege week. `ProductService` maakt van beide een `422`.
+- Openingstijden zijn lokale tijden, en de houdbaarheidsdatum is een lokale datum. Het platform rekent met één vaste tijdzone, `Europe/Amsterdam` (de constante `PLATFORM_TIME_ZONE`), en zet beide met kotlinx-datetime om naar een `Instant`. De library zat er al via Exposed en Ktor. Sinds commit 461d5fb staat zij ook als directe afhankelijkheid in `../server/module.yaml`, omdat de code haar zelf gebruikt; er komt dus geen nieuwe library bij om te verdedigen.
 
-Dat laatste punt is de verborgen prijs van deze story. Tot v1.0 kende het ontwerp alleen tijdstippen, en daar komt geen tijdzone aan te pas. Openingstijden brengen weekdagen, lokale tijd en zomertijd het domein in. De logica blijft beheersbaar doordat zij in één klasse zit die een pure functie is: dezelfde openingstijden, hetzelfde plaatsingsmoment en dezelfde houdbaarheidsdatum leveren altijd hetzelfde venster.
+Dat laatste punt is de verborgen prijs van deze story. Tot v1.0 kende het ontwerp alleen tijdstippen, en daar komt geen tijdzone aan te pas. Openingstijden brengen weekdagen, lokale tijd en zomertijd het domein in. De logica blijft beheersbaar doordat zij in één `object` zit met een pure functie: dezelfde openingstijden, hetzelfde plaatsingsmoment en dezelfde houdbaarheidsdatum leveren altijd hetzelfde venster.
 
 ### 9.10 Plausibiliteit van de houdbaarheidsdatum per productsoort
 
@@ -1438,10 +1462,10 @@ Basis-URL: `/api/v1`. De kolom "Rol" geeft de rol die de endpoint mag aanroepen;
 | `/products` | GET | — | Aanbod zoeken en filteren, met de actuele prijs per partij | F2 |
 | `/products/{id}` | GET | — | Detail van één partij, met prijsopbouw | F1 |
 | `/products` | POST | `SUPPLIER` | Partij plaatsen | F1 |
-| `/products/{id}` | PUT | `SUPPLIER` | Eigen partij wijzigen | F1 |
-| `/products/{id}` | DELETE | `SUPPLIER` | Eigen partij verwijderen | F1 |
-| `/products/lookup/{barcode}` | GET | `SUPPLIER` | Productgegevens via Open Food Facts | F1 |
-| `/suppliers/{id}/products` | GET | — | Aanbod van één aanbieder | F1 |
+| `/products/{id}` | PUT | `SUPPLIER` | Eigen `LISTED` partij wijzigen; alle velden van `POST` behalve `category` (B-63) | F1 |
+| `/products/{id}` | DELETE | `SUPPLIER` | Eigen partij verwijderen; `404` als de partij onbekend of al verwijderd is (B-38) | F1 |
+| `/products/lookup/{barcode}` | GET | `SUPPLIER` | Productgegevens via Open Food Facts; `400` bij een barcode die niet uit 7 tot en met 14 cijfers bestaat (B-58) | F1 |
+| `/suppliers/{id}/products` | GET | — | Aanbod van één aanbieder ("Mijn aanbod", B-64) | F1 |
 | `/suppliers/{id}/opening-hours` | GET | — | Openingstijden van één aanbieder | F1 |
 | `/suppliers/{id}/opening-hours` | PUT | `SUPPLIER` | Eigen openingstijden vastleggen | F1 |
 | `/reservations` | POST | `COLLECTOR` | Partij reserveren | F2 |
@@ -1455,6 +1479,8 @@ Basis-URL: `/api/v1`. De kolom "Rol" geeft de rol die de endpoint mag aanroepen;
 Alle vier de CRUD-soorten zijn hiermee gedekt (r.202): POST op `/products`, GET op `/products`, PUT op `/products/{id}` en DELETE op `/products/{id}`.
 
 **De beheerendpoints (B-42, B-43).** `POST /admin/maintenance/expire` antwoordt met `200 OK` en het rapport `MaintenanceReport` als JSON, met de velden `lapsedReservations` en `expiredProducts`. `GET /admin/products` neemt het filter `status` als herhaalde parameter: `?status=LISTED&status=RESERVED`, niet kommagescheiden. De waarden zijn hoofdlettergevoelig en komen uit `ProductStatus`. Zonder parameter geeft de route een lege set door en vertaalt `AdminProductService` die naar "alles behalve `REMOVED`" (B-26). Een onbekende waarde levert `400` met de toegestane waarden in de foutmelding en `field` gelijk aan `status`. Het antwoord is een lijst van `AdminProductResponse` met `id`, `name`, `status`, `supplierName`, `pickupWindowStart` en `pickupWindowEnd`; prijs en persoonsgegevens staan er niet in (§15).
+
+**Partijen van F1 (B-58, B-62 tot en met B-64).** De body van `POST /products` bevat `category`, `name`, `originalPrice` in euro's, `bestBeforeAt` als ISO-datum (`JJJJ-MM-DD`, B-62), `quantity`, en optioneel `barcode` en `allergens`. Er is geen afhaalvenster en geen aanbieder in de body: het venster berekent de API (B-61), en de aanbieder komt uit het token (§16.2). `PUT /products/{id}` krijgt dezelfde velden zonder `category` (B-63). Het antwoord van beide geeft `bestBeforeAt` als tijdstip, met het afhaalvenster en de prijsopbouw. `GET /suppliers/{id}/products` is openbaar en toont de partijen met status `LISTED` en `RESERVED`, op volgorde van id. Een `LISTED` partij waarvan de houdbaarheid net verstreken is, valt weg, ook als de statusbewaking nog niet heeft gedraaid. Een onbekende aanbieder levert `404`; een aanbieder zonder aanbod levert `200` met een lege lijst (B-64). `GET /products/lookup/{barcode}` antwoordt met `name`, `allergens` en `manualEntryRequired`.
 
 **Zoeken en reserveren (F2).** `GET /products` geeft een lijst. Elke partij heeft `id`, `name`, `category`, `supplier` met `id`, `name`, `latitude` en `longitude`, de prijzen `originalPrice`, `discountPercentage` en `currentPrice` in euro's, `shelfLifeRemainingHours` (hele uren, naar beneden afgerond) en `pickupWindow` met `from` en `until`. Het afhaalvenster heeft dezelfde vorm als in het antwoord van een partij van F1. `POST /reservations` krijgt als body alleen `{ "productId": … }`. Het antwoord `201` is een reservering: `id`, `productId`, `status`, `reservedPrice` in euro's, `reservedAt`, `expiresAt` en `collectedAt`, zonder persoonsgegevens (§15). `GET /reservations` geeft een lijst in dezelfde vorm, de nieuwste eerst. `POST /reservations/{id}/collect` antwoordt `200 OK` met de reservering, nu met `status` `COLLECTED` en een ingevuld `collectedAt`. `DELETE /reservations/{id}` antwoordt `204 No Content` zonder body.
 
@@ -1495,15 +1521,19 @@ Elk foutantwoord heeft dezelfde vorm: een `code`, een leesbare `message` en opti
 
 | Aspect | Invulling |
 |--------|-----------|
-| Endpoint | `GET https://world.openfoodfacts.org/api/v2/product/{barcode}.json` |
+| Endpoint | `GET https://world.openfoodfacts.org/api/v3/product/{barcode}?fields=product_name,allergens_tags`. API v3, omdat de documentatie v2 "deprecated" noemt (Open Food Facts, z.j.-b, z.j.-c); `fields` vraagt alleen de nodige velden op |
 | Authenticatie | Geen; lezen is vrij toegankelijk |
-| Verplichte header | `User-Agent` met applicatienaam, versie en contactadres |
-| Rate limit | 15 requests per minuut per IP voor productqueries |
-| Time-out | 3 seconden, daarna terugval op handmatige invoer |
-| Allergenen | De `AllergenMapper` vertaalt de tags naar de enum `Allergen`; onbekende tags worden genegeerd en gelogd (§9.8) |
-| Aangeroepen vanuit | `OpenFoodFactsClient` in de servicelaag van F1 |
+| Verplichte header | `User-Agent` in het formaat `AppName/Version (ContactEmail)`: `restpartijen-api/0.1 (<OFF_CONTACT_EMAIL>)` (B-59) |
+| Rate limit | 15 requests per minuut per IP voor productqueries; Open Food Facts kan een IP dat erover gaat blokkeren. Wij blijven eronder: hoogstens 10 aanroepen per minuut voor de hele applicatie en 5 per aanbieder (B-60) |
+| Time-out | 3 seconden voor de hele aanroep, daarna terugval op handmatige invoer |
+| Grenzen aan het antwoord | De client leest het antwoord als stroom en hoogstens 64 KiB. Een groter antwoord en een redirect gelden als geen antwoord |
+| Cache | Per barcode, in `ProductLookupService`: een gevonden product 24 uur, een onbekende barcode (`404`) 60 seconden; hoogstens 1.000 barcodes per cache, en bij een volle cache valt de oudste eruit (B-60) |
+| Allergenen | De functie `mapAllergenTags` vertaalt de tags naar de enum `Allergen`; onbekende tags worden overgeslagen en gelogd, `en:none` zonder waarschuwing (§9.8) |
+| Aangeroepen vanuit | `ProductLookupService` in de servicelaag van F1, via `OpenFoodFactsClient`: de HTTP-client van Ktor met de engine CIO (B-59) |
 
-De gegevens in deze tabel komen uit de API-documentatie (Open Food Facts, z.j.-a). De rate limit van vijftien per minuut is laag genoeg om tijdens een demo geraakt te worden. Daarom worden opgehaalde productgegevens per barcode in het geheugen gecachet voor de duur van de applicatiesessie, en wordt bij overschrijding teruggevallen op handmatige invoer in plaats van een fout.
+De rate limit en het formaat van de `User-Agent` komen uit de API-documentatie (Open Food Facts, z.j.-a). De rate limit geldt voor `GET /api/v*/product`, dus ook voor v3. Vijftien per minuut is laag genoeg om tijdens een demo geraakt te worden. Daarom onthoudt `ProductLookupService` per barcode wat Open Food Facts antwoordde. Een cache zonder grens zou in productie verouderde allergenen geven en een geheugen dat volloopt; daarom heeft hij een vervaltijd en een maximum. Alleen een gevonden product gaat er voor lange tijd in. Een onbekende barcode blijft 60 seconden staan, zodat opnieuw proberen de grens niet opmaakt; daarna mag hij weer worden opgevraagd, want het product kan later zijn toegevoegd. Een time-out of een rate limit gaat er niet in, anders blijft de storing hangen. De cache zit in de service en niet in de client: de service beslist wat het onthouden waard is, de client doet alleen HTTP.
+
+De cache helpt alleen bij een barcode die al bekend is. Daarom is er ook een eigen grens op het aantal aanroepen, voor de hele applicatie en per aanbieder, zodat één aanbieder de grens niet voor iedereen kan opmaken. Boven die grens geeft de lookup een lege voorzet met `manualEntryRequired`, zonder Open Food Facts aan te roepen. De log meldt één keer wie een grens bereikte, en één keer hoeveel aanroepen geweigerd zijn als de grens weer opengaat.
 
 Deze integratie vult de eis van een externe API in de servicelaag in (r.374, niveau "goed").
 
@@ -1520,11 +1550,11 @@ Deze matrix bestaat zodat niemand met een gat het assessment in gaat. Per studen
 | **Feature** | Aanbod plaatsen en beheren, Open Food Facts-integratie met vertaling van allergenen naar de EU-lijst, openingstijden en afgeleid afhaalvenster (US-10, Should) |
 | **Gedeeld onderdeel** | GI-1 Persistentielaag |
 | **Autorisatie** | Schrijft zelf de rolregels voor de endpoints van F1: `SUPPLIER` voor plaatsen, wijzigen, verwijderen, de barcode-lookup en de openingstijden, plus de eigenaarscontrole op het eigen aanbod (`OwnershipGuard`). Het mechanisme komt uit GI-3 |
-| **Eigen klassen** | `SurplusProduct` (abstract), `FreshProduct`, `FrozenProduct`, `AmbientProduct`, `ProductService`, `ProductRepository`, `OpenFoodFactsClient`, `AllergenMapper`, `ProductFactory`, `OwnershipGuard`, `OpeningHours`, `PickupWindowCalculator`, `PickupWindow` (staat in `shared`), `Repository<T>`, `DatabaseFactory`, `SeedData`, en de implementaties van de contracten `ProductReader` en `ProductStatusUpdater` |
-| **Kernmethoden** | `SurplusProduct.validateForListing()` (gedeelde controle in de basisklasse die de abstracte property `maxShelfLife` van de subklasse gebruikt, B-45), `SurplusProduct.shelfLifeRemaining()` (gedeeld in de basisklasse), `ProductFactory.create(category, …)` met losse waarden, zodat het model Exposed niet kent, en `ResultRow.toProduct()` in de repository die de rij uitpakt en de factory aanroept; `AllergenMapper.fromTags()`, `OpenFoodFactsClient.fetchProduct()`, `PickupWindowCalculator.defaultWindow()`, en de voorwaardelijke statusupdate achter `ProductStatusUpdater`: alleen naar `RESERVED` als de status nog `LISTED` is |
+| **Eigen klassen** | `SurplusProduct` (abstract), `FreshProduct`, `FrozenProduct`, `AmbientProduct`, `ProductService`, `ProductRepository`, `ProductLookupService`, `ExpiringCache`, `OpenFoodFactsRateLimiter`, `OpenFoodFactsClient`, `OpenFoodFactsSettings`, de functie `mapAllergenTags` (in `AllergenMapper.kt`), `ProductFactory`, `OwnershipGuard`, `OpeningHours`, `OpeningHoursService`, `PickupWindowCalculator` met `PickupWindowResult`, `PickupWindow` (staat in `shared`), `Repository<T>`, `DatabaseFactory`, `SeedData`, en de implementaties van de contracten `ProductReader` en `ProductStatusUpdater` |
+| **Kernmethoden** | `SurplusProduct.validateForListing()` (gedeelde controle in de basisklasse die de abstracte property `maxShelfLife` van de subklasse gebruikt, B-45), `SurplusProduct.shelfLifeRemaining()` (gedeeld in de basisklasse), `ProductFactory.create(category, …)` met losse waarden, zodat het model Exposed niet kent, en `ResultRow.toProduct()` in de repository die de rij uitpakt en de factory aanroept; `ProductLookupService.lookup()`, `mapAllergenTags()`, `OpenFoodFactsClient.fetchProduct()`, `PickupWindowCalculator.calculate()`, en de voorwaardelijke statusupdate achter `ProductStatusUpdater`: alleen naar `RESERVED` als de status nog `LISTED` is |
 | **OO-concepten** | Abstracte `sealed` class, overerving, polymorfisme (`category` en `maxShelfLife` per soort, aangeroepen vanuit de basisklasse), interface (`SurplusProduct` implementeert `ProductView` en `PricedProduct`; F1 levert `ProductReader` en `ProductStatusUpdater`; `Repository<T>` is de generieke interface van GI-1), generics (`Repository<T>`), encapsulatie (privé setters op status; de status verandert alleen via `ProductStatusUpdater`), data class (DTO's), companion object (`ProductFactory`), exception handling |
-| **Kotlin features** | Null safety (`barcode` is nullable, Elvis bij terugval), scope functions (`let` bij het lezen van een rij in de repository), extension functions (`ResultRow.toProduct()`), coroutines (`suspend` in de Open Food Facts-client), collections (`Set<Allergen>`), higher order functions en lambdas (de Exposed DSL, het vertalen van tags in `AllergenMapper`), named en default arguments (het command-object voor het plaatsen van een partij: `barcode` en afhaalvenster zijn optioneel) |
-| **Eigen testen** | Streven: een unittest bij elk model dat Eva schrijft. TC-01 partij plaatsen happy flow; datum in het verleden geweigerd; afhaalvenster na houdbaarheidsdatum geweigerd; `shelfLifeRemaining` met vaste klok; per productsoort de grens van `maxShelfLife`: precies op de grens toegestaan, één dag erover levert 422; allergeen buiten de EU-lijst levert 400; `AllergenMapper` vertaalt een bekende tag naar de juiste enumwaarde; `AllergenMapper` negeert een onbekende tag; lege allergenenlijst toegestaan; Open Food Facts-time-out valt terug op handmatige invoer; onbekende barcode levert 404; factory kiest de juiste subklasse per categorie; TC-03 eigen partij wijzigen happy flow; partij van een andere aanbieder wijzigen levert 403 (`OwnershipGuard`); eigen partij verwijderen levert 204; gereserveerde partij verwijderen levert 409; niet-bestaande partij levert 404; seeddata bevat alle statussen; afgeleid afhaalvenster begint bij het plaatsen als de aanbieder open is en anders op het eerstvolgende openingsmoment; afgeleid afhaalvenster eindigt op `bestBeforeAt` als de aanbieder dan open is; gesloten dag wordt overgeslagen; geen openingsmoment vóór de datum levert 422 |
+| **Kotlin features** | Null safety (`barcode` is nullable, Elvis bij terugval), scope functions (`let` bij het lezen van een rij in de repository), extension functions (`ResultRow.toProduct()`), coroutines (`suspend` in de Open Food Facts-client), collections (`Set<Allergen>`), higher order functions en lambdas (de Exposed DSL, het vertalen van tags in `mapAllergenTags`), named en default arguments (het command-object voor het plaatsen van een partij: `barcode` en `allergens` zijn optioneel) |
+| **Eigen testen** | Streven: een unittest bij elk model dat Eva schrijft. TC-01 partij plaatsen happy flow; datum in het verleden geweigerd; afhaalvenster na houdbaarheidsdatum geweigerd; `shelfLifeRemaining` met vaste klok; per productsoort de grens van `maxShelfLife`: precies op de grens toegestaan, één dag erover levert 422; allergeen buiten de EU-lijst levert 400; `mapAllergenTags` vertaalt een bekende tag naar de juiste enumwaarde en slaat een onbekende tag en `en:none` over; een barcode die niet uit 7 tot en met 14 cijfers bestaat levert 400, bij de lookup zonder Open Food Facts aan te roepen; de lookup onthoudt een gevonden product 24 uur en een onbekende barcode 60 seconden, en vraagt handmatige invoer boven 10 aanroepen per minuut of 5 per aanbieder; `ExpiringCache` laat de oudste barcode vallen als hij vol is; `bestBeforeAt` als datum eindigt in zomer- en wintertijd op het begin van de volgende dag in Amsterdam; lege allergenenlijst toegestaan; Open Food Facts-time-out valt terug op handmatige invoer; onbekende barcode levert 404; factory kiest de juiste subklasse per categorie; TC-03 eigen partij wijzigen happy flow; partij van een andere aanbieder wijzigen levert 403 (`OwnershipGuard`); een `RESERVED` partij wijzigen levert 409; een body met `category` of `pickupWindow` levert 400; eigen partij verwijderen levert 204; gereserveerde partij verwijderen levert 409; niet-bestaande of al verwijderde partij levert 404; seeddata bevat alle statussen; afgeleid afhaalvenster begint bij het plaatsen als de aanbieder open is en anders op het eerstvolgende openingsmoment; afgeleid afhaalvenster eindigt op `bestBeforeAt` als de aanbieder dan open is; gesloten dag wordt overgeslagen; geen openingsmoment vóór de datum levert 422; een lege week en een dag die twee keer voorkomt leveren 422 |
 
 ### 11.2 Stefan Pellikaan — F2 Zoeken en reserveren
 
@@ -1898,6 +1928,8 @@ Wie wat mag, staat in §1.3. Hier staat hoe dat wordt afgedwongen.
 
 Het JWT-secret komt uit de omgevingsvariabele `JWT_SECRET` en staat niet in de repository. De `application.yaml` bevat een placeholder, geen waarde. Er is een `.env.example` met de benodigde variabelen zonder inhoud. Zonder `JWT_SECRET` start de applicatie niet, en een secret moet minstens 32 bytes zijn. De docent heeft bevestigd dat het zetten van de variabele niet telt als handmatige stap in de zin van GI-2 (issue #5, B-52). Een terugval met een willekeurig secret mag tijdens de ontwikkelfase als uitgecommentarieerd alternatief in `JwtProperties.kt` staan; bij de oplevering is zij weg.
 
+De tweede verplichte variabele is `OFF_CONTACT_EMAIL`, het contactadres in de `User-Agent` naar Open Food Facts (B-59). Ontbreekt zij, of is de waarde niet één e-mailadres, dan start de applicatie niet; zo kan er ook geen regeleinde in de header komen. Het adres dat eerder in de broncode stond, blijft in de git-geschiedenis staan; die herschrijven we niet. `DB_MODE` is optioneel en kiest tussen `memory`, de standaard, en `file` (GI-2, besluit 2.3). De README en `.env.example` noemen alle drie. Het demowachtwoord van de seeddata komt bewust niet uit de omgeving: het is geen geheim, maar staat in de broncode en de README, zodat de docent en het team zonder extra stap kunnen inloggen (§9.7).
+
 ### 16.5 Invoervalidatie
 
 Alle invoer wordt gevalideerd voordat zij de domeinlogica bereikt (§10.2): in de route, in `RequestValidation`, of bij registreren als eerste stap van `RegistrationService` (B-56). Exposed gebruikt geparametriseerde queries, waardoor SQL-injectie langs de DSL niet mogelijk is. Er wordt geen dynamische SQL uit gebruikersinvoer samengesteld.
@@ -1923,7 +1955,7 @@ Kan een reservering niet vervallen, omdat het schrijven mislukt, dan logt `Reser
 | R-01 | Het ambitieniveau "goed" op realisatie en testen vraagt volume dat in week zeven niet meer in te halen is | Hoog | Hoog | Wekelijks toetsen of alle use cases nog op schema liggen; bij achterstand vroeg terugvallen op "voldoende" voor die twee criteria in plaats van laat | Alle drie |
 | R-02 | De gedeelde domeinkern heeft geen eigenaar, waardoor een noodzakelijke wijziging blijft liggen | Midden | Midden | Wijzigingen in `shared` krijgen voorrang in de reviewvolgorde | Alle drie |
 | R-03 | Vervallen. De docent heeft de vraag over de RBAC-verdeling beantwoord: optie B (§20) | — | — | — | — |
-| R-04 | Open Food Facts is tijdens het assessment onbereikbaar of de rate limit is bereikt | Laag | Midden | Cache per barcode, terugval op handmatige invoer, en een voorbereide demo met gecachete gegevens | Eva |
+| R-04 | Open Food Facts is tijdens het assessment onbereikbaar of de rate limit is bereikt | Laag | Midden | Cache per barcode met een vervaltijd en een maximum, een eigen grens van 10 aanroepen per minuut en 5 per aanbieder (B-60), terugval op handmatige invoer, en een voorbereide demo met gecachete gegevens | Eva |
 | R-05 | Het domein oogt voorspelbaar, waardoor de complexiteit onvoldoende blijkt | Midden | Midden | De onderscheidende logica zit in de afprijsstaffels per productsoort, de prijs die bij het reserveren wordt vastgelegd, het afhaalvenster dat uit openingstijden wordt afgeleid en de twee automatische statusovergangen; die worden expliciet in de demo getoond. Door de staffels is het verschil tussen de drie policies kleiner geworden (ADR-06) | Lonneke |
 | R-06 | Merge-conflicten in de gedeelde infrastructuur vertragen alle drie | Laag | Midden | Featuregerichte packages (ADR-01), dagelijks `main` binnentrekken, koppelvlakken als interfaces | Stefan |
 | R-07 | De Kotlin Toolchain is Alpha en Exposed 1.x is nieuw. Voorbeelden en suggesties van AI-tooling gaan uit van Gradle en van Exposed 0.x, en leveren dus code en configuratie op die niet werkt | Hoog | Midden | In de startsessie een walking skeleton bouwen: één endpoint, één tabel en één test door de hele keten, vóórdat iemand aan een feature begint. Versies vastzetten en tijdens het project niet verhogen, tenzij de docent het voorschrijft, zoals bij Ktor 3.6.0 (§3.2). De officiële documentatie is de bron, niet de AI-suggestie; afwijkingen komen in het AI-logboek. Blijkt de toolchain een blokkade, dan gaat dat direct naar de docent | Stefan (GI-2), Eva (GI-1) |
@@ -1999,9 +2031,9 @@ Deze paragraaf beschrijft per use case welke requests de app naar de API stuurt,
 | Eigen reserveringen bekijken | Mijn reserveringen | `GET /reservations` | Toont de eigen reserveringen met hun status. De API leest uit het token om wie het gaat; de app stuurt geen gebruikers-id mee |
 | Reservering intrekken (US-06) | Reserveringsdetail | `DELETE /reservations/{id}` | Bij `204` verdwijnt de reservering uit de lijst. Bij `409` was zij al opgehaald |
 | Ophalen bevestigen (US-11) | Reserveringsdetail, aan de balie van de aanbieder | `POST /reservations/{id}/collect` | Bij `200` toont de app een bevestigingsscherm dat de aanbieder kan zien; pas dan geeft hij de partij mee (§5.11). Bij `422` valt het moment buiten het afhaalvenster, bij `409` is de reservering al afgehandeld of vervallen |
-| Partij plaatsen met de barcode (US-01, US-02) | Partij toevoegen | 1. De camera leest de barcode. 2. `GET /products/lookup/{barcode}`. 3. De aanbieder controleert de voorzet en vult aan. 4. `POST /products` | Na stap 2 vult de app het formulier voor met naam en allergenen. Bij `404` of een leeg antwoord typt de aanbieder alles zelf; het plaatsen gaat gewoon door. Na stap 4: bij `201` terug naar Mijn aanbod, bij `422` de melding bij het juiste veld |
-| Eigen aanbod beheren (US-03) | Mijn aanbod | 1. `GET /suppliers/{id}/products`. 2. `PUT /products/{id}` of `DELETE /products/{id}` | Toont het eigen aanbod en verwerkt de wijziging. Een gereserveerde partij is niet te verwijderen (`409`); de app legt uit waarom |
-| Openingstijden vastleggen (US-10, Should) | Mijn aanbod | 1. `GET /suppliers/{id}/opening-hours`. 2. `PUT /suppliers/{id}/opening-hours` | Toont de huidige tijden en slaat de wijziging op. Bij `422` ligt een sluitingstijd niet na de openingstijd |
+| Partij plaatsen met de barcode (US-01, US-02) | Partij toevoegen | 1. De camera leest de barcode. 2. `GET /products/lookup/{barcode}`. 3. De aanbieder controleert de voorzet en vult aan. 4. `POST /products` | Na stap 2 vult de app het formulier voor met naam en allergenen. Bij `404` of een leeg antwoord typt de aanbieder alles zelf; het plaatsen gaat gewoon door. Bij `400` met `field` gelijk aan `barcode` is de gescande code geen geldige barcode (B-58). Na stap 4: bij `201` terug naar Mijn aanbod, bij `422` de melding bij het juiste veld |
+| Eigen aanbod beheren (US-03) | Mijn aanbod | 1. `GET /suppliers/{id}/products`. 2. `PUT /products/{id}` of `DELETE /products/{id}` | Toont het eigen aanbod: de partijen die `LISTED` of `RESERVED` zijn (B-64). Verwerkt de wijziging. Een gereserveerde partij is niet te wijzigen of te verwijderen (`409`); de app legt uit waarom |
+| Openingstijden vastleggen (US-10, Should) | Mijn aanbod | 1. `GET /suppliers/{id}/opening-hours`. 2. `PUT /suppliers/{id}/opening-hours` | Toont de huidige tijden en slaat de wijziging op. Bij `422` ligt een sluitingstijd niet na de openingstijd, is de week leeg of komt een dag twee keer voor |
 
 In de navigatie van §18.2 zit geen beheerscherm. De beheerfuncties (US-08 en US-09) blijven daarom buiten de app en worden aangeroepen met de HTTP client van IntelliJ (§8.2).
 
@@ -2092,7 +2124,6 @@ Na versie 2.1 kwamen er drie adviezen bij. Het eerste gaf de docent eerder in se
 - **Beslispunt voor Lonneke: welke endpoint zij in de app verzorgt.** Alle endpoints van F3 zijn beheerdersendpoints, en die roept de app in periode 2 niet aan. Daardoor heeft Lonneke geen endpoint die vanuit de app wordt gebruikt. Zij kiest tussen account aanmaken, `/auth/register`, die de app bij het registreren aanroept (§18.4), en een endpoint voor het prijsverloop van een partij, voor de grafiek die de docent noemde (§20). Het prijsverloop vraagt een chart library in de app en de staffels van een partij in het antwoord van de API (§18.3). Lonneke komt op deze keuze terug.
 - **Gevolg van die keuze voor `/auth/register`.** Valt de keuze op het prijsverloop, dan is nog niet bepaald of `/auth/register` bij Lonneke blijft of naar een ander gaat. Tot dat besluit houdt dit document de endpoint bij haar (§10.1, §11.3, §13 besluit 3.7).
 - **Bevestigen.** De afrondingsregel (B-24, §9.4). B-26 en B-31 zijn in v2.3 goedgekeurd; B-32 is in v2.4 bevestigd via issue #16.
-- **Verwijderen van een al verwijderde partij door de aanbieder (§5.3).** Bij de beheerder is het `404` (B-38). Voor de aanbieder staat nog `409`. De profgroep beslist in issue #45; het voorstel is `404` voor beide.
 - **Tijdsverschil bij inloggen (B-57, L-12).** `LoginService` controleert de hash alleen als het account bestaat. OWASP raadt aan om bij elke poging hetzelfde werk te doen, ook als het account niet bestaat, zodat de responstijd niets verraadt (OWASP Foundation, z.j.-a). Een mogelijke uitvoering is een vaste dummy-hash die `LoginService` controleert als `findByEmail` niets vindt. Door de code freeze van 24 oktober 2026 blijft dit voor na de oplevering.
 - **Testrapportage en loadtool.** NFR-03 en §8.6 verwijzen naar de testrapportage, maar zeggen niet waar die staat. §8.6 noemt de drempel voor performance, maar niet waarmee gemeten wordt.
 
@@ -2152,9 +2183,19 @@ MockK. (z.j.). *MockK: mocking library for Kotlin*. Geraadpleegd op 12 september
 
 Nederlandse Voedsel- en Warenautoriteit. (z.j.). *Allergenen*. Geraadpleegd op 18 september 2026, van https://www.nvwa.nl/onderwerpen/voedselveiligheid/allergenen
 
-Open Food Facts. (z.j.-a). *Introduction to Open Food Facts API documentation*. Product Opener. Geraadpleegd op 12 september 2026, van https://openfoodfacts.github.io/openfoodfacts-server/api/
+Open Food Facts. (z.j.-a). *Introduction to Open Food Facts API documentation*. Product Opener. Geraadpleegd op 24 oktober 2026, van https://openfoodfacts.github.io/openfoodfacts-server/api/
 
-Open Food Facts. (z.j.-b). *List of allergens – World*. Geraadpleegd op 18 september 2026, van https://world.openfoodfacts.org/allergens
+Open Food Facts. (z.j.-b). *API v2 reference (deprecated)*. Geraadpleegd op 22 oktober 2026, van https://openfoodfacts.github.io/documentation/docs/Product-Opener/api/ref-v2/
+
+Open Food Facts. (z.j.-c). *api-v3.yaml* [OpenAPI-specificatie]. GitHub. Geraadpleegd op 22 oktober 2026, van https://github.com/openfoodfacts/openfoodfacts-server/blob/main/docs/api/ref/api-v3.yaml
+
+Open Food Facts. (z.j.-d). *Barcode normalization*. Geraadpleegd op 22 oktober 2026, van https://openfoodfacts.github.io/documentation/docs/Product-Opener/api/ref-barcode-normalization/
+
+Open Food Facts. (z.j.-e). *Allergens taxonomy* [Dataset]. Geraadpleegd op 22 oktober 2026, van https://world.openfoodfacts.org/data/taxonomies/allergens.json
+
+Open Food Facts. (z.j.-f). *Search API v2* [Zoekresultaat `allergens_tags=en:none`]. Geraadpleegd op 22 oktober 2026, van https://world.openfoodfacts.org/api/v2/search?allergens_tags=en:none&fields=code,product_name,allergens_tags&page_size=3
+
+Open Food Facts. (z.j.-g). *List of allergens – World*. Geraadpleegd op 18 september 2026, van https://world.openfoodfacts.org/allergens
 
 OWASP Foundation. (z.j.-a). *Authentication cheat sheet*. OWASP Cheat Sheet Series. Geraadpleegd op 24 oktober 2026, van https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html
 
