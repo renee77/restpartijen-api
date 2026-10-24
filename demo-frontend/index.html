@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demo-frontend – restpartijen-api</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- The banner says what this page is: a demo of the API, not a product and not the Android app. -->
+<header class="banner">
+  <img src="assets/logo.png" alt="useITtoo" class="logo">
+  <div class="banner-text">
+    <h1>Demo-frontend voor de Web API</h1>
+    <p>Toont de user stories van <code>restpartijen-api</code>. Geen product en geen Android-app: elke knop
+      doet één aanroep naar de API en laat de request en de response zien.</p>
+  </div>
+</header>
+
+<div class="layout">
+<main class="steps">
+
+  <!-- Connection and login. The token per role is kept in memory, so the flow logs in once per role. -->
+  <section class="step" id="step-login">
+    <h2><span class="badge badge-dark">Start</span> Verbinden en inloggen</h2>
+    <p class="meta">GI-3 · <code>POST /auth/login</code> · antwoord: <code>{ token, role, supplierId }</code></p>
+    <form id="form-login" class="grid">
+      <label>API-basis-URL
+        <input name="baseUrl" value="http://localhost:8080/api/v1" size="32">
+      </label>
+      <label>Demo-account
+        <select name="email">
+          <option value="supermarkt@mail.com">supermarkt@mail.com (SUPPLIER, id 1)</option>
+          <option value="bakker@mail.com">bakker@mail.com (SUPPLIER, id 2)</option>
+          <option value="groothandel@mail.com">groothandel@mail.com (SUPPLIER, id 3)</option>
+          <option value="afhaler-a@mail.com">afhaler-a@mail.com (COLLECTOR)</option>
+          <option value="afhaler-b@mail.com">afhaler-b@mail.com (COLLECTOR)</option>
+          <option value="admin@mail.com">admin@mail.com (ADMIN)</option>
+        </select>
+      </label>
+      <label>Wachtwoord
+        <input name="password" value="Demo-Restpartij-2026">
+      </label>
+      <button type="submit">Inloggen</button>
+    </form>
+    <p class="status" id="login-status">Nog niet ingelogd.</p>
+  </section>
+
+  <h2 class="part"><span class="badge badge-orange">Aanbieder</span> F1 – Aanbod en productdata</h2>
+
+  <section class="step" id="step-us10">
+    <h2>US-10 · Openingstijden vastleggen</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>aanbieder</strong> wil ik mijn openingstijden één keer op mijn account vastleggen, zodat het afhaalvenster van een nieuwe partij automatisch wordt ingevuld en ik het niet bij elke partij opnieuw hoef in te voeren.</p>
+    <p class="meta">Rol SUPPLIER · <code>GET /suppliers/{id}/opening-hours</code> (openbaar) en
+      <code>PUT /suppliers/{id}/opening-hours</code> · de API leidt het afhaalvenster van een partij hieruit af</p>
+    <form id="form-opening-hours">
+      <table class="hours" id="hours-table"></table>
+      <p class="hint">Leeg laten = gesloten. Tijden in hele minuten; een sluitingstijd vóór de openingstijd geeft 422.</p>
+      <div class="buttons">
+        <button type="button" data-action="get-hours" class="secondary">Openingstijden ophalen</button>
+        <button type="submit">Openingstijden opslaan</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="step" id="step-us02">
+    <h2>US-02 · Productgegevens via barcode</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>aanbieder</strong> wil ik bij het plaatsen een barcode opgeven waarmee productnaam en allergenen automatisch worden ingevuld, zodat ik minder hoef te typen en de allergeneninformatie klopt.</p>
+    <p class="meta">Rol SUPPLIER · <code>GET /products/lookup/{barcode}</code> · Open Food Facts; naam en allergenen
+      gaan door naar US-01</p>
+    <form id="form-lookup" class="row">
+      <label>Barcode (EAN)
+        <input name="barcode" value="3017620422003" size="16">
+      </label>
+      <button type="submit">Opzoeken</button>
+    </form>
+  </section>
+
+  <section class="step" id="step-us01">
+    <h2>US-01 · Restpartij plaatsen</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>aanbieder</strong> wil ik een restpartij plaatsen met productsoort, prijs, houdbaarheidsdatum, aantal en afhaalvenster, zodat afhalers die kunnen vinden voordat de partij wordt weggegooid.</p>
+    <p class="meta">Rol SUPPLIER · <code>POST /products</code> · 201 met de partij in status LISTED; de prijs is in euro's,
+      de houdbaarheidsdatum een datum</p>
+    <form id="form-place" class="grid">
+      <label>Soort
+        <select name="category">
+          <option value="FRESH">FRESH (koelvers)</option>
+          <option value="FROZEN">FROZEN (diepvries)</option>
+          <option value="AMBIENT" selected>AMBIENT (houdbaar)</option>
+        </select>
+      </label>
+      <label>Naam <input name="name" value="Houdbare halfvolle melk 1L" size="30"></label>
+      <label>Oorspronkelijke prijs (€) <input name="originalPrice" type="number" step="0.01" min="0" value="3.49"></label>
+      <label>Houdbaar tot <input name="bestBeforeAt" type="date"></label>
+      <label>Aantal <input name="quantity" type="number" min="1" value="5"></label>
+      <label>Barcode (optioneel) <input name="barcode" value=""></label>
+      <label class="wide">Allergenen (kommagescheiden, EU-lijst) <input name="allergens" value="MILK" size="50"></label>
+      <button type="submit">Partij plaatsen</button>
+    </form>
+  </section>
+
+  <section class="step" id="step-us03">
+    <h2>US-03 · Eigen aanbod beheren</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>aanbieder</strong> wil ik mijn eigen aanbod kunnen wijzigen en verwijderen, zodat wat op het platform staat overeenkomt met wat er werkelijk in de winkel ligt.</p>
+    <p class="meta">Rol SUPPLIER · <code>GET /suppliers/{id}/products</code> (openbaar), <code>PUT /products/{id}</code>,
+      <code>DELETE /products/{id}</code> · alleen eigen partijen in status LISTED; verwijderd = status REMOVED, 204</p>
+    <form id="form-manage" class="grid">
+      <label>Partij-id <input name="productId" type="number" min="1" value=""></label>
+      <label>Nieuwe naam <input name="name" value="Houdbare volle melk 1L" size="30"></label>
+      <label>Nieuwe prijs (€) <input name="originalPrice" type="number" step="0.01" min="0" value="2.99"></label>
+      <label>Houdbaar tot <input name="bestBeforeAt" type="date"></label>
+      <label>Aantal <input name="quantity" type="number" min="1" value="3"></label>
+      <label>Barcode (optioneel) <input name="barcode" value=""></label>
+      <label class="wide">Allergenen <input name="allergens" value="MILK" size="50"></label>
+      <div class="buttons wide">
+        <button type="button" data-action="my-products" class="secondary">Mijn aanbod tonen</button>
+        <button type="submit">Partij wijzigen</button>
+        <button type="button" data-action="delete-product" class="danger">Partij verwijderen</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="step" id="step-us07">
+    <h2>US-07 · Actuele prijs zien</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>afhaler</strong> wil ik de actuele prijs zien die meebeweegt met de resterende houdbaarheid, zodat ik kan beoordelen of wachten loont.</p>
+    <p class="meta">Openbaar · <code>GET /products/{id}</code> · <code>originalPrice</code>, <code>discountPercentage</code>
+      en <code>currentPrice</code> staan in de partij zelf; een verlopen partij toont status EXPIRED zonder prijs</p>
+    <form id="form-price" class="row">
+      <label>Partij-id <input name="productId" type="number" min="1" value="1"></label>
+      <button type="submit">Partij met prijs ophalen</button>
+    </form>
+  </section>
+
+  <h2 class="part"><span class="badge badge-green">Afhaler</span> F2 – Zoeken en reserveren</h2>
+
+  <section class="step" id="step-us04">
+    <h2>US-04 · Aanbod zoeken en filteren</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>afhaler</strong> wil ik het aanbod filteren op productsoort, maximumprijs en resterende houdbaarheid, zodat ik snel vind wat bij mij past.</p>
+    <p class="meta">Openbaar · <code>GET /products?category=&amp;maxPrice=&amp;minShelfLifeHours=</code> · alleen LISTED en
+      nog houdbaar, gesorteerd op resterende houdbaarheid; filters werken als EN</p>
+    <form id="form-search" class="grid">
+      <label>Soort
+        <select name="category">
+          <option value="">(alle)</option>
+          <option value="FRESH">FRESH</option>
+          <option value="FROZEN">FROZEN</option>
+          <option value="AMBIENT">AMBIENT</option>
+        </select>
+      </label>
+      <label>Max. actuele prijs (€) <input name="maxPrice" type="number" step="0.01" min="0" value=""></label>
+      <label>Min. resterende houdbaarheid (uur) <input name="minShelfLifeHours" type="number" min="0" value=""></label>
+      <button type="submit">Zoeken</button>
+    </form>
+  </section>
+
+  <section class="step" id="step-us05">
+    <h2>US-05 · Partij reserveren</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>afhaler</strong> wil ik een partij reserveren, zodat die voor mij bewaard blijft tot ik hem binnen het afhaalvenster ophaal.</p>
+    <p class="meta">Rol COLLECTOR · <code>POST /reservations</code> met <code>{ productId }</code> · 201 met
+      <code>reservedPrice</code> en <code>expiresAt</code> (max. 24 uur); <code>GET /reservations</code> toont de eigen reserveringen</p>
+    <form id="form-reserve" class="row">
+      <label>Partij-id <input name="productId" type="number" min="1" value="1"></label>
+      <button type="submit">Reserveren</button>
+      <button type="button" data-action="my-reservations" class="secondary">Mijn reserveringen</button>
+    </form>
+  </section>
+
+  <section class="step" id="step-us06">
+    <h2>US-06 · Reservering intrekken</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>afhaler</strong> wil ik mijn reservering kunnen intrekken, zodat de partij weer beschikbaar komt voor iemand anders als ik toch niet kan.</p>
+    <p class="meta">Rol COLLECTOR · <code>DELETE /reservations/{id}</code> · 204, de partij wordt weer LISTED</p>
+    <form id="form-cancel" class="row">
+      <label>Reservering-id <input name="reservationId" type="number" min="1" value=""></label>
+      <button type="submit" class="danger">Intrekken</button>
+    </form>
+  </section>
+
+  <section class="step" id="step-us11">
+    <h2>US-11 · Ophalen bevestigen</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>afhaler</strong> wil ik bij het ophalen bevestigen dat ik de partij heb meegenomen, zodat de reservering is afgehandeld en de partij van het platform verdwijnt.</p>
+    <p class="meta">Rol COLLECTOR · <code>POST /reservations/{id}/collect</code> · 200, reservering en partij worden COLLECTED</p>
+    <form id="form-collect" class="row">
+      <label>Reservering-id <input name="reservationId" type="number" min="1" value=""></label>
+      <button type="submit">Ophalen bevestigen</button>
+    </form>
+  </section>
+
+  <h2 class="part"><span class="badge badge-dark">Beheerder</span> F3 – Prijs, statusbewaking en beheer</h2>
+
+  <section class="step" id="step-us08">
+    <h2>US-08 · Automatische statusbewaking</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>beheerder</strong> wil ik dat verlopen partijen en niet-opgehaalde reserveringen automatisch van status veranderen, zodat het overzicht klopt zonder handwerk.</p>
+    <p class="meta">Rol ADMIN · <code>POST /admin/maintenance/expire</code> · draait ook elke vijf minuten vanzelf;
+      antwoord: <code>{ lapsedReservations, expiredProducts }</code></p>
+    <form id="form-maintenance" class="row">
+      <button type="submit">Statusbewaking nu draaien</button>
+    </form>
+  </section>
+
+  <section class="step" id="step-us09">
+    <h2>US-09 · Aanbod verwijderen als beheerder</h2>
+    <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
+    <p class="story">Als <strong>beheerder</strong> wil ik onjuist of ongepast aanbod kunnen verwijderen, ongeacht wie het geplaatst heeft, zodat het platform betrouwbaar blijft.</p>
+    <p class="meta">Rol ADMIN · <code>GET /admin/products?status=</code> (herhaalbare parameter, zonder filter alles behalve
+      REMOVED) en <code>DELETE /admin/products/{id}</code> · een gereserveerde partij laat eerst de reservering vervallen</p>
+    <form id="form-admin" class="grid">
+      <fieldset class="wide">
+        <legend>Statusfilter</legend>
+        <label class="inline"><input type="checkbox" name="status" value="LISTED"> LISTED</label>
+        <label class="inline"><input type="checkbox" name="status" value="RESERVED"> RESERVED</label>
+        <label class="inline"><input type="checkbox" name="status" value="COLLECTED"> COLLECTED</label>
+        <label class="inline"><input type="checkbox" name="status" value="EXPIRED"> EXPIRED</label>
+        <label class="inline"><input type="checkbox" name="status" value="REMOVED"> REMOVED</label>
+      </fieldset>
+      <label>Partij-id om te verwijderen <input name="productId" type="number" min="1" value=""></label>
+      <div class="buttons wide">
+        <button type="submit">Beheeroverzicht ophalen</button>
+        <button type="button" data-action="admin-delete" class="danger">Partij verwijderen</button>
+      </div>
+    </form>
+  </section>
+
+</main>
+
+<!-- The call panel is the part the video shows: what went out, what came back. -->
+<aside class="panel">
+  <h2>Laatste aanroep</h2>
+  <p id="call-story" class="call-story"></p>
+  <p id="call-line" class="call-line">Nog geen aanroep gedaan.</p>
+  <h3>Request</h3>
+  <pre id="call-request" class="code">–</pre>
+  <h3>Response</h3>
+  <p id="call-status" class="call-status"></p>
+  <pre id="call-response" class="code">–</pre>
+</aside>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
