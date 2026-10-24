@@ -33,7 +33,7 @@ dependencies:
   - io.ktor:ktor-server-request-validation
   - io.ktor:ktor-server-cors
   - io.ktor:ktor-server-call-logging
-  - ch.qos.logback:logback-classic:1.5.18
+  - ch.qos.logback:logback-classic:1.5.38
   ############ HTTP client dependencies ############
   # Calls the Open Food Facts API for the barcode lookup (US-02, A5).
   - io.ktor:ktor-client-core
