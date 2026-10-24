@@ -140,3 +140,31 @@ To remove the variables before closing the window:
 ```bash
 unset JWT_SECRET OFF_CONTACT_EMAIL
 ```
+
+## Code style
+
+The Kotlin code in `server/` is checked with ktlint 1.8.0. The rules are in `.editorconfig`: the `intellij_idea` code style with a maximum line length of 120 characters.
+
+Install ktlint once:
+
+- Download `ktlint` from the [1.8.0 release](https://github.com/pinterest/ktlint/releases/tag/1.8.0).
+- Make it executable with `chmod +x ktlint` and put it in a folder on your `PATH`.
+- On Windows, also download `ktlint.bat`, keep it in the same folder as `ktlint` and run `ktlint.bat`.
+
+Check the code:
+
+```bash
+ktlint "server/**/*.kt"
+```
+
+Fix what ktlint can fix by itself:
+
+```bash
+ktlint --format "server/**/*.kt"
+```
+
+The formatting commits are listed in `.git-blame-ignore-revs`. Run this once, so `git blame` skips them and shows the real author of a line (GitHub does this automatically):
+
+```bash
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
