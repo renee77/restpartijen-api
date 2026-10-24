@@ -23,8 +23,8 @@ import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.plugins.di.provide
 import kotlin.time.Clock
 
-// Shared by the route tests of F1 (GET, POST, PUT, DELETE of /products and the barcode lookup), so the
-// setup and the token rules live in one place.
+// Shared by the route tests of F1 (GET, POST, PUT, DELETE of /products, the barcode lookup and the opening
+// hours), so the setup and the token rules live in one place.
 
 /** The user id in the tokens; the default fake supplier repository knows [aSupplier] for this user. */
 const val SUPPLIER_USER_ID = 7L

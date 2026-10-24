@@ -240,11 +240,11 @@ class PickupWindowCalculatorTest {
         assertEquals(PickupWindowResult.Expired, result)
     }
 
-    // Only Sat 09:00-18:00.
+    /** Only Sat 09:00-18:00. */
     private val saturdayOnly =
         listOf(OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0)))
 
-    // Mon to Fri 08:00-21:00, Sat 09:00-18:00, Sun closed.
+    /** Mon to Fri 08:00-21:00, Sat 09:00-18:00, Sun closed. */
     private val week =
         listOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
             .map { OpeningHours(it, opensAt = LocalTime(8, 0), closesAt = LocalTime(21, 0)) } +

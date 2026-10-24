@@ -31,16 +31,19 @@ import kotlin.time.Clock
  */
 class LookupProductRouteTest {
 
-    // Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp.
+    /** Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp. */
     private val tokenClock = FixedClock(Clock.System.now())
 
+    /** A token for [role], made with [tokenClock]. */
     private fun tokenFor(role: Role) = productToken(role, tokenClock)
 
+    /** Sends GET /api/v1/products/lookup/[barcode], by default with a supplier token. */
     private suspend fun ApplicationTestBuilder.lookup(
         barcode: String,
         token: String? = tokenFor(Role.SUPPLIER),
     ): HttpResponse = client.get("/api/v1/products/lookup/$barcode") { token?.let { bearerAuth(it) } }
 
+    /** Starts the F1 routes with Open Food Facts played by a MockEngine that always answers [status] and [body]. */
     private fun ApplicationTestBuilder.appWithOpenFoodFacts(status: HttpStatusCode, body: String) = application {
         productRoutesTestApp(
             tokenClock,

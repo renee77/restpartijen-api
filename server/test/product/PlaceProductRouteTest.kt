@@ -44,24 +44,26 @@ import kotlin.time.Clock
  */
 class PlaceProductRouteTest {
 
-    // Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp.
+    /** Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp. */
     private val tokenClock = FixedClock(Clock.System.now())
 
-    // Fakes by default; the database test passes the Exposed repositories instead.
+    /** Starts the F1 routes with fakes by default; the database test passes the Exposed repositories instead. */
     private fun Application.testApp(
         products: ProductRepository = fakeProductRepository(),
         suppliers: SupplierRepository = fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID),
     ) = productRoutesTestApp(tokenClock, products, suppliers)
 
+    /** A token for [userId] with [role], made with [tokenClock]. */
     private fun tokenFor(role: Role, userId: Long = SUPPLIER_USER_ID) = productToken(role, tokenClock, userId)
 
-    // A valid body: best-before three days after testNow. No pickup window: the API derives it (US-10).
+    /** A valid body: best-before three days after testNow. No pickup window: the API derives it (US-10). */
     private val validBody = """
         {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
          "bestBeforeAt": "2026-10-04", "quantity": 2,
          "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
     """
 
+    /** Sends POST /api/v1/products with [body], and with [token] as bearer token when it is given. */
     private suspend fun ApplicationTestBuilder.place(body: String = validBody, token: String? = null): HttpResponse =
         client.post("/api/v1/products") {
             token?.let { bearerAuth(it) }

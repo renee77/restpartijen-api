@@ -284,12 +284,19 @@ class ProductLookupServiceTest {
         assertNull(lookup.name)
     }
 
+    /** A service whose Open Food Facts always answers [status] and [body]. */
     private fun serviceAnswering(status: HttpStatusCode, body: String) = serviceWith(CallCounter(status, body).client)
 
+    /** A service on [client], with [clock] for the caches and the limits. */
     private fun serviceWith(client: OpenFoodFactsClient, clock: Clock = FixedClock(testNow)) =
         ProductLookupService(client, clock)
 
-    // Plays Open Food Facts with one fixed answer and counts how often it was asked.
+    /**
+     * Plays Open Food Facts with one fixed answer and counts how often it was asked.
+     *
+     * @property count how many calls reached Open Food Facts
+     * @property client the OpenFoodFactsClient that counts its calls
+     */
     private class CallCounter(status: HttpStatusCode, body: String) {
         var count = 0
             private set

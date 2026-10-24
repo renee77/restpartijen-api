@@ -18,6 +18,7 @@ import kotlin.test.assertFailsWith
  */
 class PlaceProductRequestValidatorTest {
 
+    /** A valid request; a test passes only the values it is about. */
     private fun aRequest(
         name: String = "Volkoren brood",
         barcode: String? = null,
@@ -32,7 +33,7 @@ class PlaceProductRequestValidatorTest {
         barcode = barcode,
     )
 
-    // Runs the validator and returns the field it names; fails the test when nothing is thrown.
+    /** Runs the validator and returns the field it names; fails the test when nothing is thrown. */
     private fun fieldOfError(request: PlaceProductRequest): String? =
         assertFailsWith<ValidationException> { validatePlaceProductRequest(request) }.field
 

@@ -28,6 +28,10 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
+/**
+ * The domain logic of F1 against fakes: reading, placing, listing the offer of a supplier, deleting and
+ * updating products, with the pickup window derived from the opening hours (US-01, US-03, US-10).
+ */
 class ProductServiceTest {
     @Test
     fun `getProduct returns the product when the id exists`() = runTest {
@@ -410,8 +414,10 @@ class ProductServiceTest {
         assertEquals(ProductStatus.RESERVED, repository.findById(1)?.status)
     }
 
-    // FixedPriceProvider gives every product the same answer; this one gives no price (expired, B-18)
-    // only to a product whose shelf life has run out, so one list can hold both kinds.
+    /**
+     * FixedPriceProvider gives every product the same answer; this one gives no price (expired, B-18)
+     * only to a product whose shelf life has run out, so one list can hold both kinds.
+     */
     private class ExpiryPriceProvider(private val clock: Clock) : PriceProvider {
         override fun currentPrice(product: PricedProduct): Money? = priceBreakdown(product)?.currentPrice
         override fun priceBreakdown(product: PricedProduct): PriceBreakdown? =
@@ -599,6 +605,7 @@ class ProductServiceTest {
         assertEquals("Croissant", repository.findById(1)?.name)
     }
 
+    /** A valid update command; a test passes only the values it is about. */
     private fun anUpdateCommand(
         name: String = "Volkoren brood",
         originalPrice: Money = Money.fromCents(349),
@@ -611,6 +618,7 @@ class ProductServiceTest {
         quantity = quantity,
     )
 
+    /** A valid command to place a FRESH product; a test passes only the values it is about. */
     private fun aCommand(bestBeforeAt: kotlin.time.Instant = testNow + 3.days, quantity: Int = 2) = PlaceProductCommand(
         category = ProductCategory.FRESH,
         name = "Volkoren brood",

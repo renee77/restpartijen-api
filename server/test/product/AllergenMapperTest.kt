@@ -128,7 +128,7 @@ class AllergenMapperTest {
         assertEquals(emptySet(), allergens)
     }
 
-    // Collects what the mapper logs during one test; detached afterwards so tests do not see each other's logs.
+    /** Collects what the mapper logs during one test; detached afterwards so tests do not see each other's logs. */
     private fun captureLogEvents(): ListAppender<ILoggingEvent> {
         val logger = LoggerFactory.getLogger(MAPPER_LOGGER) as Logger
         val appender = ListAppender<ILoggingEvent>().apply { start() }
@@ -137,11 +137,13 @@ class AllergenMapperTest {
         return appender
     }
 
-    // Only the events about [tag], so a log line from a test running at the same time cannot interfere.
+    /** Only the events about [tag], so a log line from a test running at the same time cannot interfere. */
     private fun ListAppender<ILoggingEvent>.about(tag: String) = list.filter { it.formattedMessage.contains(tag) }
 
+    /** The appenders this test attached, so [detachAppenders] can remove them. */
     private val attached = mutableListOf<ListAppender<ILoggingEvent>>()
 
+    /** Removes the appenders of this test from the logger after each test. */
     @AfterTest
     fun detachAppenders() {
         val logger = LoggerFactory.getLogger(MAPPER_LOGGER) as Logger
@@ -149,9 +151,10 @@ class AllergenMapperTest {
     }
 
     private companion object {
+        /** The logger name of AllergenMapper; it logs under the file name, because it is not a class. */
         const val MAPPER_LOGGER = "com.restpartijen.api.product.service.AllergenMapper"
 
-        // The fourteen EU tags of the taxonomy and the Allergen each one must become (§9.8).
+        /** The fourteen EU tags of the taxonomy and the Allergen each one must become (§9.8). */
         val euTags = mapOf(
             "en:gluten" to Allergen.CEREALS_CONTAINING_GLUTEN,
             "en:crustaceans" to Allergen.CRUSTACEANS,

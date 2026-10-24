@@ -20,8 +20,12 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
+/**
+ * Unit test for the rules of SurplusProduct itself: shelfLifeRemaining, isExpired and validateForListing,
+ * including the longest shelf life per kind (§9.10).
+ */
 class SurplusProductTest {
-    // Every test uses the same fixed moment, so results do not depend on when the test runs.
+    /** Every test uses the same fixed moment, so results do not depend on when the test runs. */
     private val now = Instant.parse("2026-10-01T00:00:00Z")
     private val clock = FixedClock(now)
 
@@ -207,8 +211,10 @@ class SurplusProductTest {
         assertEquals("bestBeforeAt", exception.field)
     }
 
-    // Builds a valid product; a test passes only the values it is about.
-    // Picks the subclass by category, because a sealed class cannot be instantiated itself.
+    /**
+     * Builds a valid product; a test passes only the values it is about.
+     * Picks the subclass by category, because a sealed class cannot be instantiated itself.
+     */
     private fun aProduct(
         category: ProductCategory = ProductCategory.FRESH,
         id: Long = 1,

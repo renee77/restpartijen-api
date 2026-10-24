@@ -41,7 +41,7 @@ import kotlin.time.Clock
  */
 class OpeningHoursRoutesTest {
 
-    // GET needs no token, but productRoutesTestApp also starts the security plugin.
+    /** GET needs no token, but productRoutesTestApp also starts the security plugin. */
     private val tokenClock = FixedClock(Clock.System.now())
 
     // --- GET /api/v1/suppliers/{id}/opening-hours ---
@@ -94,14 +94,16 @@ class OpeningHoursRoutesTest {
 
     // --- PUT /api/v1/suppliers/{id}/opening-hours ---
 
-    // Saturday first, so a sorted answer proves the stored week is returned instead of the request.
+    /** Saturday first, so a sorted answer proves the stored week is returned instead of the request. */
     private val validBody = """
         [{"day": "SATURDAY", "opensAt": "09:00", "closesAt": "18:00"},
          {"day": "MONDAY", "opensAt": "08:00", "closesAt": "21:00"}]
     """
 
+    /** A token for [userId] with [role], made with [tokenClock]. */
     private fun tokenFor(role: Role, userId: Long = SUPPLIER_USER_ID) = productToken(role, tokenClock, userId)
 
+    /** Sends PUT /api/v1/suppliers/[id]/opening-hours with [body], by default as the owning supplier. */
     private suspend fun ApplicationTestBuilder.replace(
         id: String = aSupplier.id.toString(),
         body: String = validBody,
@@ -112,7 +114,7 @@ class OpeningHoursRoutesTest {
         setBody(body)
     }
 
-    // A fake that already holds a week, so a refused request can be checked to leave it alone.
+    /** A fake that already holds a week, so a refused request can be checked to leave it alone. */
     private suspend fun suppliersWithSaturday(): SupplierRepository =
         fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID)
             .also { it.updateOpeningHours(aSupplier.id, listOf(saturday)) }

@@ -15,12 +15,13 @@ import kotlin.test.assertNull
 import kotlin.time.Clock
 
 /**
- * The two public GET routes of F1, with fakes behind the service (§5.7, A4).
+ * The public GET routes of F1 for one product and for the offer of a supplier, with fakes behind the service
+ * (§5.7, A4). The public GET of the opening hours is in OpeningHoursRoutesTest.
  * Only the F1 routes start, without the seed data of module(), so each test sees only its own products (E-09).
  */
 class ProductRoutesTest {
 
-    // The GET routes need no token, but productRoutesTestApp also starts the security plugin.
+    /** The GET routes need no token, but productRoutesTestApp also starts the security plugin. */
     private val tokenClock = FixedClock(Clock.System.now())
 
     @Test

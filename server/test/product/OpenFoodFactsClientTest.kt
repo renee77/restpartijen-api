@@ -347,10 +347,11 @@ class OpenFoodFactsClientTest {
         assertEquals(LookupResult.Unavailable, result)
     }
 
+    /** A client whose Open Food Facts always answers [status] and [body]. */
     private fun clientResponding(status: HttpStatusCode, body: String) =
         openFoodFactsClient(MockEngine { respondJson(status, body) })
 
-    // The one request the client sends for [barcode], answered with the real Nutella body.
+    /** The one request the client sends for [barcode], answered with the real Nutella body. */
     private suspend fun requestSentFor(barcode: String): HttpRequestData {
         val requests = mutableListOf<HttpRequestData>()
         val client = openFoodFactsClient(
@@ -363,6 +364,7 @@ class OpenFoodFactsClientTest {
         return requests.single()
     }
 
+    /** Answers [status] with [body] as JSON, as Open Food Facts does. */
     private fun MockRequestHandleScope.respondJson(status: HttpStatusCode, body: String): HttpResponseData = respond(
         content = body,
         status = status,
@@ -373,7 +375,7 @@ class OpenFoodFactsClientTest {
         const val NUTELLA_BARCODE = "3017620422003"
         const val UNKNOWN_BARCODE = "8712345678906"
 
-        // Real response of GET /api/v3/product/8712345678906?fields=product_name,allergens_tags.
+        /** Real response of GET /api/v3/product/8712345678906?fields=product_name,allergens_tags. */
         const val NOT_FOUND_BODY =
             """{"code":"8712345678906","errors":[""" +
                 """{"field":{"id":"code","value":"8712345678906"},"impact":""" +

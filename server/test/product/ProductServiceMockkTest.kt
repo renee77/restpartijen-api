@@ -9,6 +9,10 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+/**
+ * ProductService.getProduct with a MockK mock as repository: checks the interaction itself,
+ * that the service asks the repository exactly once.
+ */
 class ProductServiceMockkTest {
     @Test
     fun `getProduct asks the repository, returns exactly one`() = runTest {

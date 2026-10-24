@@ -289,6 +289,7 @@ class ExposedProductRepositoryTest {
         assertDeleteRefused(ProductStatus.EXPIRED)
     }
 
+    /** Checks that delete refuses a stored product with [status] and leaves that status in the table. */
     private suspend fun assertDeleteRefused(status: ProductStatus) {
         // Arrange: create always stores LISTED, so the status is set in the table directly
         val supplier = emptyDatabaseWithSupplier()
@@ -337,6 +338,7 @@ class ExposedProductRepositoryTest {
         assertUpdateRefused(ProductStatus.EXPIRED)
     }
 
+    /** Checks that update refuses a stored product with [status] and leaves the product unchanged. */
     private suspend fun assertUpdateRefused(status: ProductStatus) {
         // Arrange: create always stores LISTED, so the status is set in the table directly
         val supplier = emptyDatabaseWithSupplier()

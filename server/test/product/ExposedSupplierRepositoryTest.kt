@@ -25,8 +25,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Integration test: the real SupplierIdLookup of F1 against a real, empty H2 database per test (A15).
- * One test per promise in the KDoc of SupplierIdLookup, plus the opening hours of US-10.
+ * Integration test: the real SupplierRepository of F1 against a real, empty H2 database per test (A15).
+ * One test per promise in the KDoc of SupplierIdLookup and SupplierRepository, the opening hours of US-10 included.
  */
 class ExposedSupplierRepositoryTest {
 
@@ -231,7 +231,7 @@ class ExposedSupplierRepositoryTest {
     private val mondayLate = OpeningHours(DayOfWeek.MONDAY, opensAt = LocalTime(12, 0), closesAt = LocalTime(22, 0))
     private val saturday = OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0))
 
-    // An empty database with the opening-hours table and one supplier; returns the supplier id.
+    /** An empty database with the opening-hours table and one supplier; returns the supplier id. */
     private fun emptyDatabaseWithSupplierAndOpeningHours(): Long {
         createEmptyTestDatabase(UsersTable, SuppliersTable, SupplierOpeningHoursTable)
         return insertSupplier(insertUser(Role.SUPPLIER))

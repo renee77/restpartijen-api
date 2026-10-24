@@ -42,18 +42,20 @@ import kotlin.time.Clock
  */
 class UpdateProductRouteTest {
 
-    // Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp.
+    /** Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp. */
     private val tokenClock = FixedClock(Clock.System.now())
 
+    /** A token for [userId] with [role], made with [tokenClock]. */
     private fun tokenFor(role: Role, userId: Long = SUPPLIER_USER_ID) = productToken(role, tokenClock, userId)
 
-    // A valid body: every field of POST except category, best-before three days after testNow.
+    /** A valid body: every field of POST except category, best-before three days after testNow. */
     private val validBody = """
         {"name": "Wit brood", "originalPrice": 2.49,
          "bestBeforeAt": "2026-10-04", "quantity": 5,
          "allergens": ["MILK"]}
     """
 
+    /** Sends PUT /api/v1/products/[id] with [body], and with [token] as bearer token when it is given. */
     private suspend fun ApplicationTestBuilder.update(
         id: String,
         body: String = validBody,

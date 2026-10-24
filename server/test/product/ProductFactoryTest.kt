@@ -69,7 +69,7 @@ class ProductFactoryTest {
         )
     }
 
-    // Every test uses the same values; only the category differs.
+    /** Every test uses the same values; only the category differs. */
     private fun createWith(category: ProductCategory) = ProductFactory.create(
         category = category,
         id = 42,

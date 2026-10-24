@@ -20,6 +20,7 @@ import kotlin.time.Instant
  */
 class UpdateProductRequestTest {
 
+    /** A valid request; a test passes only the values it is about. */
     private fun aRequest(
         name: String = "Volkoren brood",
         barcode: String? = null,
@@ -34,6 +35,7 @@ class UpdateProductRequestTest {
         allergens = setOf(Allergen.MILK),
     )
 
+    /** Runs the validator and returns the field it names; fails the test when nothing is thrown. */
     private fun fieldOfError(request: UpdateProductRequest): String? =
         assertFailsWith<ValidationException> { validateUpdateProductRequest(request) }.field
 

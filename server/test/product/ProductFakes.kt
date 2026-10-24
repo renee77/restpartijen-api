@@ -45,6 +45,8 @@ import kotlin.time.Instant
  *
  * Delegation (`by`) passes every Repository call on to the fake, so no repository logic is repeated here.
  * The product-specific queries of ProductRepository are implemented here on top of findAll.
+ *
+ * @param products the products the fake starts with, under their own ids
  */
 fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository {
     val store = FakeRepository(
@@ -53,17 +55,19 @@ fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository {
         initialItems = products.toList(),
     )
     return object : ProductRepository, Repository<SurplusProduct> by store {
-        // The same rule as the real query (A4): only the current offer of this supplier.
+        /** The same rule as the real query (A4): only the current offer of this supplier. */
         override suspend fun findBySupplier(supplierId: Long): List<SurplusProduct> = findAll().filter {
             it.supplier.id == supplierId && it.status in setOf(ProductStatus.LISTED, ProductStatus.RESERVED)
         }
 
-        // The same rule as the real delete (§5.3): only a LISTED product can be deleted, otherwise false.
-        // Removing it from the list matches what callers see of the soft delete: findById no longer finds it.
+        /**
+         * The same rule as the real delete (§5.3): only a LISTED product can be deleted, otherwise false.
+         * Removing it from the list matches what callers see of the soft delete: findById no longer finds it.
+         */
         override suspend fun delete(id: Long): Boolean =
             store.findById(id)?.status == ProductStatus.LISTED && store.delete(id)
 
-        // The same rule as the real update (A13): only a LISTED product changes, otherwise false.
+        /** The same rule as the real update (A13): only a LISTED product changes, otherwise false. */
         override suspend fun update(item: SurplusProduct): Boolean =
             store.findById(item.id)?.status == ProductStatus.LISTED && store.update(item)
     }
@@ -107,8 +111,10 @@ fun fakeSupplierRepository(
     ownerUserId: Long = 7,
     openingHours: List<OpeningHours> = anOpenWeek,
 ): SupplierRepository = object : SupplierRepository {
-    // Opening hours per supplier id. Replaced as a whole and returned from Monday to Sunday,
-    // like the real repository, so a test sees the same behaviour.
+    /**
+     * Opening hours per supplier id. Replaced as a whole and returned from Monday to Sunday,
+     * like the real repository, so a test sees the same behaviour.
+     */
     private val hoursBySupplier = mutableMapOf<Long, List<OpeningHours>>().apply {
         if (supplier != null) put(supplier.id, openingHours)
     }

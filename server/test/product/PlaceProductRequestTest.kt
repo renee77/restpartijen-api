@@ -17,6 +17,7 @@ import kotlin.time.Instant
  */
 class PlaceProductRequestTest {
 
+    /** A valid request; a test passes only the price it is about. */
     private fun aRequest(originalPrice: Double = 3.49) = PlaceProductRequest(
         category = ProductCategory.FRESH,
         name = "Volkoren brood",

@@ -152,6 +152,7 @@ class OpeningHoursServiceTest {
         }
     }
 
+    /** The same open day as the command a supplier would send. */
     private fun OpeningHours.asCommand() = OpeningHoursCommand(day, opensAt, closesAt)
 
     private val closingBeforeOpening =
