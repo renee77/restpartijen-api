@@ -79,6 +79,8 @@ private data class SeedReservation(
     val priceCents: Long,
     val reservedAgo: Duration,
     val status: ReservationStatus = ReservationStatus.ACTIVE,
+    // How long ago it was picked up; null when it was never collected (US-11).
+    val collectedAgo: Duration? = null,
 )
 
 /**
@@ -282,10 +284,10 @@ object SeedData {
         SeedReservation("supermarkt-wraps", "afhaler-a@mail.com", priceCents = 239, reservedAgo = 3.hours),
         SeedReservation("groothandel-yoghurt", "afhaler-b@mail.com", priceCents = 250, reservedAgo = 25.hours),
         SeedReservation("supermarkt-brood", "afhaler-a@mail.com", priceCents = 120, reservedAgo = 6.hours),
-        // History of collector A. The COLLECTED one gets collected_at once issue #42 adds the column.
+        // History of collector A. The COLLECTED one was picked up after reserving and inside its pickup window (issue #42).
         SeedReservation(
             "bakker-appeltaart", "afhaler-a@mail.com", priceCents = 390, reservedAgo = 5.hours,
-            status = ReservationStatus.COLLECTED,
+            status = ReservationStatus.COLLECTED, collectedAgo = 4.hours,
         ),
         SeedReservation(
             "supermarkt-melk", "afhaler-a@mail.com", priceCents = 249, reservedAgo = 10.hours,
@@ -395,6 +397,7 @@ object SeedData {
                     it[ReservationsTable.reservedAt] = reservedAt
                     it[ReservationsTable.expiresAt] = minOf(reservedAt + 24.hours, now + product.pickupUntil)
                     it[ReservationsTable.status] = reservation.status
+                    it[ReservationsTable.collectedAt] = reservation.collectedAgo?.let { now - it }
                 }
             }
         }

@@ -85,4 +85,35 @@ class ReservationService(
             "Reservation $reservationId disappeared while cancelling"
         }
     }
+
+    /** Confirms the pickup of an own reservation (US-11, §5.11): both the reservation and the product become COLLECTED. */
+    suspend fun collect(reservationId: Long, collectorId: Long): Reservation = dbQuery {
+        val reservation = reservations.findById(reservationId)
+            ?: throw NotFoundException("Reservation $reservationId not found")
+
+        if (reservation.collectorId != collectorId) {
+            throw ForbiddenException("Reservation $reservationId is not allowed")
+        }
+
+        val product = productReader.findById(reservation.productId)
+            ?: throw NotFoundException("Product ${reservation.productId} not found")
+
+        // 409 for COLLECTED, CANCELLED or LAPSED; the state machine decides (§9.5)
+        val to = ReservationStateMachine.transition(ReservationEvent.COLLECT, product.status, reservation.status)
+
+        // 422: only inside the pickup window (§5.11)
+        val now = clock.now()
+        if (now < product.pickupWindow.from || now > product.pickupWindow.until) {
+            throw DomainRuleException("Reservation $reservationId can only be collected inside its pickup window")
+        }
+
+        // 409: the product changed just now (markCollected only succeeds while still RESERVED)
+        if (!statusUpdater.markCollected(product.id)) {
+            throw IllegalStateTransitionException("Product ${product.id} is no longer reserved")
+        }
+
+        val collected = reservation.copy(status = to.reservation, collectedAt = now)
+        check(reservations.update(collected)) { "Reservation $reservationId disappeared while collecting" }
+        collected
+    }
 }

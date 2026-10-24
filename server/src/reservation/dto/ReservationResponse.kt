@@ -14,6 +14,8 @@ data class ReservationResponse(
     val reservedPrice: Double,
     val reservedAt: String,
     val expiresAt: String,
+    // Only set once collected (US-11); null for every other status
+    val collectedAt: String? = null,
 )
 
 fun Reservation.toResponse() = ReservationResponse(
@@ -23,4 +25,5 @@ fun Reservation.toResponse() = ReservationResponse(
     reservedPrice = reservedPrice.toEuros() ,
     reservedAt = reservedAt.toString() ,
     expiresAt = expiresAt.toString(),
+    collectedAt = collectedAt?.toString(),
 )
