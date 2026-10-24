@@ -13,8 +13,11 @@ import kotlin.time.Clock
 class FakeUserRepository : UserRepository {
     /** The stored users, including soft-deleted ones; a test can fill or inspect it directly. */
     val users = mutableListOf<User>()
+
+    /** The id for the next create, counting up from 1 like an auto-increment column. */
     private var nextId = 1L
 
+    /** Stamps deletedAt on a soft delete; the real clock is enough, because no test reads that moment. */
     private val clock: Clock = Clock.System
 
     /** Trim and lower case, as the real repository does. */
