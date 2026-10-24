@@ -44,7 +44,11 @@ class ExposedAdminProductIntegrationTest {
     private lateinit var reservationMaintenance: ReservationMaintenanceService
     private lateinit var service: AdminProductService
 
-    /** Wraps the real updater, but a removal never works. This lets the test fail the second step. */
+    /**
+     * Wraps the real updater, but a removal never works. This lets the test fail the second step.
+     *
+     * @param real the updater that handles every other call
+     */
     private class FailingRemoveUpdater(real: ProductStatusUpdater) : ProductStatusUpdater by real {
         override suspend fun markRemoved(productId: Long): Boolean = false
     }
