@@ -3,13 +3,24 @@ package com.restpartijen.api.shared
 /**
  * Base class for every domain error. StatusPages (GI-4, Stefan) maps each
  * subclass to one HTTP status code, so services never build error responses themselves.
+ *
+ * @param message the text StatusPages puts in the error response
  */
 abstract class DomainException(message: String) : RuntimeException(message)
 
-/** 400 Bad Request — structural error in the request. [field] names the offending field. */
+/**
+ * 400 Bad Request — structural error in the request.
+ *
+ * @property field the offending field, sent along in the error response; null when no single field is to blame
+ */
 class ValidationException(message: String, val field: String? = null) : DomainException(message)
 
-/** 422 Unprocessable Entity — well-formed request that breaks a domain rule. */
+/**
+ * 422 Unprocessable Entity — well-formed request that breaks a domain rule.
+ *
+ * @property field the field that breaks the rule, sent along in the error response;
+ *   null when no single field is to blame
+ */
 class DomainRuleException(message: String, val field: String? = null) : DomainException(message)
 
 /** 404 Not Found — the requested resource does not exist. */

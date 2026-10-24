@@ -5,6 +5,10 @@ package com.restpartijen.api.shared
  *
  * Amounts are [Money] in whole cents, the discount is a whole percentage (ADR-07).
  * The class guards itself, like PickupWindow does.
+ *
+ * @property originalPrice the price the supplier asked
+ * @property discountPercentage the discount of the current tier, from 0 to 100
+ * @property currentPrice the price after the discount; never above [originalPrice]
  */
 data class PriceBreakdown(val originalPrice: Money, val discountPercentage: Int, val currentPrice: Money) {
     init {
