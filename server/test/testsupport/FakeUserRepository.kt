@@ -8,7 +8,7 @@ import kotlin.time.Clock
  * In-memory UserRepository for service tests.
  *
  * Normalizes the email and soft-deletes like the real repository, so lookups behave the same.
- * [update] is not implemented: it always returns false, because no test needs it yet.
+ * [update] is not implemented: it always returns false.
  */
 class FakeUserRepository : UserRepository {
     /** The stored users, including soft-deleted ones; a test can fill or inspect it directly. */
@@ -17,7 +17,7 @@ class FakeUserRepository : UserRepository {
     /** The id for the next create, counting up from 1 like an auto-increment column. */
     private var nextId = 1L
 
-    /** Stamps deletedAt on a soft delete; the real clock is enough, because no test reads that moment. */
+    /** Stamps deletedAt on a soft delete. */
     private val clock: Clock = Clock.System
 
     /** Trim and lower case, as the real repository does. */
@@ -36,7 +36,7 @@ class FakeUserRepository : UserRepository {
         return saved
     }
 
-    override suspend fun update(item: User): Boolean = false // not used yet
+    override suspend fun update(item: User): Boolean = false // not implemented, see the class KDoc
 
     // Soft delete, like the real repository: the user stays, but is invisible.
     override suspend fun delete(id: Long): Boolean {
