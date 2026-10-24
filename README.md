@@ -62,7 +62,7 @@ There are two ways to set them:
 
 To fill in `OFF_CONTACT_EMAIL` in `.env`, enter a real e-mail address after the `=`: `OFF_CONTACT_EMAIL=you@example.com`. Open Food Facts uses it to contact you if your app causes problems.
 
-To fill in `JWT_SECRET` in `.env`, generate a random secret, copy the line it prints and paste it after `JWT_SECRET=`:
+To fill in `JWT_SECRET`, generate a random secret and copy the line it prints. In `.env`, paste it after `JWT_SECRET=`; in the terminal, use it as shown below.
 
 ```powershell
 # PowerShell
@@ -82,12 +82,10 @@ A new `JWT_SECRET` makes all tokens issued before it invalid, so after a restart
 
 ### PowerShell
 
-Generate a secret and set the variables:
+Set the variables, with the secret you generated above:
 
 ```powershell
-$bytes = New-Object byte[] 32
-[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
-$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
+$env:JWT_SECRET = "<your secret>"
 $env:OFF_CONTACT_EMAIL = "you@example.com"
 ```
 (Use a real email address.)
@@ -115,10 +113,10 @@ Remove-Item Env:JWT_SECRET, Env:OFF_CONTACT_EMAIL
 
 ### Bash
 
-Generate a secret and set the variables:
+Set the variables, with the secret you generated above:
 
 ```bash
-export JWT_SECRET=$(openssl rand -base64 32)
+export JWT_SECRET="<your secret>"
 export OFF_CONTACT_EMAIL="you@example.com"
 ```
 (Use a real email address.)
