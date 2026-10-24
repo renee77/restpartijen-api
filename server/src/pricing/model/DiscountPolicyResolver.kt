@@ -33,5 +33,5 @@ object DiscountPolicyResolver {
      * @throws IllegalStateException if no policy is registered for the category
      */
     fun resolve(category: ProductCategory): DiscountPolicy =
-        policies[category] ?: error("Geen korting geregistreerd voor de categorie: $category")
+        policies[category] ?: error("No discount policy registered for category: $category")
 }
