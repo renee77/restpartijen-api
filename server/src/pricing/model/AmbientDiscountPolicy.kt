@@ -2,7 +2,6 @@ package com.restpartijen.api.pricing.model
 
 import com.restpartijen.api.shared.ProductCategory
 import kotlin.time.Duration.Companion.days
-import kotlin.time.Duration.Companion.hours
 
 /**
  * Discount policy for ambient products: discounts start fourteen days before the
