@@ -34,6 +34,8 @@ import kotlin.time.Clock
  * Entry point of the application.
  * Hands control to Ktor's Netty EngineMain, which reads resources/application.yaml
  * for the port and the module(s) to load.
+ *
+ * @param args command-line arguments, passed on to EngineMain unchanged.
  */
 fun main(args: Array<String>) {
     EngineMain.main(args)
