@@ -23,7 +23,7 @@ object TestJwtSettings {
     )
 }
 
-/** One fixed moment, shared by the token helper and the JwtConfig in tests. */
+/** The clocks for tests: one fixed moment, or a clock that stands still from the real "now". */
 object TestClock {
     /** One fixed moment, for tests that do not go through the JWT verifier (for example ExpirySchedulerTest). */
     val fixed = FixedClock(Instant.parse("2026-09-26T12:00:00Z"))
@@ -37,8 +37,8 @@ object TestClock {
 }
 
 /**
- * Helper class to create test tokens. It uses the default JWT settings and a fixed clock,
- * so token generation is consistent.
+ * Helper class to create test tokens. By default it uses the default JWT settings and
+ * [TestClock.fixedNow], so the JWT verifier accepts the token; a test can pass other settings or another clock.
  */
 class TestTokens {
 

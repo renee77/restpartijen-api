@@ -21,7 +21,7 @@ class PasswordHasherTest {
         assertTrue(hash.verifyPassword(password, hashedPassword))
     }
 
-    // Sad path: Verify a password against a wrong hash.
+    // Sad path: a wrong password does not match the hash of another password.
     @Test
     fun `test the password with wrong hash`() {
         // Arrange: get the password hasher and a sample password.

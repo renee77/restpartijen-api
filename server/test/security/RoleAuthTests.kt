@@ -62,12 +62,12 @@ class RoleAuthTests {
             role = Role.ADMIN,
         )
 
-        // Act: Make a GET request to the role-protected route with a valid token that has the required role
+        // Act: Make a GET request to the role-protected route with a valid token that lacks the required role
         val response = client.get("/test/role-protected-collector") {
             bearerAuth(token)
         }
 
-        // Assert. Verify that the decoded token contains the expected userId and role.
+        // Assert: the error body says that the role is not allowed (the 403 message)
         val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText()).message
         assertEquals("Insufficient role", error)
     }
