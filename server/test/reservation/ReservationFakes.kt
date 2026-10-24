@@ -46,7 +46,10 @@ class FakeProductReader(private val products: List<ProductView>) : ProductReader
         products.filter { it.status in statuses }
 }
 
-/** Records which products were reserved, so a test can check the service really called it. */
+/**
+ * Records which products were reserved, listed again or collected, so a test can check the service
+ * really called it. Those calls always succeed; markExpired and markRemoved change nothing.
+ */
 class FakeProductStatusUpdater : ProductStatusUpdater {
     val reserved = mutableListOf<Long>()
     val listed = mutableListOf<Long>()

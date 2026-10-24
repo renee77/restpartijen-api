@@ -27,7 +27,8 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 
 /**
- * K-5 / issue #48: lapsing returns false and never throws, and on false nothing of the lapse stays behind.
+ * K-5 / issue #48: a failing lapse returns false instead of throwing, and on false nothing of the lapse
+ * stays behind.
  * Real database for the product status; storing the reservation is made to fail on purpose.
  */
 class ReservationLapseRollbackTest {
