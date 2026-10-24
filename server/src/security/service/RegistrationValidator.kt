@@ -1,6 +1,5 @@
 package com.restpartijen.api.security.service
 
-import com.restpartijen.api.shared.DomainRuleException
 import com.restpartijen.api.shared.ValidationException
 
 /**
