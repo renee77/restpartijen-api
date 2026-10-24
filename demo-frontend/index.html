@@ -188,7 +188,8 @@
     <h2>US-11 · Ophalen bevestigen</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>afhaler</strong> wil ik bij het ophalen bevestigen dat ik de partij heb meegenomen, zodat de reservering is afgehandeld en de partij van het platform verdwijnt.</p>
-    <p class="meta">Rol COLLECTOR · <code>POST /reservations/{id}/collect</code> · 200, reservering en partij worden COLLECTED</p>
+    <p class="meta">Rol COLLECTOR · <code>POST /reservations/{id}/collect</code> · 200 met <code>collectedAt</code>; reservering en partij worden COLLECTED,
+      alleen binnen het afhaalvenster (anders 422)</p>
     <form id="form-collect" class="row">
       <label>Reservering-id <input name="reservationId" type="number" min="1" value=""></label>
       <button type="submit">Ophalen bevestigen</button>

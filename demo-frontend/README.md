@@ -52,7 +52,7 @@ De demo is gebouwd in de nacht van 23 op 24 oktober 2026, voordat alle branches 
 |---|---|---|
 | A1 | Productcontract van `feat/opening-hours` (PR #70): `bestBeforeAt` is een datum (`"2027-06-30"`), zonder `pickupWindow`; de API leidt het afhaalvenster af uit de openingstijden. | Sinds 24 oktober ook op `main`. |
 | A2 | US-04 volgens `feature/stefan-product-search`: filters `category`, `maxPrice`, `minShelfLifeHours`; antwoord met `supplier{id,name,latitude,longitude}`, `currentPrice`, `shelfLifeRemainingHours`, `pickupFrom`, `pickupUntil`. | Sinds 24 oktober op `main` (PR #69). |
-| A3 | US-06 `DELETE /reservations/{id}` geeft 204 zonder body; US-11 `POST /reservations/{id}/collect` geeft 200 met de reservering. | US-06 staat sinds 24 oktober op `main` (PR #73). US-11 bestaat nog nergens; de demo toont dan de 404 van de API. |
+| A3 | US-06 `DELETE /reservations/{id}` geeft 204 zonder body; US-11 `POST /reservations/{id}/collect` geeft 200 met de reservering en `collectedAt`. | Sinds 24 oktober op `main` (PR #73 en #75). |
 | A4 | Login geeft `supplierId` voor een aanbieder (`null` voor afhaler en beheerder), sinds PR #72. De demo gebruikt dat id voor `/suppliers/{id}/...`. | FTD §10.1. |
 | A5 | Barcode `3017620422003` (Nutella) als voorbeeld voor US-02. | Zelfde voorbeeld als `requests.http`. |
 | A6 | Pagina op `http://localhost:8000` via `python3 -m http.server`. | CORS `anyHost()`; geen wijziging aan de API nodig. |
