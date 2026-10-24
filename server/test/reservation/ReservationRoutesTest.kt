@@ -23,6 +23,7 @@ import com.restpartijen.api.shared.ProductView
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -87,6 +88,17 @@ class ReservationRoutesTest {
 
     private suspend fun ApplicationTestBuilder.ownReservations(token: String? = null): HttpResponse =
         client.get("/api/v1/reservations") { token?.let { bearerAuth(it) } }
+
+    private suspend fun ApplicationTestBuilder.cancel(reservationId: String, token: String? = null): HttpResponse =
+        client.delete("/api/v1/reservations/$reservationId") { token?.let { bearerAuth(it) } }
+
+    // Reservation 1 on product 1. tokenFor() belongs to collector 7, so collectorId 7 means "mine".
+    private fun reservation(collectorId: Long = 7, status: ReservationStatus = ReservationStatus.ACTIVE) = Reservation(
+        1, productId = 1, collectorId = collectorId, reservedPrice = Money.fromCents(299),
+        reservedAt = now - 1.hours, expiresAt = now + 5.hours, status = status,
+    )
+
+    private val reservedProduct = FakeProduct(id = 1, pickupWindow = openWindow, status = ProductStatus.RESERVED)
 
     @Test
     fun `without a token reserving gives 401`() = testApplication {
@@ -242,5 +254,84 @@ class ReservationRoutesTest {
         // Assert (§5.5)
         val body = Json.decodeFromString<ReservationResponse>(response.bodyAsText())
         assertEquals(openWindow.until.toString(), body.expiresAt)
+    }
+
+    @Test
+    fun `a collector cancels an own reservation, gets 204 and the product is listed again`() = testApplication {
+        // Arrange
+        application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation())) }
+        // Act
+        val response = cancel("1", token = tokenFor(Role.COLLECTOR))
+        // Assert: 204, the product went back to LISTED, and the reservation shows as CANCELLED
+        assertEquals(HttpStatusCode.NoContent, response.status)
+        assertTrue(1L in statusUpdater.listed, "service did not put the product back to LISTED")
+        val own = Json.decodeFromString<List<ReservationResponse>>(ownReservations(tokenFor(Role.COLLECTOR)).bodyAsText())
+        assertEquals(ReservationStatus.CANCELLED, own.single().status)
+    }
+
+    @Test
+    fun `cancelling the reservation of another collector gives 403 and changes nothing`() = testApplication {
+        // Arrange: the reservation belongs to collector 8, the token to collector 7
+        application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation(collectorId = 8))) }
+        // Act
+        val response = cancel("1", token = tokenFor(Role.COLLECTOR))
+        // Assert
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+        assertTrue(statusUpdater.listed.isEmpty(), "the product of someone else was put back to LISTED")
+    }
+
+    @Test
+    fun `cancelling an unknown reservation gives 404`() = testApplication {
+        // Arrange
+        setUp()
+        // Act
+        val response = cancel("999", token = tokenFor(Role.COLLECTOR))
+        // Assert
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `cancelling with an id that is not a number gives 400`() = testApplication {
+        // Arrange
+        setUp()
+        // Act
+        val response = cancel("abc", token = tokenFor(Role.COLLECTOR))
+        // Assert
+        assertEquals(HttpStatusCode.BadRequest, response.status)
+    }
+
+    @Test
+    fun `cancelling a collected reservation gives 409 and changes nothing`() = testApplication {
+        // Arrange: an own reservation that was already picked up, so its product is COLLECTED too
+        val collectedProduct = FakeProduct(id = 1, pickupWindow = openWindow, status = ProductStatus.COLLECTED)
+        application {
+            testApp(products = listOf(collectedProduct), reservations = listOf(reservation(status = ReservationStatus.COLLECTED)))
+        }
+        // Act
+        val response = cancel("1", token = tokenFor(Role.COLLECTOR))
+        // Assert: the state machine refuses CANCEL for COLLECTED (§5.6, §9.5), and nothing was written
+        assertEquals(HttpStatusCode.Conflict, response.status)
+        assertTrue(statusUpdater.listed.isEmpty(), "a collected product was put back to LISTED")
+    }
+
+    @Test
+    fun `without a token cancelling gives 401`() = testApplication {
+        // Arrange
+        application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation())) }
+        // Act
+        val response = cancel("1")
+        // Assert
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+    }
+
+    @Test
+    fun `a supplier cannot cancel a reservation and gets 403`() = testApplication {
+        // Arrange: a valid, active reservation, so only the role can cause the 403
+        application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation())) }
+        // Act
+        val response = cancel("1", token = tokenFor(Role.SUPPLIER))
+        // Assert: requireRole stops the request before the service runs
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+        assertTrue(statusUpdater.listed.isEmpty(), "a supplier put the product back to LISTED")
     }
 }
