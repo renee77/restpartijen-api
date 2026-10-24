@@ -22,4 +22,12 @@ data class User(
     val role: Role,
     val createdAt: Instant,
     val deletedAt: Instant? = null,
-)
+) {
+    /**
+     * Shows the password hash as `***`, so logging the user object does not reveal it;
+     * the generated data-class toString would print the hash. The other fields keep the data-class format.
+     */
+    override fun toString(): String =
+        "User(id=$id, email=$email, passwordHash=***, displayName=$displayName, role=$role, " +
+            "createdAt=$createdAt, deletedAt=$deletedAt)"
+}
