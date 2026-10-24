@@ -30,8 +30,9 @@ import io.ktor.server.util.getOrFail
  * Registers the F1 product routes.
  *
  * GET /api/v1/products/{id} reads one product; POST /api/v1/products places one (US-01); PUT and DELETE
- * change an own product (US-03). GET and PUT /api/v1/suppliers/{id}/opening-hours read and replace the
- * opening hours of a supplier (US-10).
+ * change an own product (US-03). GET /api/v1/suppliers/{id}/products lists the offer of a supplier (US-03).
+ * GET /api/v1/products/lookup/{barcode} suggests a name and allergens from Open Food Facts (US-02).
+ * GET and PUT /api/v1/suppliers/{id}/opening-hours read and replace the opening hours of a supplier (US-10).
  * The route knows the service, never the repository (§8.3). It only handles HTTP: errors are
  * exceptions from the layers below, which StatusPages turns into the right status code (GI-4).
  */
@@ -75,7 +76,7 @@ fun Application.configureProductRouting() {
             call.respond(week.map { it.toResponse() })
         }
 
-        // Only a supplier may place a product: no token gives 401, another role 403 (decision 3.6).
+        // Only a supplier may use the routes below: no token gives 401, another role 403 (decision 3.6).
         requireRole(Role.SUPPLIER) {
             // A suggestion from Open Food Facts before placing; it stores nothing (US-02, W-14).
             get("/api/v1/products/lookup/{barcode}") {
