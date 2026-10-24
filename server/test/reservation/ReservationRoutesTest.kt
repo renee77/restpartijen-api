@@ -92,6 +92,9 @@ class ReservationRoutesTest {
     private suspend fun ApplicationTestBuilder.cancel(reservationId: String, token: String? = null): HttpResponse =
         client.delete("/api/v1/reservations/$reservationId") { token?.let { bearerAuth(it) } }
 
+    private suspend fun ApplicationTestBuilder.collect(reservationId: String, token: String? = null): HttpResponse =
+        client.post("/api/v1/reservations/$reservationId/collect") { token?.let { bearerAuth(it) } }
+
     // Reservation 1 on product 1. tokenFor() belongs to collector 7, so collectorId 7 means "mine".
     private fun reservation(collectorId: Long = 7, status: ReservationStatus = ReservationStatus.ACTIVE) = Reservation(
         1, productId = 1, collectorId = collectorId, reservedPrice = Money.fromCents(299),
@@ -333,5 +336,120 @@ class ReservationRoutesTest {
         // Assert: requireRole stops the request before the service runs
         assertEquals(HttpStatusCode.Forbidden, response.status)
         assertTrue(statusUpdater.listed.isEmpty(), "a supplier put the product back to LISTED")
+    }
+
+    @Test
+    fun `a collector confirms the pickup inside the window and gets 200 with the reservation COLLECTED (TC-11)`() = testApplication {
+        // Arrange: openWindow runs from 1 hour ago to 5 hours from now
+        application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation())) }
+        // Act
+        val response = collect("1", token = tokenFor(Role.COLLECTOR))
+        // Assert: the moment comes from the test clock, and the product was marked COLLECTED too
+        assertEquals(HttpStatusCode.OK, response.status)
+        val body = Json.decodeFromString<ReservationResponse>(response.bodyAsText())
+        assertEquals(ReservationStatus.COLLECTED, body.status)
+        assertEquals(now.toString(), body.collectedAt)
+        assertEquals(listOf(1L), statusUpdater.collected)
+    }
+
+    @Test
+    fun `the confirmed pickup is stored, so the own reservations show it as COLLECTED`() = testApplication {
+        // Arrange
+        application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation())) }
+        // Act
+        collect("1", token = tokenFor(Role.COLLECTOR))
+        // Assert: read back through GET, not from the collect answer
+        val own = Json.decodeFromString<List<ReservationResponse>>(ownReservations(tokenFor(Role.COLLECTOR)).bodyAsText())
+        assertEquals(ReservationStatus.COLLECTED, own.single().status)
+        assertEquals(now.toString(), own.single().collectedAt)
+    }
+
+    @Test
+    fun `confirming before the pickup window starts gives 422 and changes nothing`() = testApplication {
+        // Arrange: the window opens in 1 hour
+        val notYetOpen = FakeProduct(id = 1, pickupWindow = PickupWindow(now + 1.hours, now + 5.hours), status = ProductStatus.RESERVED)
+        application { testApp(products = listOf(notYetOpen), reservations = listOf(reservation())) }
+        // Act
+        val response = collect("1", token = tokenFor(Role.COLLECTOR))
+        // Assert
+        assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
+        assertTrue(statusUpdater.collected.isEmpty(), "the product was marked COLLECTED before its window")
+    }
+
+    @Test
+    fun `confirming after the pickup window ended gives 422 and changes nothing`() = testApplication {
+        // Arrange: the window closed 1 hour ago, but the maintenance has not lapsed the reservation yet
+        val closed = FakeProduct(id = 1, pickupWindow = PickupWindow(now - 5.hours, now - 1.hours), status = ProductStatus.RESERVED)
+        application { testApp(products = listOf(closed), reservations = listOf(reservation())) }
+        // Act
+        val response = collect("1", token = tokenFor(Role.COLLECTOR))
+        // Assert
+        assertEquals(HttpStatusCode.UnprocessableEntity, response.status)
+        assertTrue(statusUpdater.collected.isEmpty(), "the product was marked COLLECTED after its window")
+    }
+
+    @Test
+    fun `confirming exactly when the window ends is still allowed`() = testApplication {
+        // Arrange: edge case, until counts as inside, like reserve() (§5.5)
+        val endsNow = FakeProduct(id = 1, pickupWindow = PickupWindow(now - 5.hours, now), status = ProductStatus.RESERVED)
+        application { testApp(products = listOf(endsNow), reservations = listOf(reservation())) }
+        // Act
+        val response = collect("1", token = tokenFor(Role.COLLECTOR))
+        // Assert
+        assertEquals(HttpStatusCode.OK, response.status)
+    }
+
+    @Test
+    fun `confirming a collected, cancelled or lapsed reservation gives 409 and changes nothing`() {
+        // Each finished status with the product status it leaves behind (§9.5)
+        val finished = mapOf(
+            ReservationStatus.COLLECTED to ProductStatus.COLLECTED,
+            ReservationStatus.CANCELLED to ProductStatus.LISTED,
+            ReservationStatus.LAPSED to ProductStatus.LISTED,
+        )
+        for ((reservationStatus, productStatus) in finished) {
+            testApplication {
+                // Arrange: inside the window, so only the status can cause the refusal
+                val product = FakeProduct(id = 1, pickupWindow = openWindow, status = productStatus)
+                application { testApp(products = listOf(product), reservations = listOf(reservation(status = reservationStatus))) }
+                // Act
+                val response = collect("1", token = tokenFor(Role.COLLECTOR))
+                // Assert
+                assertEquals(HttpStatusCode.Conflict, response.status, "for $reservationStatus")
+                assertTrue(statusUpdater.collected.isEmpty(), "a $reservationStatus reservation was collected")
+            }
+        }
+    }
+
+    @Test
+    fun `confirming the reservation of another collector gives 403 and changes nothing`() = testApplication {
+        // Arrange: the reservation belongs to collector 8, the token to collector 7
+        application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation(collectorId = 8))) }
+        // Act
+        val response = collect("1", token = tokenFor(Role.COLLECTOR))
+        // Assert
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+        assertTrue(statusUpdater.collected.isEmpty(), "the product of someone else was marked COLLECTED")
+    }
+
+    @Test
+    fun `a supplier cannot confirm a pickup and gets 403`() = testApplication {
+        // Arrange: a valid, active reservation inside the window, so only the role can cause the 403
+        application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation())) }
+        // Act
+        val response = collect("1", token = tokenFor(Role.SUPPLIER))
+        // Assert: requireRole stops the request before the service runs
+        assertEquals(HttpStatusCode.Forbidden, response.status)
+        assertTrue(statusUpdater.collected.isEmpty(), "a supplier marked the product COLLECTED")
+    }
+
+    @Test
+    fun `without a token confirming gives 401`() = testApplication {
+        // Arrange
+        application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation())) }
+        // Act
+        val response = collect("1")
+        // Assert
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
     }
 }

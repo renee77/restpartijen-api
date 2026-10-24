@@ -43,14 +43,16 @@ class ExposedReservationRepository : ReservationRepository {
             it[ReservationsTable.reservedAt] = item.reservedAt
             it[ReservationsTable.expiresAt] = item.expiresAt
             it[ReservationsTable.status] = item.status
+            it[ReservationsTable.collectedAt] = item.collectedAt
         }[ReservationsTable.id]
         item.copy(id = newId)
     }
 
     override suspend fun update(item: Reservation): Boolean = dbQuery {
-        // Only the status can change; price and times are fixed when reserving (§5.5).
+        // Only the status and the pickup moment can change; price and the other times are fixed when reserving (§5.5).
         ReservationsTable.update({ ReservationsTable.id eq item.id }) {
             it[ReservationsTable.status] = item.status
+            it[ReservationsTable.collectedAt] = item.collectedAt
         } > 0
     }
 
@@ -99,4 +101,5 @@ private fun ResultRow.toReservation(): Reservation = Reservation(
     reservedAt = this[ReservationsTable.reservedAt],
     expiresAt = this[ReservationsTable.expiresAt],
     status = this[ReservationsTable.status],
+    collectedAt = this[ReservationsTable.collectedAt],
 )

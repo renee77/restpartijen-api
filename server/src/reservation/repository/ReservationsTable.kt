@@ -19,6 +19,7 @@ object ReservationsTable : Table("reservations") {
     val reservedPriceCents = long("reserved_price_cents")
     val reservedAt = timestamp("reserved_at")
     val expiresAt = timestamp("expires_at")
+    val collectedAt = timestamp("collected_at").nullable()
     val status = enumerationByName<ReservationStatus>("status", length = 20)
 
     override val primaryKey = PrimaryKey(id)
