@@ -7,9 +7,10 @@ rechts toont de request (methode, pad, headers, body) en de response (status, bo
 
 ## Starten
 
-1. Start de API vanuit de root van de repo (poort 8080, `.env` met `JWT_SECRET` en `OFF_CONTACT_EMAIL`):
+1. Start de API vanuit de root van de repo (poort 8080). `./kotlin run` leest `.env` niet zelf, dus laad die eerst
+   in dezelfde regel (`JWT_SECRET` en `OFF_CONTACT_EMAIL` zijn verplicht, zie de README van de API):
 
-       ./kotlin run
+       set -a; . ./.env; set +a; ./kotlin run
 
 2. Serveer deze map op een lokale poort. Open de pagina niet als `file://`: dan is de origin `null` en gelden
    andere browserregels.
