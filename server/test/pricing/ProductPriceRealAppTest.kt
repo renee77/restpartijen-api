@@ -21,13 +21,13 @@ import kotlin.test.assertNull
  * TC-07 on the real application: GET /api/v1/products/{id} shows the three price fields in euros,
  * and an expired product gives 200 with EXPIRED and no price (US-07, §5.7, B-18).
  *
- * The seed data puts one product in every staffel, well away from a boundary, so the expected
+ * The seed data puts one product in every discount tier, well away from a boundary, so the expected
  * discount does not depend on the exact second. module() shares one database between tests,
  * so nothing here changes data.
  */
 class ProductPriceRealAppTest {
 
-    // One product per staffel (§9.4), with the price it must show. Amounts in cents, like Money.
+    // One product per discount tier (§9.4), with the price it must show. Amounts in cents, like Money.
     private data class Case(val name: String, val originalCents: Long, val percentage: Int, val currentCents: Long)
 
     private val cases = listOf(
