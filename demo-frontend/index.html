@@ -23,7 +23,7 @@
 
   <!-- Connection and login. The token per role is kept in memory, so the flow logs in once per role. -->
   <section class="step" id="step-login">
-    <h2><span class="badge badge-dark">Start</span> Verbinden en inloggen</h2>
+    <h2><span class="badge badge-dark">Start</span> Verbinden en inloggen · Lonneke</h2>
     <p class="meta">GI-3 · <code>POST /auth/login</code> · antwoord: <code>{ token, role, supplierId }</code></p>
     <form id="form-login" class="grid">
       <label>API-basis-URL
@@ -50,7 +50,7 @@
   <h2 class="part"><span class="badge badge-orange">Aanbieder</span> F1 – Aanbod en productdata</h2>
 
   <section class="step" id="step-us10">
-    <h2>US-10 · Openingstijden vastleggen</h2>
+    <h2>US-10 · Openingstijden vastleggen · Eva</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>aanbieder</strong> wil ik mijn openingstijden één keer op mijn account vastleggen, zodat het afhaalvenster van een nieuwe partij automatisch wordt ingevuld en ik het niet bij elke partij opnieuw hoef in te voeren.</p>
     <p class="meta">Rol SUPPLIER · <code>GET /suppliers/{id}/opening-hours</code> (openbaar) en
@@ -66,7 +66,7 @@
   </section>
 
   <section class="step" id="step-us02">
-    <h2>US-02 · Productgegevens via barcode</h2>
+    <h2>US-02 · Productgegevens via barcode · Eva</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>aanbieder</strong> wil ik bij het plaatsen een barcode opgeven waarmee productnaam en allergenen automatisch worden ingevuld, zodat ik minder hoef te typen en de allergeneninformatie klopt.</p>
     <p class="meta">Rol SUPPLIER · <code>GET /products/lookup/{barcode}</code> · Open Food Facts; naam en allergenen
@@ -80,7 +80,7 @@
   </section>
 
   <section class="step" id="step-us01">
-    <h2>US-01 · Restpartij plaatsen</h2>
+    <h2>US-01 · Restpartij plaatsen · Eva</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>aanbieder</strong> wil ik een restpartij plaatsen met productsoort, prijs, houdbaarheidsdatum, aantal en afhaalvenster, zodat afhalers die kunnen vinden voordat de partij wordt weggegooid.</p>
     <p class="meta">Rol SUPPLIER · <code>POST /products</code> · 201 met de partij in status LISTED; de prijs is in euro's,
@@ -104,7 +104,7 @@
   </section>
 
   <section class="step" id="step-us03">
-    <h2>US-03 · Eigen aanbod beheren</h2>
+    <h2>US-03 · Eigen aanbod beheren · Eva</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>aanbieder</strong> wil ik mijn eigen aanbod kunnen wijzigen en verwijderen, zodat wat op het platform staat overeenkomt met wat er werkelijk in de winkel ligt.</p>
     <p class="meta">Rol SUPPLIER · <code>GET /suppliers/{id}/products</code> (openbaar), <code>PUT /products/{id}</code>,
@@ -126,7 +126,7 @@
   </section>
 
   <section class="step" id="step-us07">
-    <h2>US-07 · Actuele prijs zien</h2>
+    <h2>US-07 · Actuele prijs zien · Lonneke</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>afhaler</strong> wil ik de actuele prijs zien die meebeweegt met de resterende houdbaarheid, zodat ik kan beoordelen of wachten loont.</p>
     <p class="meta">Openbaar · <code>GET /products/{id}</code> · <code>originalPrice</code>, <code>discountPercentage</code>
@@ -140,7 +140,7 @@
   <h2 class="part"><span class="badge badge-green">Afhaler</span> F2 – Zoeken en reserveren</h2>
 
   <section class="step" id="step-us04">
-    <h2>US-04 · Aanbod zoeken en filteren</h2>
+    <h2>US-04 · Aanbod zoeken en filteren · Stefan</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>afhaler</strong> wil ik het aanbod filteren op productsoort, maximumprijs en resterende houdbaarheid, zodat ik snel vind wat bij mij past.</p>
     <p class="meta">Openbaar · <code>GET /products?category=&amp;maxPrice=&amp;minShelfLifeHours=</code> · alleen LISTED en
@@ -161,7 +161,7 @@
   </section>
 
   <section class="step" id="step-us05">
-    <h2>US-05 · Partij reserveren</h2>
+    <h2>US-05 · Partij reserveren · Stefan</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>afhaler</strong> wil ik een partij reserveren, zodat die voor mij bewaard blijft tot ik hem binnen het afhaalvenster ophaal.</p>
     <p class="meta">Rol COLLECTOR · <code>POST /reservations</code> met <code>{ productId }</code> · 201 met
@@ -174,7 +174,7 @@
   </section>
 
   <section class="step" id="step-us06">
-    <h2>US-06 · Reservering intrekken</h2>
+    <h2>US-06 · Reservering intrekken · Stefan</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>afhaler</strong> wil ik mijn reservering kunnen intrekken, zodat de partij weer beschikbaar komt voor iemand anders als ik toch niet kan.</p>
     <p class="meta">Rol COLLECTOR · <code>DELETE /reservations/{id}</code> · 204, de partij wordt weer LISTED</p>
@@ -185,7 +185,7 @@
   </section>
 
   <section class="step" id="step-us11">
-    <h2>US-11 · Ophalen bevestigen</h2>
+    <h2>US-11 · Ophalen bevestigen · Stefan</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>afhaler</strong> wil ik bij het ophalen bevestigen dat ik de partij heb meegenomen, zodat de reservering is afgehandeld en de partij van het platform verdwijnt.</p>
     <p class="meta">Rol COLLECTOR · <code>POST /reservations/{id}/collect</code> · 200 met <code>collectedAt</code>; reservering en partij worden COLLECTED,
@@ -199,7 +199,7 @@
   <h2 class="part"><span class="badge badge-dark">Beheerder</span> F3 – Prijs, statusbewaking en beheer</h2>
 
   <section class="step" id="step-us08">
-    <h2>US-08 · Automatische statusbewaking</h2>
+    <h2>US-08 · Automatische statusbewaking · Lonneke</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>beheerder</strong> wil ik dat verlopen partijen en niet-opgehaalde reserveringen automatisch van status veranderen, zodat het overzicht klopt zonder handwerk.</p>
     <p class="meta">Rol ADMIN · <code>POST /admin/maintenance/expire</code> · draait ook elke vijf minuten vanzelf;
@@ -210,7 +210,7 @@
   </section>
 
   <section class="step" id="step-us09">
-    <h2>US-09 · Aanbod verwijderen als beheerder</h2>
+    <h2>US-09 · Aanbod verwijderen als beheerder · Lonneke</h2>
     <!-- The user story as written in the FTD, so the video shows story, endpoint and response in one frame. -->
     <p class="story">Als <strong>beheerder</strong> wil ik onjuist of ongepast aanbod kunnen verwijderen, ongeacht wie het geplaatst heeft, zodat het platform betrouwbaar blijft.</p>
     <p class="meta">Rol ADMIN · <code>GET /admin/products?status=</code> (herhaalbare parameter, zonder filter alles behalve
