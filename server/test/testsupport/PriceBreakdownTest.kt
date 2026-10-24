@@ -6,6 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+/** The checks of the shared PriceBreakdown on its prices and discount percentage. */
 class PriceBreakdownTest {
     val testPrice = Money.fromCents(349)
     val testCurrentPrice = Money.fromCents(300)

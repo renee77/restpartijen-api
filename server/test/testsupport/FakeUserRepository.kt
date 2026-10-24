@@ -4,12 +4,20 @@ import com.restpartijen.api.security.model.User
 import com.restpartijen.api.security.repository.UserRepository
 import kotlin.time.Clock
 
+/**
+ * In-memory UserRepository for service tests.
+ *
+ * Normalizes the email and soft-deletes like the real repository, so lookups behave the same.
+ * [update] is not implemented: it always returns false, because no test needs it yet.
+ */
 class FakeUserRepository : UserRepository {
+    /** The stored users, including soft-deleted ones; a test can fill or inspect it directly. */
     val users = mutableListOf<User>()
     private var nextId = 1L
 
     private val clock: Clock = Clock.System
 
+    /** Trim and lower case, as the real repository does. */
     private fun normalize(email: String) = email.trim().lowercase()
 
     override suspend fun findById(id: Long): User? = users.find { it.id == id && it.deletedAt == null }

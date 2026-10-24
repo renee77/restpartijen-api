@@ -5,6 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+/** Conversions of the shared Money type between euros and cents. */
 class MoneyTest {
     @Test
     fun `euros are rounded to the nearest cent`() {

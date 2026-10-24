@@ -7,12 +7,13 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-// Minimal entity for these tests, so the generic fake is tested without depending on a feature.
+/** Minimal entity for these tests, so the generic fake is tested without depending on a feature. */
 private data class Item(val id: Long, val name: String)
 
+/** The generic FakeRepository behaves as the Repository contract describes; also an example of its use. */
 class FakeRepositoryTest {
 
-    // Builds a fake for Item, so each test only states its starting data.
+    /** Builds a fake for Item, so each test only states its starting data. */
     private fun repositoryWith(vararg items: Item) = FakeRepository<Item>(
         idOf = { it.id },
         withId = { item, id -> item.copy(id = id) },

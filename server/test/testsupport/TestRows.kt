@@ -14,7 +14,7 @@ import kotlin.time.Instant
 // must first store the rows it refers to; these helpers give each a valid row and return its id.
 // Only for tables in persistence: every feature may import that package, so every test may use these.
 
-// Counts the users created so far, so every e-mail address is new (the column is unique).
+/** Counts the users created so far, so every e-mail address is new (the column is unique). */
 private var userCount = 0
 
 /** Stores a valid user and returns its id. */

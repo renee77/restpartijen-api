@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Instant
 
+/** FixedClock never moves. */
 class FixedClockTest {
     @Test
     fun `now() should return the fixed instant`() {
