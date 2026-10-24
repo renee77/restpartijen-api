@@ -2,13 +2,14 @@ package com.restpartijen.api.config
 
 import io.ktor.server.config.ApplicationConfig
 
-/**
- * Where H2 keeps its data, set with `database.mode` (DB_MODE).
- *
- * [MEMORY] is empty at every start, so the seed data loads every time; it is the default.
- * [FILE] stores the data in a file, so it survives a restart.
- */
-enum class DbMode { MEMORY, FILE }
+/** Where H2 keeps its data, set with `database.mode` (DB_MODE). */
+enum class DbMode {
+    /** Empty at every start, so the seed data loads every time; the default. */
+    MEMORY,
+
+    /** Stores the data in a file, so it survives a restart. */
+    FILE,
+}
 
 /**
  * The `database` section of the configuration.
