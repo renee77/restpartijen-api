@@ -11,16 +11,18 @@ import org.jetbrains.exposed.v1.datetime.time
  * One row per open day. A closed day has no row, so no column needs to be nullable (§9.9).
  */
 object SupplierOpeningHoursTable : Table("supplier_opening_hours") {
-    // The supplier these opening hours belong to; the database rejects an id that is not in SuppliersTable.
+    /** The supplier these opening hours belong to; the database rejects an id that is not in SuppliersTable. */
     val supplierId = long("supplier_id").references(SuppliersTable.id)
 
-    // Stored by name (for example "MONDAY"); the longest name, "WEDNESDAY", has nine characters.
+    /** Stored by name (for example "MONDAY"); the longest name, "WEDNESDAY", has nine characters. */
     val dayOfWeek = enumerationByName<DayOfWeek>("day_of_week", length = 9)
 
-    // Local times in Europe/Amsterdam; PickupWindowCalculator turns them into instants (§9.9).
+    /** The opening time, a local time in Europe/Amsterdam; PickupWindowCalculator turns it into an instant (§9.9). */
     val opensAt = time("opens_at")
+
+    /** The closing time, a local time in Europe/Amsterdam like [opensAt]. */
     val closesAt = time("closes_at")
 
-    // Composite key: a supplier has at most one row per day.
+    /** Composite key: a supplier has at most one row per day. */
     override val primaryKey = PrimaryKey(supplierId, dayOfWeek)
 }

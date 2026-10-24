@@ -25,7 +25,7 @@ class ExposedProductStatusUpdater : ProductStatusUpdater {
     override suspend fun markCollected(productId: Long): Boolean =
         changeStatus(productId, fromStatus = ProductStatus.RESERVED, toStatus = ProductStatus.COLLECTED)
 
-    // Returns how many rows really changed: a product reserved in the meantime is no longer LISTED and is skipped.
+    /** Returns how many rows really changed: a product reserved in the meantime is no longer LISTED and is skipped. */
     override suspend fun markExpired(productIds: List<Long>): Int = dbQuery {
         ProductsTable.update({
             (ProductsTable.id inList productIds) and (ProductsTable.status eq ProductStatus.LISTED)
@@ -38,8 +38,12 @@ class ExposedProductStatusUpdater : ProductStatusUpdater {
         changeStatus(productId, fromStatus = ProductStatus.LISTED, toStatus = ProductStatus.REMOVED)
 }
 
-// One conditional update: the WHERE checks the current status, so checking and changing happen in one step.
-// Two callers at the same time cannot both win: the second finds the status already changed and updates 0 rows.
+/**
+ * Changes the status of [productId] from [fromStatus] to [toStatus]; false when it did not have [fromStatus].
+ *
+ * One conditional update: the WHERE checks the current status, so checking and changing happen in one step.
+ * Two callers at the same time cannot both win: the second finds the status already changed and updates 0 rows.
+ */
 private suspend fun changeStatus(productId: Long, fromStatus: ProductStatus, toStatus: ProductStatus): Boolean =
     dbQuery {
         ProductsTable.update({ (ProductsTable.id eq productId) and (ProductsTable.status eq fromStatus) }) {

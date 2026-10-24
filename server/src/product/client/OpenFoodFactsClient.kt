@@ -20,11 +20,13 @@ import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import java.nio.channels.UnresolvedAddressException
 
-// Open Food Facts asks every app to name itself as AppName/Version (ContactEmail) (A5).
+/** Open Food Facts asks every app to name itself as AppName/Version (ContactEmail) (A5). */
 private const val APP_NAME_AND_VERSION = "restpartijen-api/0.1"
 
-// The two fields we ask for are a few hundred bytes; a bigger body is no normal answer,
-// and reading stops there (security F-02).
+/**
+ * The largest body that is read. The two fields we ask for are a few hundred bytes; a bigger body
+ * is no normal answer, and reading stops there (security F-02).
+ */
 private const val MAX_BODY_BYTES = 64 * 1024
 
 /**
@@ -37,10 +39,14 @@ private const val MAX_BODY_BYTES = 64 * 1024
  * @param settings the contact address for the User-Agent
  */
 class OpenFoodFactsClient(engine: HttpClientEngine, settings: OpenFoodFactsSettings) : AutoCloseable {
+    /** Logs every failure of Open Food Facts or the network, without the response body. */
     private val log = LoggerFactory.getLogger(OpenFoodFactsClient::class.java)
 
-    // expectSuccess keeps Ktor's default (false): a 404 or 5xx does not throw,
-    // so fetchProduct reads the status itself and picks the LookupResult.
+    /**
+     * The HTTP client for every call to Open Food Facts, with a time-out, the User-Agent and no redirects.
+     * expectSuccess keeps Ktor's default (false): a 404 or 5xx does not throw,
+     * so fetchProduct reads the status itself and picks the LookupResult.
+     */
     private val httpClient = HttpClient(engine) {
         install(HttpTimeout) {
             // The whole call, from connecting to the last byte; afterwards the lookup is Unavailable.
@@ -53,8 +59,11 @@ class OpenFoodFactsClient(engine: HttpClientEngine, settings: OpenFoodFactsSetti
         followRedirects = false
     }
 
-    // coerceInputValues: an explicit null for a field with a default takes the default, so
-    // "allergens_tags": null still gives the name instead of a broken body.
+    /**
+     * Reads the response body; unknown fields are skipped.
+     * coerceInputValues: an explicit null for a field with a default takes the default, so
+     * "allergens_tags": null still gives the name instead of a broken body.
+     */
     private val json = Json {
         ignoreUnknownKeys = true
         coerceInputValues = true
@@ -92,7 +101,7 @@ class OpenFoodFactsClient(engine: HttpClientEngine, settings: OpenFoodFactsSetti
         LookupResult.Unavailable
     }
 
-    // Picks the LookupResult from the status; only a 200 is read, and never more than MAX_BODY_BYTES of it.
+    /** Picks the LookupResult from the status; only a 200 is read, and never more than MAX_BODY_BYTES of it. */
     private suspend fun HttpResponse.toLookupResult(): LookupResult = when (status) {
         HttpStatusCode.OK -> {
             val text = textWithin(MAX_BODY_BYTES)
@@ -114,22 +123,34 @@ class OpenFoodFactsClient(engine: HttpClientEngine, settings: OpenFoodFactsSetti
         }
     }
 
-    // Reads at most one byte more than allowed, so a bigger body is noticed without reading the rest;
-    // leaving execute { } then closes the connection. The bytes are UTF-8, as JSON requires (RFC 8259).
+    /**
+     * The body as text, or null when it is larger than [maxBytes].
+     * Reads at most one byte more than allowed, so a bigger body is noticed without reading the rest;
+     * leaving execute { } then closes the connection. The bytes are UTF-8, as JSON requires (RFC 8259).
+     */
     private suspend fun HttpResponse.textWithin(maxBytes: Int): String? {
         val bytes = bodyAsChannel().readBuffer(maxBytes + 1L).readByteArray()
         return if (bytes.size > maxBytes) null else bytes.decodeToString()
     }
 }
 
-// Only the outer envelope of the Open Food Facts answer; every other field is skipped.
+/**
+ * Only the outer envelope of the Open Food Facts answer; every other field is skipped.
+ *
+ * @property product the product fields
+ */
 @Serializable
 private data class OpenFoodFactsResponse(
     // No default: a 200 without a product is a broken body, so decoding fails and the lookup is Unavailable.
     val product: OpenFoodFactsProduct,
 )
 
-// Open Food Facts is filled by its community, so either field can be missing.
+/**
+ * The product fields we ask for. Open Food Facts is filled by its community, so either field can be missing.
+ *
+ * @property productName the product name, or null when it is missing
+ * @property allergensTags the allergen tags, such as "en:milk"; empty when they are missing
+ */
 @Serializable
 private data class OpenFoodFactsProduct(
     @SerialName("product_name") val productName: String? = null,

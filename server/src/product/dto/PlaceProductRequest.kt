@@ -16,6 +16,14 @@ import kotlinx.serialization.Serializable
  * pickupWindow gives a 400, because the JSON reader refuses unknown fields (B-49).
  * An allergen that is not one of the fourteen EU allergens cannot be read, which gives a 400 (§5.1).
  * There is no supplier field: the supplier comes from the token (§16.2).
+ *
+ * @property category the product kind; it decides the subclass, the longest shelf life and the discount tiers
+ * @property name the product name, not blank and at most MAX_TEXT_LENGTH characters
+ * @property originalPrice the price in euros before any discount
+ * @property bestBeforeAt the best-before date on the label
+ * @property quantity how many units are offered
+ * @property barcode the barcode on the package, 7 to 14 digits, or null for a product without one
+ * @property allergens the EU allergens the product contains; empty when none are given
  */
 @Serializable
 data class PlaceProductRequest(

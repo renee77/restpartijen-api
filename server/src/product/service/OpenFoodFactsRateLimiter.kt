@@ -5,14 +5,20 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
-// Open Food Facts allows 15 product reads per minute per IP and may block an IP that goes over (§10.3);
-// 10 leaves room for a retry or a second instance (decision Eva, 22 Oct).
+/**
+ * The most calls to Open Food Facts per minute for the whole application.
+ * Open Food Facts allows 15 product reads per minute per IP and may block an IP that goes over (§10.3);
+ * 10 leaves room for a retry or a second instance (decision Eva, 22 Oct).
+ */
 private const val MAX_CALLS = 10
 
-// Half of the total, so one supplier, a loop in the app or a stolen token cannot use it up for everybody
-// (security review M-2, decision Eva, 22 Oct).
+/**
+ * The most calls to Open Food Facts per minute for one supplier user. Half of the total, so one supplier,
+ * a loop in the app or a stolen token cannot use it up for everybody (security review M-2, decision Eva, 22 Oct).
+ */
 private const val MAX_CALLS_PER_USER = 5
 
+/** The period the limits count over; a call older than this no longer counts. */
 private val WINDOW = 1.minutes
 
 /**
@@ -22,16 +28,19 @@ private val WINDOW = 1.minutes
  * It logs a warning when it starts refusing, naming the supplier, and one line when it accepts again;
  * so the log shows who reached a limit without one line per refused call.
  *
- * @param clock decides when a call has left the window (GI-6)
+ * @property clock decides when a call has left the window (GI-6)
  */
 class OpenFoodFactsRateLimiter(private val clock: Clock) {
+    /** Logs when the limiter starts refusing and when it accepts again. */
     private val log = LoggerFactory.getLogger(OpenFoodFactsRateLimiter::class.java)
 
-    // Times of the allowed calls, oldest first: for the application and per supplier user id.
+    /** Times of the allowed calls of the whole application, oldest first. */
     private val allCalls = ArrayDeque<Instant>()
+
+    /** Times of the allowed calls per supplier user id, oldest first. */
     private val callsPerUser = HashMap<Long, ArrayDeque<Instant>>()
 
-    // Refused calls since the last allowed one, for the line that says the limit is open again.
+    /** Refused calls since the last allowed one, for the line that says the limit is open again. */
     private var refusedInARow = 0
 
     /** True, and counted, when [userId] may call out now; false, and not counted, when a limit is reached. */
@@ -65,6 +74,7 @@ class OpenFoodFactsRateLimiter(private val clock: Clock) {
         }
     }
 
+    /** Removes the calls that are [WINDOW] or older at [now]; they no longer count towards a limit. */
     private fun ArrayDeque<Instant>.dropOlderThan(now: Instant) {
         while (isNotEmpty() && now - first() >= WINDOW) removeFirst()
     }

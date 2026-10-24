@@ -22,7 +22,7 @@ fun validatePlaceProductRequest(request: PlaceProductRequest): ValidationResult 
 fun validateUpdateProductRequest(request: UpdateProductRequest): ValidationResult =
     validateProductFields(request.name, request.barcode, request.originalPrice, request.bestBeforeAt)
 
-// The shape rules of the product fields, shared by POST and PUT so each rule exists once.
+/** The shape rules of the product fields, shared by POST and PUT so each rule exists once. */
 private fun validateProductFields(
     name: String,
     barcode: String?,
@@ -46,10 +46,10 @@ private fun validateProductFields(
     return ValidationResult.Valid
 }
 
-// The last date a request may carry: the largest year with four digits, as in plain ISO 8601.
+/** The last date a request may carry: the largest year with four digits, as in plain ISO 8601. */
 private val LAST_BEST_BEFORE_DATE = LocalDate(9999, 12, 31)
 
-// UPC-E (7) up to GTIN-14 (14), only the digits 0-9.
+/** UPC-E (7) up to GTIN-14 (14), only the digits 0-9. */
 private val BARCODE = Regex("[0-9]{7,14}")
 
 /**
@@ -64,7 +64,10 @@ internal fun requireBarcode(barcode: String) {
     }
 }
 
-// A blank text counts as empty: a name of only spaces is no name.
+/**
+ * Checks that [value] is not blank and at most [MAX_TEXT_LENGTH] characters; [field] names it in the 400.
+ * A blank text counts as empty: a name of only spaces is no name.
+ */
 private fun requireText(value: String, field: String) {
     if (value.isBlank()) throw ValidationException("$field must not be empty", field = field)
     if (value.length > MAX_TEXT_LENGTH) {

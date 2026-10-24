@@ -11,10 +11,16 @@ import kotlin.time.Instant
  * Nothing empties it in the background: an expired entry is removed when someone asks for it,
  * and [maxEntries] keeps the rest bounded. Safe to use from requests that run at the same time.
  *
- * @param clock decides when an entry has expired (GI-6)
+ * @param V the type of the stored values
+ * @property clock decides when an entry has expired (GI-6)
+ * @property timeToLive how long an entry stays valid after it was stored
+ * @property maxEntries the most keys the cache holds at once
  */
 class ExpiringCache<V : Any>(private val clock: Clock, private val timeToLive: Duration, private val maxEntries: Int) {
-    // Keeps the order in which keys came in, so the first key is always the oldest.
+    /**
+     * The stored entries per key.
+     * A LinkedHashMap keeps the order in which keys came in, so the first key is always the oldest.
+     */
     private val entries = LinkedHashMap<String, Entry<V>>()
 
     /** The value for [key], or null when there is none or it is [timeToLive] or older. */
@@ -44,5 +50,11 @@ class ExpiringCache<V : Any>(private val clock: Clock, private val timeToLive: D
         }
     }
 
+    /**
+     * One stored value.
+     *
+     * @property value the stored value
+     * @property storedAt when it was stored; the entry expires [timeToLive] later
+     */
     private data class Entry<V>(val value: V, val storedAt: Instant)
 }

@@ -10,6 +10,13 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
+/**
+ * A shelf-stable product, kept at room temperature (§9.3).
+ *
+ * Adds only its kind and its longest plausible shelf life, five years (§9.10); everything else lives in
+ * [SurplusProduct], which also explains the constructor parameters. Production code builds it through
+ * [SurplusProduct.ProductFactory], so the category always picks the right subclass.
+ */
 class AmbientProduct(
     id: Long = 0,
     supplier: SupplierSummary,

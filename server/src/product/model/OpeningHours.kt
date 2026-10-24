@@ -8,6 +8,11 @@ import kotlinx.datetime.LocalTime
  * The opening and closing time of a supplier on one day of the week (US-10, §9.9).
  *
  * A closed day has no OpeningHours at all, so every instance describes an open day.
+ *
+ * @property day the day of the week these hours apply to
+ * @property opensAt the local opening time in [PLATFORM_TIME_ZONE]
+ * @property closesAt the local closing time in [PLATFORM_TIME_ZONE]; always after [opensAt],
+ *   and itself no longer open
  */
 data class OpeningHours(val day: DayOfWeek, val opensAt: LocalTime, val closesAt: LocalTime) {
     init {

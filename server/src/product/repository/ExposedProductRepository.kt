@@ -21,6 +21,8 @@ import kotlin.time.Clock
  * Products in the database. Deleting is a soft delete: the row stays and gets status REMOVED (§9.5, B-19).
  * Only a LISTED product can be deleted; delete returns false for any other status (§5.3).
  * A REMOVED product counts as not found, as the Repository contract promises.
+ *
+ * @property clock sets created_at when a product is stored
  */
 class ExposedProductRepository(private val clock: Clock) : ProductRepository {
     override suspend fun findById(id: Long): SurplusProduct? = dbQuery {
@@ -51,6 +53,7 @@ class ExposedProductRepository(private val clock: Clock) : ProductRepository {
         findById(newId)!!
     }
 
+    /** Like delete, it changes only a LISTED product: false also means the product is not LISTED (A13). */
     override suspend fun update(item: SurplusProduct): Boolean = dbQuery {
         // update() returns how many rows changed: 0 means no product with this id, or it is not LISTED (A13).
         // The status check sits in the WHERE, so a product reserved after the check in the service stays
@@ -88,9 +91,11 @@ class ExposedProductRepository(private val clock: Clock) : ProductRepository {
     }
 }
 
-// The columns that both create and update write. Supplier, created_at and status are left out:
-// update must not change them, and status changes go through ProductStatusUpdater.
-// UpdateBuilder is the common parent of Exposed's insert and update statements, so one function serves both.
+/**
+ * Writes the columns that both create and update write. Supplier, created_at and status are left out:
+ * update must not change them, and status changes go through ProductStatusUpdater.
+ * UpdateBuilder is the common parent of Exposed's insert and update statements, so one function serves both.
+ */
 private fun writeChangeableColumns(row: UpdateBuilder<*>, item: SurplusProduct) {
     row[ProductsTable.category] = item.category
     row[ProductsTable.name] = item.name
@@ -102,7 +107,7 @@ private fun writeChangeableColumns(row: UpdateBuilder<*>, item: SurplusProduct) 
     row[ProductsTable.pickupUntil] = item.pickupWindow.until
 }
 
-// One row per allergen for this product (§9.8). An empty set inserts nothing.
+/** Inserts one row per allergen for this product (§9.8). An empty set inserts nothing. */
 private fun insertAllergensOfProduct(productId: Long, allergens: Set<Allergen>) =
     ProductAllergensTable.batchInsert(allergens) { allergen ->
         this[ProductAllergensTable.productId] = productId

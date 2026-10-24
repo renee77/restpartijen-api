@@ -13,6 +13,13 @@ import kotlinx.serialization.Serializable
  * ISO-8601 date). There is no pickup window: the service derives it again (US-10).
  * A body with a category is refused with a 400: the JSON reader does not accept unknown fields.
  * There is no supplier field: the owner is checked against the token (§16.2).
+ *
+ * @property name the product name, not blank and at most MAX_TEXT_LENGTH characters
+ * @property originalPrice the price in euros before any discount
+ * @property bestBeforeAt the best-before date on the label
+ * @property quantity how many units are offered
+ * @property barcode the barcode on the package, 7 to 14 digits, or null for a product without one
+ * @property allergens the EU allergens the product contains; empty when none are given
  */
 @Serializable
 data class UpdateProductRequest(

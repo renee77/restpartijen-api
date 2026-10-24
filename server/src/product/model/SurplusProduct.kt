@@ -21,6 +21,12 @@ const val BEST_BEFORE_PASSED = "bestBeforeAt must be in the future"
  * Sealed, so the compiler checks that the factory handles every kind. What is the same
  * for every kind lives here; each subclass only supplies its [category] and [maxShelfLife].
  * Not a data class: copy() would bypass the private setter on [status].
+ *
+ * @property barcode the barcode on the package, or null for a product without one, such as bread from a bakery
+ * @property bestBeforeAt the moment the best-before date ends; from then on the product has expired
+ * @property quantity how many units are offered; at least 1 when listed
+ * @property allergens the EU allergens the product contains; empty when none were entered
+ * @param status the lifecycle status of the product, as stored or LISTED for a new one
  */
 sealed class SurplusProduct(
     override val id: Long,
@@ -35,8 +41,12 @@ sealed class SurplusProduct(
     val allergens: Set<Allergen>,
 ) : ProductView {
 
-    // Final, because Kotlin does not allow a private setter on an open property.
-    // Other features change the status only through ProductStatusUpdater.
+    /**
+     * The lifecycle status this product was built with.
+     *
+     * Final, because Kotlin does not allow a private setter on an open property.
+     * Other features change the status only through ProductStatusUpdater.
+     */
     final override var status: ProductStatus = status
         private set
 
@@ -88,6 +98,10 @@ sealed class SurplusProduct(
      * the repository and a request to list a product.
      */
     companion object ProductFactory {
+        /**
+         * Builds the [FreshProduct], [FrozenProduct] or [AmbientProduct] that belongs to [category],
+         * with the given values; [id] is 0 for a product that is not stored yet.
+         */
         fun create(
             category: ProductCategory,
             id: Long,

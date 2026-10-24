@@ -10,6 +10,13 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
+/**
+ * A chilled fresh product, such as dairy, meat or bread (§9.3).
+ *
+ * Adds only its kind and its longest plausible shelf life, 14 days (§9.10); everything else lives in
+ * [SurplusProduct], which also explains the constructor parameters. Production code builds it through
+ * [SurplusProduct.ProductFactory], so the category always picks the right subclass.
+ */
 class FreshProduct(
     id: Long = 0,
     supplier: SupplierSummary,

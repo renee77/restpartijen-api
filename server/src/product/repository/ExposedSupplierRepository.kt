@@ -11,7 +11,7 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 
 /** Suppliers in the database. */
 class ExposedSupplierRepository : SupplierRepository {
-    // user_id is unique (SuppliersTable), so there is one row or none.
+    /** user_id is unique (SuppliersTable), so there is one row or none. */
     override suspend fun findByUserId(userId: Long): SupplierSummary? = dbQuery {
         SuppliersTable.selectAll().where { SuppliersTable.userId eq userId }.singleOrNull()
             ?.let {
@@ -28,7 +28,7 @@ class ExposedSupplierRepository : SupplierRepository {
         SuppliersTable.selectAll().where { SuppliersTable.id eq supplierId }.singleOrNull() != null
     }
 
-    // Passes on to findByUserId, so the query that finds a user's supplier exists only once.
+    /** Passes on to findByUserId, so the query that finds a user's supplier exists only once. */
     override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
 
     override suspend fun getOpeningHours(supplierId: Long): List<OpeningHours> = dbQuery {
@@ -46,8 +46,10 @@ class ExposedSupplierRepository : SupplierRepository {
             .sortedBy { it.day }
     }
 
-    // Replaces the whole week: a day that is not in [openingHours] is closed afterwards (§9.9).
-    // Delete and insert share one dbQuery, so one transaction: if the insert fails, the old week stays.
+    /**
+     * Replaces the whole week: a day that is not in [openingHours] is closed afterwards (§9.9).
+     * Delete and insert share one dbQuery, so one transaction: if the insert fails, the old week stays.
+     */
     override suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>) {
         dbQuery {
             // Locks the supplier row first, so two replacements of one week run one after the other. Without it,

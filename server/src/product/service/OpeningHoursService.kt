@@ -12,8 +12,8 @@ import com.restpartijen.api.shared.NotFoundException
  * Calculating the pickup window is not done here: PickupWindowCalculator does that,
  * and ProductService reads the week straight from [suppliers].
  *
- * @param suppliers stores the opening hours and knows whether a supplier exists
- * @param ownershipGuard checks that a supplier only replaces its own opening hours (§16.2)
+ * @property suppliers stores the opening hours and knows whether a supplier exists
+ * @property ownershipGuard checks that a supplier only replaces its own opening hours (§16.2)
  */
 class OpeningHoursService(private val suppliers: SupplierRepository, private val ownershipGuard: OwnershipGuard) {
     /**
