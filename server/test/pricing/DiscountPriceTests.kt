@@ -14,6 +14,10 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
+/**
+ * PricingService on the boundaries of every discount tier: exactly on a boundary the higher discount
+ * applies, with one second more shelf life left the lower one.
+ */
 class DiscountPriceTests {
     val fakeClock = FixedClock(Instant.parse("2026-10-11T12:00:00Z"))
     val service = PricingService(fakeClock)

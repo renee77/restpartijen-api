@@ -27,9 +27,10 @@ import kotlin.test.assertEquals
  */
 class ExpiryRealAppTest {
 
-    // The one demo password of all seed accounts (SeedData, README.md)
+    /** The one demo password of all seed accounts (SeedData, README.md). */
     private val demoPassword = "Demo-Restpartij-2026"
 
+    /** Starts the real module() with the test configuration. */
     private fun ApplicationTestBuilder.startApp() {
         environment { config = testConfig() }
         application { module() }

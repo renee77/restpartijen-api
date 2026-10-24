@@ -18,9 +18,15 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+/**
+ * GET and DELETE /api/v1/admin/products on the pricing test app (US-09): the real route and the real
+ * AdminProductService, with fakes behind the service that each test controls.
+ */
 class AdminProductEndpointTest {
+    /** A valid ADMIN token for user 1. */
     val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN")
 
+    /** A valid token for user 1 with the given role name. */
     private fun tokenFor(role: String) = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = role)
 
     @Test

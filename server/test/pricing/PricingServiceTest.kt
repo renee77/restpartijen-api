@@ -12,12 +12,13 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 
+/** PricingService: the rounding of the current price and the three fields of the price breakdown. */
 class PricingServiceTest {
 
     private val clock = FixedClock(Instant.fromEpochSeconds(0))
     private val service = PricingService(clock)
 
-    // A fake product with a fixed price, category and remaining shelf life
+    /** A fake product with a fixed price, category and remaining shelf life. */
     private fun fakeProduct(priceCents: Long, productCategory: ProductCategory, remaining: Duration) =
         object : PricedProduct {
             override val originalPrice = Money.fromCents(priceCents)

@@ -8,7 +8,9 @@ import kotlin.test.assertNull
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
+/** tierFor on the tiers of the fresh category: which tier applies for a remaining shelf life. */
 class DiscountTierTest {
+    /** The same tiers as FreshDiscountPolicy, in their natural order. */
     val tiers = listOf(
         DiscountTier(48.hours, 10),
         DiscountTier(24.hours, 40),

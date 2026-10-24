@@ -44,11 +44,12 @@ class ExposedAdminProductIntegrationTest {
     private lateinit var reservationMaintenance: ReservationMaintenanceService
     private lateinit var service: AdminProductService
 
-    // Wraps the real updater, but a removal never works. This lets the test fail the second step.
+    /** Wraps the real updater, but a removal never works. This lets the test fail the second step. */
     private class FailingRemoveUpdater(real: ProductStatusUpdater) : ProductStatusUpdater by real {
         override suspend fun markRemoved(productId: Long): Boolean = false
     }
 
+    /** Builds a fresh seeded database and the service with the real F1 and F2 parts. */
     @BeforeTest
     fun setUp() {
         // SupplierOpeningHoursTable too: the seed writes the opening hours of every supplier (US-10).
@@ -74,18 +75,22 @@ class ExposedAdminProductIntegrationTest {
 
     // ---- Helpers that read straight from the database ----
 
+    /** The id of the product with this name. */
     private fun idOf(name: String): Long = transaction {
         ProductsTable.selectAll().single { it[ProductsTable.name] == name }[ProductsTable.id]
     }
 
+    /** The id of the first product with this status. */
     private fun idWithStatus(status: ProductStatus): Long = transaction {
         ProductsTable.selectAll().first { it[ProductsTable.status] == status }[ProductsTable.id]
     }
 
+    /** The current status of this product. */
     private fun statusOf(productId: Long): ProductStatus = transaction {
         ProductsTable.selectAll().single { it[ProductsTable.id] == productId }[ProductsTable.status]
     }
 
+    /** The status of the one reservation of this product. */
     private fun reservationStatusOf(productId: Long): ReservationStatus = transaction {
         ReservationsTable.selectAll().single { it[ReservationsTable.productId] == productId }[ReservationsTable.status]
     }

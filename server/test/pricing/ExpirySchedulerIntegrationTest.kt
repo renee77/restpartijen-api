@@ -41,6 +41,7 @@ class ExpirySchedulerIntegrationTest {
 
     private lateinit var scheduler: ExpiryScheduler
 
+    /** Builds a fresh seeded database and the scheduler with the real F1 and F2 parts. */
     @BeforeTest
     fun setUp() {
         // Every test gets its own empty database, filled with the seed data for this one moment

@@ -17,6 +17,10 @@ import io.ktor.server.plugins.di.dependencies
 /**
  * Test app for the pricing endpoints: real route, fakes behind the service.
  * Same pieces as setUpTestApp() in the security tests, plus serialization and DI.
+ *
+ * @param reservationMaintenance the fake behind ExpiryScheduler and AdminProductService for reservations
+ * @param productReader the fake that supplies the products
+ * @param productStatusUpdater the fake that records status changes
  */
 fun Application.setUpPricingTestApp(
     // The fakes are passed in so that the test can control their behavior.

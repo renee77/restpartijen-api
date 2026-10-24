@@ -5,6 +5,11 @@ import com.restpartijen.api.shared.ProductStatusUpdater
 /**
  * Fake of F1's ProductStatusUpdater. Every call is written to [calls], so a test can check
  * the order. Share one list with FakeReservationMaintenance to see the order across both.
+ * Only markExpired and markRemoved work; the other functions are not needed for the pricing tests.
+ *
+ * @property expiredCount what markExpired returns; null means the number of ids it was given
+ * @property removeSucceeds what markRemoved returns
+ * @property calls every call in order, for example "markRemoved(1)"
  */
 class FakeProductStatusUpdater(
     private val expiredCount: Int? = null,

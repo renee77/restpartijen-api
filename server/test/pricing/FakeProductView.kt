@@ -10,6 +10,12 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Instant
 
+/**
+ * A ProductView with fixed values; only the id and the status can be chosen.
+ *
+ * @property id the product id
+ * @property status the product status
+ */
 class FakeProductView(override val id: Long, override val status: ProductStatus = ProductStatus.LISTED) : ProductView {
     override val supplier = SupplierSummary(id = 1, name = "Fake supplier", latitude = 0.0, longitude = 0.0)
     override val name = "Fake product"

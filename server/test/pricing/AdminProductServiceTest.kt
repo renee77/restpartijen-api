@@ -11,6 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+/** AdminProductService with fakes behind the contracts (US-09): the order of the calls and the refusals. */
 class AdminProductServiceTest {
 
     @Test
