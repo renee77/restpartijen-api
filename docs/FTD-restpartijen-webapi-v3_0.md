@@ -3,10 +3,12 @@ type: FTD
 title: "Restpartijenplatform — Functioneel Technisch Ontwerp Web API"
 description: "Ontwerp van de Ktor Web API voor een platform waarop bedrijven uit de levensmiddelenbranche restpartijen aanbieden met een afprijzing die in staffels meebeweegt met de resterende houdbaarheid."
 tags: [ftd, scenario-project, ktor, kotlin, proftaak, lu1]
-timestamp: 2026-10-03T00:00:00
+timestamp: 2026-10-24T00:00:00
 ---
 
 # Restpartijenplatform — Functioneel Technisch Ontwerp Web API
+
+> **Wijziging in v3.0.** Het document volgt de code op `main` na PR #78 (24 oktober 2026). De bronnen waren de punten van Eva, de vergelijking van Stefan met de code van F2, de verzamelde aanpassingen na v2.4, PR #78 zelf en een controle van het klassendiagram in §8.4 tegen de code. Nieuw zijn de besluiten B-55 tot en met B-64 in de tabel "Besluiten in v3.0"; het open punt van v2.4 is besloten: ook de aanbieder krijgt `404` bij een al verwijderde partij (B-38, issue #45). Sinds 24 oktober 2026 geldt een code freeze: de code verandert niet meer vóór de oplevering.
 
 > **Wijziging in v2.4.** Het document is gelijkgetrokken met de code van F3 op `main` van 20 oktober 2026 en met vier punten uit de bouw van F1. Nieuw zijn de besluiten B-38 tot en met B-47 in de tabel "Besluiten in v2.4": `404` bij het verwijderen van een al verwijderde partij, het antwoord en de parameters van de beheerendpoints, de periodieke statusbewaking, de logging van de statusbewaking, `maxShelfLife` als property, `id = 0` tot het opslaan en de sleutels in het ERD. B-32 is bevestigd. Daarna is de hele code op `main` van 20 oktober 2026 tegen het document gelegd; waar het document achterliep, volgt het nu de code (B-53, B-54 en de tekstcorrecties in §8.3, §8.4, §9.1, §11, §12 en §21). Vijf besluiten van de profgroep van 20 oktober staan als B-48 tot en met B-52. Eén punt staat open als **Opmerking v2.4**: wat de aanbieder krijgt bij het verwijderen van een al verwijderde partij (§5.3).
 
@@ -18,11 +20,11 @@ timestamp: 2026-10-03T00:00:00
 
 | Veld | Waarde |
 |------|--------|
-| Document ID | FTD-restpartijen-webapi-v2.4 |
+| Document ID | FTD-restpartijen-webapi-v3.0 |
 | Scenario | project |
 | Auteurs | Eva Bouwman, Lonneke van Oers, Stefan Pellikaan |
-| Datum | 2026-10-20 |
-| Status | Casus en sensoronderwerp goedgekeurd door de vakdocent (september 2026); besluiten van 19 september, de besluiten van de docent van 20 september, de besluiten uit de startsessie en de besluiten uit de issues van begin oktober verwerkt. B-26, B-31 en B-32 zijn goedgekeurd. B-24 wacht op bevestiging door Lonneke en Stefan; B-38 voor de aanbieder (§5.3) ligt als issue #45 bij de profgroep |
+| Datum | 2026-10-24 |
+| Status | Casus en sensoronderwerp goedgekeurd door de vakdocent (september 2026); besluiten van 19 september, de besluiten van de docent van 20 september, de besluiten uit de startsessie en de besluiten uit de issues van begin oktober verwerkt. B-26, B-31 en B-32 zijn goedgekeurd. B-24 wacht op bevestiging door Lonneke en Stefan. B-38 geldt sinds v3.0 ook voor de aanbieder (issue #45). Het document volgt de code na PR #78; sinds 24 oktober 2026 geldt een code freeze |
 | Classificatie | Intern (schoolproject) |
 | Module | AI-powered software development, periode 1, LU1 |
 
@@ -37,6 +39,7 @@ timestamp: 2026-10-03T00:00:00
 | 2.2 | 2026-09-29 | Eva Bouwman, namens de profgroep | Besluiten van de docent verwerkt: bedragen als hele centen in een `Long` (nieuw ADR-07) en Ktor 3.6.0. Besluiten uit de startsessie verwerkt: `PriceProvider` geeft `null` bij een verlopen partij, de eindstatus `REMOVED`, de aanbieder als `SupplierSummary` op `ProductView`, `suspend` in de contracten die de database raken, en de uitkomst van B-6 en B-10. De contracten in §12.1 volgen nu de code. Nieuw: de afrondingsregel, bedragen in euro's in de API, `findByStatus` voor het beheeroverzicht, en de afspraak over Nederlands werkcommentaar. Twee voorstellen: een verwijderde partij in de seeddata, en `404` bij het reserveren van een verwijderde partij. |
 | 2.4 | 2026-10-20 | Eva Bouwman, namens de profgroep | Feedback van Lonneke op de code van F3 verwerkt en vier punten uit de bouw van F1. Verwijderen: een al verwijderde partij levert bij de beheerder `404` in plaats van `409` (B-38); mislukt het verwijderen na het laten vervallen van de reservering, dan draait de transactie terug en volgt `409` (B-39). Statusbewaking: een lager aantal van `markExpired` is geen fout (B-40), de periodieke run is beschreven (B-41), het antwoord van `POST /admin/maintenance/expire` is vastgelegd (B-42), net als de parameters en het antwoord van `GET /admin/products` (B-43) en de logging (B-44). F1: `maxShelfLife` is een property (B-45), een nieuwe partij heeft `id = 0` tot het opslaan (B-46), en het ERD toont de sleutels en de toegestane waarden (B-47). B-32 is bevestigd via issue #16. De voorstellen voor Lonneke in §11.3 zijn uitgevoerd; `runTest` is beschikbaar (§21). Daarna is de code op `main` tegen het document gelegd: het contract `SupplierIdLookup` is opgenomen als K-7 (B-53), het aanmelden van tabellen is beschreven (B-54), en §8.3, §8.4, §9.1, §11, §12 en §21 volgen weer de code. Besluiten van 20 oktober: `ConflictException` (B-48), een onbekend veld levert `400` (B-49), soft delete op `USERS` (B-50), `reservedPrice` in het antwoord van reserveren (B-51) en de uitkomst over het JWT-secret (B-52). Open: `404` of `409` voor de aanbieder in §5.3. |
 | 2.3 | 2026-10-03 | Eva Bouwman, namens de profgroep | Twee issues verwerkt. `Repository<T>`: `save` is vervangen door `create` en `update`, met een generieke fake voor testen (B-33). Security: wachtwoorden met Argon2id via Spring Security Crypto in plaats van BCrypt (B-34), security gooit excepties die `StatusPages` omzet (B-35), en de JWT-instellingen in `application.yaml` met de klassen `JwtProperties` en `JwtSettings` (B-36). Goedgekeurd: `findByStatus` voor het beheeroverzicht (B-26) en een verwijderde partij in de seeddata (B-31). Nederlands werkcommentaar mag op `main` en is weg bij de oplevering (B-37). |
+| 3.0 | 2026-10-24 | Eva Bouwman, namens de profgroep | Het document volgt de code op `main` na PR #78. Verwerkt: de punten van Eva (B-55 tot en met B-57); de vergelijking van Stefan met de code van F2, GI-2 en GI-4; de besluiten van Eva van 20 tot en met 23 oktober (B-58 tot en met B-64: de vorm van een barcode, de koppeling met Open Food Facts, grenzen aan de lookup, een afhaalvenster dat altijd wordt berekend, `bestBeforeAt` als datum, een partij wijzigen en het aanbod van één aanbieder); PR #78 (`status` als `val`, de gemaskeerde hash in `User.toString`, camelCase in `User`, Engels commentaar en ktlint); en het klassendiagram in §8.4, nu gelijk aan de code. Issue #45 is besloten: ook de aanbieder krijgt `404` bij een al verwijderde partij (B-38). B-48, B-50, B-51 en B-53 staan in de code. Code freeze vanaf 24 oktober 2026. |
 
 > **Dit is het ontwikkeldocument voor deel 1 van de proftaak.** Versie 1.0 was tevens het voorstel waarmee de casus en het sensoronderwerp voor deel 2 ter goedkeuring zijn voorgelegd. De vakdocent heeft beide goedgekeurd; zijn terugkoppeling staat in §20. Alle regelverwijzingen (r.) verwijzen naar `opdrachten/proftaak-casus-en-portfolio.md`, zodat elke eis na te lopen is. Waar de checklist en de rubric van elkaar verschillen, is de rubric aangehouden.
 
@@ -146,7 +149,7 @@ B-33 tot en met B-36 komen uit twee issues in de repository: één over `Reposit
 
 ## Besluiten in v2.4
 
-B-38 tot en met B-44 volgen uit de code van F3 op `main` van 20 oktober 2026, nagelopen door Lonneke. B-45 tot en met B-47 komen uit de bouw van F1. B-48 tot en met B-52 zijn besluiten van de profgroep van 20 oktober 2026, genomen bij het naleggen van de code tegen dit document; B-53 en B-54 leggen vast wat de code al deed. Waar het document en de code verschilden, volgt het document de code, met één uitzondering: B-38 geldt voor de aanbieder (§5.3) pas na een besluit van de profgroep.
+B-38 tot en met B-44 volgen uit de code van F3 op `main` van 20 oktober 2026, nagelopen door Lonneke. B-45 tot en met B-47 komen uit de bouw van F1. B-48 tot en met B-52 zijn besluiten van de profgroep van 20 oktober 2026, genomen bij het naleggen van de code tegen dit document; B-53 en B-54 leggen vast wat de code al deed. Waar het document en de code verschilden, volgt het document de code, met één uitzondering: B-38 geldt voor de aanbieder (§5.3) pas na een besluit van de profgroep. Dat besluit is genomen in issue #45: sinds v3.0 geldt B-38 ook voor de aanbieder.
 
 | # | Onderwerp | Besluit | Door | Verwerkt in | Status |
 |---|-----------|---------|------|-------------|--------|
