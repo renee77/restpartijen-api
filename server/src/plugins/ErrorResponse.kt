@@ -7,13 +7,26 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 enum class ErrorCode {
-    VALIDATION_ERROR, // 400 – ValidationException, BadRequestException, RequestValidationException
-    UNAUTHORIZED, // 401 – UnauthorizedException
-    FORBIDDEN, // 403 – ForbiddenException
-    NOT_FOUND, // 404 – NotFoundException
-    CONFLICT, // 409 – IllegalStateTransitionException, ConflictException
-    DOMAIN_RULE_VIOLATION, // 422 – DomainRuleException
-    INTERNAL_ERROR, // 500 – any other exception
+    /** 400 – ValidationException, BadRequestException, RequestValidationException */
+    VALIDATION_ERROR,
+
+    /** 401 – UnauthorizedException */
+    UNAUTHORIZED,
+
+    /** 403 – ForbiddenException */
+    FORBIDDEN,
+
+    /** 404 – NotFoundException */
+    NOT_FOUND,
+
+    /** 409 – IllegalStateTransitionException, ConflictException */
+    CONFLICT,
+
+    /** 422 – DomainRuleException */
+    DOMAIN_RULE_VIOLATION,
+
+    /** 500 – any other exception */
+    INTERNAL_ERROR,
 }
 
 /**
