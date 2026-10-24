@@ -1,6 +1,6 @@
 package com.restpartijen.api.config
 
-import io.ktor.server.config.*
+import io.ktor.server.config.ApplicationConfig
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
