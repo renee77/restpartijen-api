@@ -151,6 +151,8 @@ Install ktlint once:
 - Make it executable with `chmod +x ktlint` and put it in a folder on your `PATH`.
 - On Windows, also download `ktlint.bat`, keep it in the same folder as `ktlint` and run `ktlint.bat`.
 
+ktlint needs Java 8 or newer on your `PATH`; the application itself does not, because the Kotlin Toolchain downloads its own JDK and does not put it on the `PATH`.
+
 Check the code:
 
 ```bash
