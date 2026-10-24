@@ -5,7 +5,6 @@ import com.restpartijen.api.shared.IllegalStateTransitionException
 import com.restpartijen.api.shared.NotFoundException
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
-import io.ktor.http.IllegalHeaderNameException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
