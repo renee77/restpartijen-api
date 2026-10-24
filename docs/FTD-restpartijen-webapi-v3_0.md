@@ -1326,7 +1326,7 @@ Deze keuze is bewust en is bij het assessment te verantwoorden (r.304):
 
 Een `Money`-waarde wordt opgeslagen als een geheel aantal centen in een `BIGINT`-kolom, de SQL-tegenhanger van een Kotlin-`Long`. Tot v2.1 was dat `DECIMAL`. Het doel is hetzelfde gebleven: geen `DOUBLE`, zodat er geen afrondingsfouten in prijsberekeningen ontstaan. Maar een `Long` bestaat op elk platform, en `BigDecimal` alleen op de JVM (ADR-07). Omdat `Money` een `value class` is, is het tijdens het draaien gewoon een `Long`; de omzetting tussen kolom en waardetype is één regel in de repository.
 
-**Een nieuwe partij heeft `id = 0` tot de database een id geeft (B-46).** De database kiest het id bij het opslaan (`autoIncrement`). Een partij die nog niet is opgeslagen, krijgt daarom `id = 0`; dat is de standaardwaarde in de constructors van de drie subklassen en betekent "nog niet opgeslagen". `SurplusProduct` en de drie subklassen zijn geen data class, dus er is geen `copy(id = …)`. Tot v3.0 noemde dit document als reden dat `copy()` de privé setter op `status` zou omzeilen. Die setter bestaat sinds PR #78 niet meer: `status` is een `override val` in de constructor, net als `id` en `supplier`. `create` bouwt na het opslaan een nieuw object op uit de opgeslagen rij, met `ResultRow.toProduct()`, en geeft dat terug. Zo belooft `Repository<T>.create` precies wat B-33 zegt: het item met het id dat de database koos.
+**Een nieuwe partij heeft `id = 0` tot de database een id geeft (B-46).** De database kiest het id bij het opslaan (`autoIncrement`). Een partij die nog niet is opgeslagen, krijgt daarom `id = 0`; dat is de standaardwaarde in de constructors van de drie subklassen en betekent "nog niet opgeslagen". `SurplusProduct` en de drie subklassen zijn geen data class, dus er is geen `copy(id = …)`. Daar zijn twee redenen voor. Een partij is een entiteit: twee partijen zijn dezelfde als hun `id` gelijk is, terwijl een data class alle velden vergelijkt. En een data class moet al zijn velden als `val` in de eigen constructor hebben; elke subklasse zou dan de tien velden van `SurplusProduct` opnieuw als `override val` declareren, waar hij ze nu alleen doorgeeft. Tot v3.0 noemde dit document als reden dat `copy()` de privé setter op `status` zou omzeilen. Die setter bestaat sinds PR #78 niet meer: `status` is een `override val` in de constructor, net als `id` en `supplier`. `create` bouwt na het opslaan een nieuw object op uit de opgeslagen rij, met `ResultRow.toProduct()`, en geeft dat terug. Zo belooft `Repository<T>.create` precies wat B-33 zegt: het item met het id dat de database koos.
 
 ### 9.4 Afprijsstaffels per productsoort
 
@@ -2054,7 +2054,7 @@ Drie tabs met detailschermen daaronder, wat ruim voldoet aan de eis van minimaal
 ### 18.3 Wat de API nu al biedt voor periode 2
 
 - Eén foutmodel voor de hele API (§10.2), zodat de app maar één vorm hoeft af te handelen.
-- `CORS` is geïnstalleerd (ADR-05), zodat de app zonder aanpassing aan de backend kan aansluiten. Het staat elke host toe (`anyHost()`), de methoden GET, POST, PUT en DELETE, en de headers `Content-Type` en `Authorization`. `anyHost()` is hier acceptabel, omdat er geen productieomgeving is (§1.6).
+- `CORS` is geïnstalleerd (ADR-05) voor de demo-frontend in `demo-frontend/`. Die draait in de browser op een andere poort dan de API, en een browser blokkeert zo'n verzoek zonder CORS. De Android-app heeft CORS niet nodig: alleen browsers handhaven het (MDN Web Docs, z.j.). Het staat elke host toe (`anyHost()`), de methoden GET, POST, PUT en DELETE, en de headers `Content-Type` en `Authorization`. `anyHost()` is hier acceptabel, omdat er geen productieomgeving is (§1.6).
 - De prijs wordt server-side berekend, zodat de app geen afprijslogica hoeft te dupliceren.
 - De prijsopbouw staat in het antwoord van de partij zelf, zodat de app voor een lijst of een detailscherm geen extra aanroep per partij nodig heeft.
 - De zoek-endpoint is openbaar, zodat de app aanbod kan tonen voordat de gebruiker inlogt.
@@ -2223,6 +2223,8 @@ JetBrains s.r.o. (z.j.-p). *Coding conventions: Functions vs properties*. Kotlin
 JetBrains s.r.o. (2026, 26 augustus). *Migrating from 0.61.0 to 1.0.0*. Exposed Documentation. https://www.jetbrains.com/help/exposed/migration-guide-1-0-0.html
 
 MapLibre. (z.j.). *MapLibre Compose*. Geraadpleegd op 18 september 2026, van https://maplibre.org/maplibre-compose/
+
+MDN Web Docs. (z.j.). *Cross-Origin Resource Sharing (CORS)*. Mozilla. Geraadpleegd op 24 oktober 2026, van https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS
 
 MockK. (z.j.). *MockK: mocking library for Kotlin*. Geraadpleegd op 12 september 2026, van https://mockk.io/
 
