@@ -45,26 +45,98 @@ first maintenance run, five minutes after the start.
 
 ## Configuration
 
-- The application reads three environment variables: `JWT_SECRET` and `OFF_CONTACT_EMAIL`, which are required, and `DB_MODE`, which is optional.
-- Without `JWT_SECRET` the application stops at startup with a message (FTD §16.4, decision B-52, issue #5). Setting the variable is not a "manual step" in the sense of GI-2.
-- Generate a secret with `openssl rand -base64 32` (Linux/macOS) or the PowerShell lines below, and put it in `.env` (ignored by git) or in the run configuration of IntelliJ. `.env.example` shows the variables.
+The application reads three environment variables. If a required one is missing, the application stops at startup and the error message names it (FTD §16.4).
 
-  | Variable | Required | Values | Default |
-  |---|---|---|---|
-  | `JWT_SECRET` | yes | any string of at least 32 bytes | none: the application stops |
-  | `OFF_CONTACT_EMAIL` | yes | one e-mail address, sent to Open Food Facts in the User-Agent (US-02) | none: the application stops |
-  | `DB_MODE` | no | `memory` or `file` | `memory` |
+| Variable | Required | Values | Default |
+|---|---|---|---|
+| `JWT_SECRET` | yes | any string of at least 32 bytes | none: the application stops |
+| `OFF_CONTACT_EMAIL` | yes | one e-mail address, sent to Open Food Facts in the User-Agent (US-02) | none: the application stops |
+| `DB_MODE` | no | `memory` or `file` | `memory` |
 
-## Powershell
+There are two ways to set them:
 
-- $bytes = New-Object byte[] 32
-  [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
-  $env:JWT_SECRET = [Convert]::ToBase64String($bytes)
-- ./kotlin.bat run
-- Remove-Item Env:JWT_SECRET
+- **In the terminal** (below). The variables last only as long as that terminal window, and only apps started from that window see them.
+- **In the IntelliJ run configuration**, under *Environment variables*. They are kept between runs.
 
-## Bash
+`.env.example` lists the variables. You can copy it to `.env` (ignored by git) to keep your values in one place, but **the application does not read `.env` by itself**: load it into the terminal first, as shown below. If a value in `.env` is empty, the variable counts as not set and the application stops.
 
-- export JWT_SECRET=$(openssl rand -base64 32)
-- ./kotlin run
-- unset JWT_SECRET
+To fill in `OFF_CONTACT_EMAIL` in `.env`, enter a real e-mail address after the `=`: `OFF_CONTACT_EMAIL=you@example.com`. Open Food Facts uses it to contact you if your app causes problems.
+
+To fill in `JWT_SECRET` in `.env`, generate a random secret, copy the line it prints and paste it after `JWT_SECRET=`:
+
+```powershell
+# PowerShell
+$bytes = New-Object byte[] 32
+[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+[Convert]::ToBase64String($bytes)
+```
+
+```bash
+# Bash
+openssl rand -base64 32
+```
+
+The secret is the key the application uses to sign its tokens (JWTs). It is not a token itself. Keep it out of git, chats and screenshots.
+
+A new `JWT_SECRET` makes all tokens issued before it invalid, so after a restart with a new secret everyone has to log in again.
+
+### PowerShell
+
+Generate a secret and set the variables:
+
+```powershell
+$bytes = New-Object byte[] 32
+[System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
+$env:OFF_CONTACT_EMAIL = "you@example.com"
+```
+(Use a real email address.)
+
+Or load them from `.env`:
+
+```powershell
+Get-Content .env | Where-Object { $_ -match '^\s*[^#\s][^=]*=' } | ForEach-Object {
+    $name, $value = $_ -split '=', 2
+    Set-Item "Env:$($name.Trim())" $value.Trim()
+}
+```
+
+Then start the application:
+
+```powershell
+./kotlin.bat run
+```
+
+To remove the variables before closing the window:
+
+```powershell
+Remove-Item Env:JWT_SECRET, Env:OFF_CONTACT_EMAIL
+```
+
+### Bash
+
+Generate a secret and set the variables:
+
+```bash
+export JWT_SECRET=$(openssl rand -base64 32)
+export OFF_CONTACT_EMAIL="you@example.com"
+```
+(Use a real email address.)
+
+Or load them from `.env`:
+
+```bash
+set -a; . ./.env; set +a
+```
+
+Then start the application:
+
+```bash
+./kotlin run
+```
+
+To remove the variables before closing the window:
+
+```bash
+unset JWT_SECRET OFF_CONTACT_EMAIL
+```
