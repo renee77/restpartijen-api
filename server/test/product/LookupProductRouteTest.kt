@@ -2,7 +2,6 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.plugins.ErrorCode
 import com.restpartijen.api.plugins.ErrorResponse
-import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.dto.ProductLookupResponse
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Role

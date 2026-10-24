@@ -9,7 +9,6 @@ import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.time.Duration.Companion.days
 
 /**
  * The shape check of POST /api/v1/products, registered in RequestValidation (§10.2, ADR-05, issue #46).

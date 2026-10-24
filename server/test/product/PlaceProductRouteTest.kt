@@ -12,7 +12,6 @@ import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.product.repository.SupplierRepository
-import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
