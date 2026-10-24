@@ -62,6 +62,7 @@ class ReservationTransactionTest {
         assertEquals(ProductStatus.LISTED, statusOf(productId))
     }
 
+    /** The status of this product, read straight from the database. */
     private fun statusOf(productId: Long): ProductStatus = transaction {
         ProductsTable.selectAll().where { ProductsTable.id eq productId }.single()[ProductsTable.status]
     }

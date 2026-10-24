@@ -13,6 +13,7 @@ import org.jetbrains.exposed.v1.jdbc.update
  * ProductsTable lives in persistence, so F2 may use it (issue #36); F1's own class may not be imported (GI-5).
  */
 internal class TableStatusUpdater : ProductStatusUpdater {
+    /** The ids that markReserved set to RESERVED, so a test can see it ran even after a rollback. */
     val reserved = mutableListOf<Long>()
 
     override suspend fun markReserved(productId: Long): Boolean = dbQuery {

@@ -38,6 +38,7 @@ class SearchRoutesTest {
 
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
+    /** The real search route and service over these products, with every price at 1.99 and a fixed clock. */
     private fun ApplicationTestBuilder.setUp(vararg products: ProductView) = application {
         configureSerialization()
         configureStatusPages()

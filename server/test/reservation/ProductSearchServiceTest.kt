@@ -41,7 +41,10 @@ class ProductSearchServiceTest {
         originalPrice = Money.fromCents(originalCents),
     )
 
-    // 60% off by default, so the current price always differs from the original one
+    /**
+     * The service over these products with a fixed clock.
+     * 60% off by default, so the current price always differs from the original one.
+     */
     private fun service(vararg products: ProductView, prices: PriceProvider = DiscountPriceProvider(60)) =
         ProductSearchService(FakeProductReader(products.toList()), prices, FixedClock(now))
 
@@ -121,7 +124,11 @@ class ProductSearchServiceTest {
     }
 }
 
-/** Gives every product the same discount, so the current price is lower than the original one. */
+/**
+ * Gives every product the same discount, so the current price is lower than the original one.
+ *
+ * @property percentage the discount for every product
+ */
 private class DiscountPriceProvider(private val percentage: Int) : PriceProvider {
     override fun priceBreakdown(product: PricedProduct): PriceBreakdown {
         val current = Money.fromCents(product.originalPrice.cents * (100 - percentage) / 100)

@@ -51,13 +51,26 @@ import kotlin.time.Duration.Companion.hours
  */
 class ReservationRoutesTest {
 
-    // Arrange: a clock that stands still during the test but starts at the real "now",
-    // because the JWT verifier checks token expiry against the real time (#62)
+    /**
+     * A clock that stands still during the test but starts at the real "now",
+     * because the JWT verifier checks token expiry against the real time (#62).
+     */
     private val testClock = TestClock.fixedNow()
     private val now = testClock.now()
+
+    /** A pickup window that opened an hour ago and closes in five hours. */
     private val openWindow = PickupWindow(now - 1.hours, now + 5.hours)
+
+    /** Shared with the app, so a test can check which status changes the service made. */
     private val statusUpdater = FakeProductStatusUpdater()
 
+    /**
+     * The real reservation routes and service, with fakes behind the service and the test clock.
+     *
+     * @param products what the product reader knows
+     * @param reservations the reservations that are stored from the start
+     * @param price the current price of every product; null means "expired"
+     */
     private fun Application.testApp(
         products: List<ProductView>,
         reservations: List<Reservation> = emptyList(),
@@ -79,10 +92,13 @@ class ReservationRoutesTest {
         configureReservationRouting()
     }
 
+    /** Starts the test app with these products, no reservations and the default price. */
     private fun ApplicationTestBuilder.setUp(vararg products: ProductView) = application { testApp(products.toList()) }
 
+    /** A valid token for user 7 with this role. */
     private fun tokenFor(role: Role) = TestTokens().createTestToken(userId = 7L, role = role, clock = testClock)
 
+    /** POST /api/v1/reservations for this product, with the token if one is given. */
     private suspend fun ApplicationTestBuilder.reserve(productId: Long, token: String? = null): HttpResponse =
         client.post("/api/v1/reservations") {
             token?.let { bearerAuth(it) }
@@ -90,16 +106,19 @@ class ReservationRoutesTest {
             setBody("""{"productId": $productId}""")
         }
 
+    /** GET /api/v1/reservations, with the token if one is given. */
     private suspend fun ApplicationTestBuilder.ownReservations(token: String? = null): HttpResponse =
         client.get("/api/v1/reservations") { token?.let { bearerAuth(it) } }
 
+    /** DELETE /api/v1/reservations/{id}; the id is text, so a test can also send one that is not a number. */
     private suspend fun ApplicationTestBuilder.cancel(reservationId: String, token: String? = null): HttpResponse =
         client.delete("/api/v1/reservations/$reservationId") { token?.let { bearerAuth(it) } }
 
+    /** POST /api/v1/reservations/{id}/collect, with the token if one is given. */
     private suspend fun ApplicationTestBuilder.collect(reservationId: String, token: String? = null): HttpResponse =
         client.post("/api/v1/reservations/$reservationId/collect") { token?.let { bearerAuth(it) } }
 
-    // Reservation 1 on product 1. tokenFor() belongs to collector 7, so collectorId 7 means "mine".
+    /** Reservation 1 on product 1. tokenFor() belongs to collector 7, so collectorId 7 means "mine". */
     private fun reservation(collectorId: Long = 7, status: ReservationStatus = ReservationStatus.ACTIVE) = Reservation(
         1,
         productId = 1,
@@ -110,6 +129,7 @@ class ReservationRoutesTest {
         status = status,
     )
 
+    /** Product 1, RESERVED, with an open pickup window: the product of [reservation]. */
     private val reservedProduct = FakeProduct(id = 1, pickupWindow = openWindow, status = ProductStatus.RESERVED)
 
     @Test

@@ -23,12 +23,13 @@ import kotlin.time.Instant
 /** Integration test: the real repository against a fresh, empty H2 database per test. */
 class ExposedReservationRepositoryTest {
 
-    // Whole seconds: the database may store fewer digits than Instant has, and equality would fail.
+    /** Whole seconds: the database may store fewer digits than Instant has, and equality would fail. */
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
-    // Set by emptyDatabaseWithCollector(); JUnit makes a new instance per test, so no test sees another's id.
+    /** Set by emptyDatabaseWithCollector(); JUnit makes a new instance per test, so no test sees another's id. */
     private var collectorId = 0L
 
+    /** A new reservation (id 0) of the stored collector at 1.99, reserved 24 hours before [expiresAt]. */
     private fun reservation(productId: Long, expiresAt: Instant, status: ReservationStatus = ReservationStatus.ACTIVE) =
         Reservation(
             id = 0,
@@ -168,8 +169,10 @@ class ExposedReservationRepositoryTest {
         assertEquals(stored, repository.findById(stored.id))
     }
 
-    // A reservation must point to an existing product and collector (issue #36),
-    // so every test starts with one stored collector; products are stored per test.
+    /**
+     * A reservation must point to an existing product and collector (issue #36),
+     * so every test starts with one stored collector; products are stored per test.
+     */
     private fun emptyDatabaseWithCollector() {
         createEmptyTestDatabase(UsersTable, ProductsTable, ReservationsTable)
         collectorId = insertUser()

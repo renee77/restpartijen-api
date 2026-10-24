@@ -35,6 +35,7 @@ class ReservationLapseRollbackTest {
 
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
+    /** A fresh, empty database for every test. */
     @BeforeTest
     fun setup() = createEmptyTestDatabase(UsersTable, SuppliersTable, ProductsTable, ReservationsTable)
 
@@ -115,6 +116,7 @@ class ReservationLapseRollbackTest {
         return ReservationMaintenanceService(reader, TableStatusUpdater(), reservations)
     }
 
+    /** Stores a new product row with status RESERVED and returns its id. */
     private fun reservedProductRow(): Long {
         val productId = insertProduct()
         transaction {
@@ -123,6 +125,7 @@ class ReservationLapseRollbackTest {
         return productId
     }
 
+    /** The status of this product, read straight from the database. */
     private fun statusOf(productId: Long): ProductStatus = transaction {
         ProductsTable.selectAll().where { ProductsTable.id eq productId }.single()[ProductsTable.status]
     }

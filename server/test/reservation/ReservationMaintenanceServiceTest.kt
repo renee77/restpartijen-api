@@ -18,14 +18,16 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
+/** ReservationMaintenanceService with fakes (K-5): which reservations lapse, and on which boundary. */
 class ReservationMaintenanceServiceTest {
 
-    // The service opens its own transaction (GI-1, decision 1.4), so even with fakes it needs a database.
+    /** The service opens its own transaction (GI-1, decision 1.4), so even with fakes it needs a database. */
     @BeforeTest
     fun setup() = createEmptyTestDatabase()
 
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
+    /** A reservation of collector 7 at 1.99; by default ACTIVE and reserved 24 hours before [expiresAt]. */
     private fun reservation(
         id: Long,
         productId: Long,
@@ -42,6 +44,7 @@ class ReservationMaintenanceServiceTest {
         status = status,
     )
 
+    /** A RESERVED product whose pickup window is open from two days ago until two days from now by default. */
     private fun reservedProduct(id: Long, window: PickupWindow = PickupWindow(now - 2.days, now + 2.days)) =
         FakeProduct(id = id, status = ProductStatus.RESERVED, pickupWindow = window)
 
