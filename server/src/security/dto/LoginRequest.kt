@@ -11,5 +11,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class LoginRequest(val email: String, val password: String) {
     /** Shows the password as `***`, so logging the request never leaks it. */
-    override fun toString(): String = "UserRequest(email=$email, password=***)"
+    override fun toString(): String = "LoginRequest(email=$email, password=***)"
 }
