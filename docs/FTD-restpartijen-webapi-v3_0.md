@@ -163,7 +163,7 @@ B-38 tot en met B-44 volgen uit de code van F3 op `main` van 20 oktober 2026, na
 | B-48 | `ConflictException` | Registreren met een bestaand e-mailadres is een conflict, geen statusovergang. GI-4 levert een `ConflictException` (409, code `CONFLICT`) in `shared/DomainException.kt` met een regel in `StatusPages`; `RegistrationService` gebruikt haar daarna in plaats van `IllegalStateTransitionException` | Eva, 20 oktober 2026; uitvoering Stefan en Lonneke in issue #47 | §10.2 | Vast; in de code (v3.0): `StatusPages` geeft `409` met code `CONFLICT`; `RegistrationService` en `ExposedUserRepository` gooien haar bij een bestaand e-mailadres |
 | B-49 | Onbekend veld in een verzoek | Een veld dat het request-model niet kent, levert `400 Bad Request`. `ContentNegotiation` staat zonder `ignoreUnknownKeys`, dus deserialisatie weigert het veld. Dat geldt voor elk endpoint. Registreren met een `role` in het verzoek levert dus `400`, niet `201` | Eva, 20 oktober 2026 | §10.2, §13 (GI-3 acceptatiecriteria) | Vast; in de code |
 | B-50 | Soft delete op `USERS` | `Repository<T>.delete` (B-33) is voor `USERS` een soft delete: de kolom `deleted_at` (timestamp, `null` = actief) krijgt het moment van verwijderen en een verwijderd account is daarna onzichtbaar voor `findById` en `findByEmail`. Er is geen endpoint voor; de kolom bestaat omdat het contract `delete` eist | Eva, 20 oktober 2026 | §9.1, §15 | Vast; in de code (v3.0): `deleted_at` is een nullable timestamp, en `User` heeft de property `deletedAt` |
-| B-51 | Antwoord van `POST /reservations` | Het antwoord bevat naast het vervalmoment ook de vastgelegde prijs, `reservedPrice` in euro's (B-25). §5.5 en §18.4 spraken elkaar tegen; de app heeft de prijs nergens anders vandaan | Eva, 20 oktober 2026; uitvoering Stefan in issue #49 | §5.5, §18.4 | Besloten; code volgt (issue #49) |
+| B-51 | Antwoord van `POST /reservations` | Het antwoord bevat naast het vervalmoment ook de vastgelegde prijs, `reservedPrice` in euro's (B-25). §5.5 en §18.4 spraken elkaar tegen; de app heeft de prijs nergens anders vandaan | Eva, 20 oktober 2026; uitvoering Stefan in issue #49 | §5.5, §18.4 | Vast; in de code (v3.0): `ReservationResponse` geeft `reservedPrice` in euro's |
 | B-52 | JWT-secret en starten zonder handmatige stap | De docent vindt beide manieren goed (issue #5). Keuze: zonder `JWT_SECRET` start de applicatie niet; het zetten van de variabele staat in de README en telt niet als handmatige stap. Een terugval met een willekeurig secret mag tijdens de ontwikkelfase als uitgecommentarieerd alternatief in `JwtProperties.kt` staan en is weg bij de oplevering | Profgroep en docent, issue #5, gesloten 11 oktober 2026 | §16.4, §21 | Vast; in de code |
 | B-53 | Contract `SupplierIdLookup` (K-7) | Voor het `supplierId` in het antwoord van `/auth/login` (besluit 3.8) levert F1 het contract `SupplierIdLookup` met `suspend fun lookupSupplierId(userId: Long): Long?` in `shared`; `SupplierRepository` implementeert het. In issue #39 heette het nog `SupplierLookup.supplierIdFor`; de code is leidend (B-30) | Eva, issue #39, oktober 2026 | §12.1, §12.2, §13 (GI-5) | Vast; in de code. Sinds v3.0 gebruikt `LoginService` het: alleen bij een account met rol `SUPPLIER` vraagt het `lookupSupplierId` op |
 | B-54 | Tabellen aanmelden | `DatabaseFactory.init(settings, vararg tables)` maakt de tabellen aan die de aanroeper meegeeft; `persistence` importeert geen feature. `Application.module()` geeft de tabellen door, in de volgorde van hun verwijzingen. Een feature meldt een nieuwe tabel daar met één regel aan | Eva, oktober 2026 | §13 (GI-1), §21 | Vast; in de code |
@@ -490,9 +490,12 @@ Elk criterium is één toetsbare uitspraak. Statuscodes zijn onderdeel van het c
 - Filteren op `maxPrice` vergelijkt met de actuele afgeprijsde prijs, niet met de oorspronkelijke prijs. `maxPrice` is een bedrag in euro's, bijvoorbeeld `3.00` (§10.1).
 - Filteren op `minShelfLifeHours` levert uitsluitend partijen met minimaal die resterende houdbaarheid.
 - Meerdere filters tegelijk worden als EN-voorwaarde toegepast.
-- Een onbekende waarde voor `category` levert `400 Bad Request` met de toegestane waarden in de foutmelding.
+- Een onbekende waarde voor `category` levert `400 Bad Request` met de toegestane waarden in de foutmelding en `field` gelijk aan `category`. De waarden zijn hoofdlettergevoelig.
+- Een `maxPrice` die geen getal is of negatief is, levert `400 Bad Request` met `field` gelijk aan `maxPrice`.
+- Een `minShelfLifeHours` die geen geheel getal is of negatief is, levert `400 Bad Request` met `field` gelijk aan `minShelfLifeHours`.
 - De endpoint is zonder authenticatie te benaderen.
 - Elke partij in het antwoord bevat de naam en de coördinaten van de aanbieder, zodat de app zelf de afstand kan berekenen (§18.1).
+- Het antwoord is een lijst. Elke partij heeft `id`, `name`, `category`, `supplier` (`id`, `name`, `latitude`, `longitude`), `originalPrice`, `discountPercentage`, `currentPrice`, `shelfLifeRemainingHours` en `pickupWindow` (`from`, `until`); zie §10.1.
 
 ### 5.5 US-05 — Partij reserveren
 
@@ -502,16 +505,28 @@ Elk criterium is één toetsbare uitspraak. Statuscodes zijn onderdeel van het c
 - Een partij die niet bestaat of status `REMOVED` heeft, kan niet worden gereserveerd; het antwoord is `404 Not Found` (B-32).
 - Reserveren kan tot het einde van het afhaalvenster; daarna wordt het verzoek geweigerd met `422 Unprocessable Entity`.
 - Een reservering is maximaal 24 uur geldig. Het antwoord bevat het moment waarop zij vervalt: 24 uur na het reserveren, of het einde van het afhaalvenster als dat eerder is. Het antwoord bevat ook de vastgelegde prijs, `reservedPrice` in euro's (B-25, B-51).
+- De request body bevat alleen `productId`. Het antwoord `201` bevat `id`, `productId`, `status` (`ACTIVE`), `reservedPrice`, `reservedAt`, `expiresAt` en `collectedAt` (`null`), en geen persoonsgegevens (§15).
+- De controles lopen in deze volgorde: `404` onbekend of verwijderd, `409` status niet `LISTED`, `409` datum verstreken, `422` afhaalvenster voorbij, `409` een ander was eerder.
 - Reserveren twee afhalers dezelfde partij op hetzelfde moment, dan slaagt er precies één; de ander krijgt `409 Conflict`.
 - Een reservering geldt voor de hele partij; een deel reserveren kan niet.
 - Een gebruiker met rol `SUPPLIER` die deze endpoint aanroept krijgt `403 Forbidden`.
 - De actuele prijs op het moment van reserveren wordt vastgelegd in de reservering en verandert daarna niet meer, ook niet als de partij daarna in een volgende staffel valt.
 
+**Eigen reserveringen (`GET /reservations`).** Tot v3.0 had deze endpoint geen eigen criteria; ze volgen de code van F2.
+
+- Een afhaler krijgt `200 OK` met de eigen reserveringen, in elke status, de nieuwste eerst (op `reservedAt`).
+- Elke reservering heeft dezelfde vorm als het antwoord van `POST /reservations`.
+- Wie de afhaler is, komt uit het token; de app stuurt geen gebruikers-id mee.
+- Zonder token is het antwoord `401 Unauthorized`; met een andere rol dan `COLLECTOR` `403 Forbidden`.
+
 ### 5.6 US-06 — Reservering intrekken
 
 - Een afhaler kan een eigen reservering intrekken; het antwoord is `204 No Content` en de partij keert terug naar status `LISTED`.
 - Een afhaler die de reservering van een ander probeert in te trekken krijgt `403 Forbidden`.
-- Een reservering met status `COLLECTED` kan niet worden ingetrokken; het antwoord is `409 Conflict`.
+- Een reservering met status `COLLECTED`, `CANCELLED` of `LAPSED` kan niet worden ingetrokken; het antwoord is `409 Conflict`.
+- Is de partij intussen veranderd, zodat `markListed` `false` geeft, dan is het antwoord `409 Conflict` en verandert er niets.
+- Een onbekende reservering levert `404 Not Found`; een id dat geen getal is, levert `400 Bad Request` met `field` gelijk aan `id`.
+- De controles lopen in deze volgorde: `404`, `403`, `409`.
 
 ### 5.7 US-07 — Actuele prijs zien
 
@@ -568,9 +583,12 @@ Elk criterium is één toetsbare uitspraak. Statuscodes zijn onderdeel van het c
 ### 5.11 US-11 — Ophalen bevestigen
 
 - Een afhaler kan het ophalen van een eigen reservering bevestigen; het antwoord is `200 OK`, de reservering en de partij krijgen status `COLLECTED` en het tijdstip wordt vastgelegd.
+- De body van `200 OK` is de reservering, in dezelfde vorm als bij reserveren (§10.1), met `status` `COLLECTED` en een ingevuld `collectedAt`.
 - Een afhaler die de reservering van een ander probeert te bevestigen krijgt `403 Forbidden`.
 - Een reservering die al is opgehaald, ingetrokken of vervallen kan niet worden bevestigd; het antwoord is `409 Conflict`.
-- Bevestigen buiten het afhaalvenster wordt geweigerd met `422 Unprocessable Entity`.
+- Bevestigen buiten het afhaalvenster wordt geweigerd met `422 Unprocessable Entity`. Beide grenzen tellen mee: bevestigen precies op het einde mag, vóór het begin niet.
+- Een onbekende reservering levert `404 Not Found`; een id dat geen getal is, levert `400 Bad Request`.
+- De controles lopen in deze volgorde: `404`, `403`, `409`, `422`. Een al opgehaalde reservering van een ander levert dus `403`, niet `409`.
 
 De aanbieder geeft de partij pas mee nadat de afhaler in de app heeft bevestigd. Dat is een afspraak in het proces en geen regel in de API. Wordt er niet bevestigd, dan gaat het ophalen dus niet door: de reservering vervalt aan het einde van het afhaalvenster en de partij komt weer beschikbaar (US-08).
 
@@ -1015,36 +1033,44 @@ sequenceDiagram
     alt partij bestaat niet of is REMOVED
         RS-->>RR: NotFoundException
         RR-->>C: 404 Not Found
-    else status is niet LISTED (ReservationStateMachine)
-        RS-->>RR: IllegalStateTransitionException
-        RR-->>C: 409 Conflict
-    else currentPrice is null, dus de datum is verstreken (PriceProvider, B-18)
-        RS-->>RR: IllegalStateTransitionException
-        RR-->>C: 409 Conflict
-    else afhaalvenster is voorbij
-        RS-->>RR: DomainRuleException
-        RR-->>C: 422 Unprocessable Entity
-    else toegestaan
-        RS->>SM: transition(LISTED, RESERVE)
-        SM-->>RS: RESERVED
-        RS->>PP: currentPrice(partij)
-        PP-->>RS: prijs op dit moment
-        RS->>F1: markReserved(productId) (ProductStatusUpdater)
-        alt een ander was eerder
-            F1-->>RS: niet gelukt
+    else partij gevonden
+        RS->>SM: transition(RESERVE, status van de partij, null)
+        alt status is niet LISTED
+            SM-->>RS: IllegalStateTransitionException
             RS-->>RR: IllegalStateTransitionException
             RR-->>C: 409 Conflict
-        else gelukt
-            F1-->>RS: gelukt
-            RS->>DB: INSERT reservering (ACTIVE, reservedPrice)
-            DB-->>RS: ok
-            RS-->>RR: reservering
-            RR-->>C: 201 Created
+        else toegestaan
+            SM-->>RS: To(RESERVED, ACTIVE)
+            RS->>PP: currentPrice(partij)
+            alt null, dus de datum is verstreken (B-18)
+                PP-->>RS: null
+                RS-->>RR: IllegalStateTransitionException
+                RR-->>C: 409 Conflict
+            else prijs op dit moment
+                PP-->>RS: prijs
+                alt afhaalvenster is voorbij
+                    RS-->>RR: DomainRuleException
+                    RR-->>C: 422 Unprocessable Entity
+                else binnen het afhaalvenster
+                    RS->>F1: markReserved(productId) (ProductStatusUpdater)
+                    alt een ander was eerder
+                        F1-->>RS: false
+                        RS-->>RR: IllegalStateTransitionException
+                        RR-->>C: 409 Conflict
+                    else gelukt
+                        F1-->>RS: true
+                        RS->>DB: INSERT reservering (ACTIVE, reservedPrice, expiresAt)
+                        DB-->>RS: reservering met id
+                        RS-->>RR: reservering
+                        RR-->>C: 201 Created
+                    end
+                end
+            end
         end
     end
 ```
 
-SD-2 volgt een afhaler van zoeken tot reserveren. F2 raakt de tabellen van F1 niet aan: lezen gaat via `ProductReader` en de status wijzigen via `ProductStatusUpdater` (bijlage A). Zoeken levert alleen partijen die `LISTED` zijn én nog houdbaar. De service kijkt daarvoor zelf naar de tijd en wacht niet op de statusbewaking. Per partij vraagt hij de prijsopbouw op. Die is om twee redenen nodig: het filter op maximumprijs werkt op de afgeprijsde prijs, en het antwoord toont de oorspronkelijke prijs, de korting en de actuele prijs (§5.7). Reserveren kan tot het einde van het afhaalvenster, en de statusmachine beslist of de overgang mag. Reserveren twee afhalers tegelijk, dan wint de eerste: de status gaat alleen naar `RESERVED` als hij op dat moment nog `LISTED` is, en de ander krijgt `409`. De prijs van dat moment gaat mee de reservering in. Beide schrijfacties vallen binnen één transactie (§9.6).
+SD-2 volgt een afhaler van zoeken tot reserveren. F2 raakt de tabellen van F1 niet aan: lezen gaat via `ProductReader` en de status wijzigen via `ProductStatusUpdater` (bijlage A). Zoeken levert alleen partijen die `LISTED` zijn én nog houdbaar. De service kijkt daarvoor zelf naar de tijd en wacht niet op de statusbewaking. Per partij vraagt hij de prijsopbouw op. Die is om twee redenen nodig: het filter op maximumprijs werkt op de afgeprijsde prijs, en het antwoord toont de oorspronkelijke prijs, de korting en de actuele prijs (§5.7). Reserveren kan tot het einde van het afhaalvenster, en de statusmachine beslist of de overgang mag. Zij wordt één keer aangeroepen, direct na `findById`, als `transition(RESERVE, status van de partij, null)`: er is nog geen reservering. Het antwoord `To(RESERVED, ACTIVE)` noemt beide nieuwe statussen. Daarna vraagt de service één keer `currentPrice` op. Is die `null`, dan is de datum verstreken en volgt `409`; anders wordt precies die prijs vastgelegd. De controles lopen dus in deze volgorde: `404`, `409` status, `409` verstreken, `422` venster, `409` een ander was eerder. De insert slaat ook `expires_at` op: het vroegste van het moment van reserveren plus 24 uur en het einde van het afhaalvenster (§9.5). Reserveren twee afhalers tegelijk, dan wint de eerste: de status gaat alleen naar `RESERVED` als hij op dat moment nog `LISTED` is, en de ander krijgt `409`. De prijs van dat moment gaat mee de reservering in. Beide schrijfacties vallen binnen één transactie (§9.6).
 
 > **Opmerking v2.2 — voor Stefan.** Tot v2.1 riep zoeken `currentPrice()` aan. Dat levert alleen de actuele prijs, terwijl §5.7 in het antwoord van `GET /products` ook de oorspronkelijke prijs en het kortingspercentage eist. Zoeken gebruikt daarom `priceBreakdown()`; reserveren blijft `currentPrice()` gebruiken. Beide geven `null` als een partij verlopen is (B-18). Bij zoeken gebeurt dat zelden, want `findAvailable` levert alleen houdbare partijen. Maar tussen die twee aanroepen kan een partij net over de grens gaan. Laat zo'n partij dan weg uit het resultaat.
 
@@ -1108,16 +1134,20 @@ sequenceDiagram
 
     A->>AR: POST /api/v1/admin/maintenance/expire
     AR->>ES: runMaintenance()
+    Note over ES: now = clock.now(), één moment<br/>voor beide stappen
 
     Note over ES: stap 1 — reserveringen laten vervallen
-    ES->>RM: lapseOverdue(clock.now())
-    Note over RM: F2 zoekt zelf de actieve reserveringen<br/>die over tijd zijn (venster voorbij<br/>of ouder dan 24 uur)
-    RM->>F1: markListed(productId), per reservering (ProductStatusUpdater)
-    F1-->>RM: gelukt
-    RM-->>ES: aantal vervallen
+    ES->>RM: lapseOverdue(now)
+    Note over RM: F2 zoekt zelf de actieve reserveringen<br/>met expires_at op of vóór now (findOverdue)
+    loop per reservering, elk in een eigen savepoint
+        RM->>F1: markListed(productId) (ProductStatusUpdater)
+        F1-->>RM: true of false
+        Note over RM: reservering op LAPSED.<br/>Mislukt iets, dan draait alleen<br/>deze reservering terug
+    end
+    RM-->>ES: aantal werkelijk vervallen
 
     Note over ES: stap 2 — partijen laten verlopen
-    ES->>F1: findExpiredListings(clock.now()) (ProductReader)
+    ES->>F1: findExpiredListings(now) (ProductReader)
     F1-->>ES: partijen die LISTED zijn en over de datum
     ES->>F1: markExpired(productIds) (ProductStatusUpdater)
     F1-->>ES: aantal verlopen (kan lager zijn dan gevonden, B-40)
@@ -1127,7 +1157,7 @@ sequenceDiagram
     AR-->>A: 200 OK met het rapport als JSON
 ```
 
-SD-4 toont de statusbewaking. De beheerder start haar hier handmatig, zodat zij tijdens de demo te tonen is. F3 beslist wat er moet gebeuren; F2 en F1 voeren het uit op hun eigen gegevens, via contracten (bijlage A). De volgorde van de twee stappen is een besluit. Eerst vervallen de reserveringen die over tijd zijn: het afhaalvenster is voorbij, of de reservering is ouder dan 24 uur. Dat is één aanroep, `lapseOverdue`. F2 bepaalt zelf welke reserveringen over tijd zijn en voert het vervallen uit via de statusmachine; de partij komt dan weer vrij (§9.5). Tot v2.1 tekende dit diagram twee aanroepen, een om de reserveringen op te vragen en een om ze te laten vervallen. Dat kan niet via een contract: een `Reservation` is een klasse van F2 en staat niet in `shared`. Het contract geeft daarom alleen een aantal terug. Daarna verlopen de partijen waarvan de datum is verstreken. Andersom zou een verlopen partij door de tweede stap weer op `LISTED` komen. Het antwoord is een `MaintenanceReport` met twee velden, `lapsedReservations` en `expiredProducts`, en gaat als JSON terug met `200 OK` (B-42). Het aantal in `expiredProducts` kan lager zijn dan het aantal partijen dat stap 2 vond: tussen `findExpiredListings` en `markExpired` kan een afhaler een partij reserveren, en `markExpired` zet alleen partijen om die nog `LISTED` zijn. Dat is geen fout; het rapport toont het werkelijke aantal (B-40). Een tweede aanroep direct erna verandert niets meer. Dezelfde `runMaintenance()` draait ook periodiek, elke vijf minuten, vanuit een coroutine in de scope van de applicatie (B-41). De route in het diagram heet `PricingRoutes`, omdat de beheerendpoints in de package `pricing` van F3 staan (§8.3).
+SD-4 toont de statusbewaking. De beheerder start haar hier handmatig, zodat zij tijdens de demo te tonen is. F3 beslist wat er moet gebeuren; F2 en F1 voeren het uit op hun eigen gegevens, via contracten (bijlage A). De volgorde van de twee stappen is een besluit. Eerst vervallen de reserveringen die over tijd zijn: het afhaalvenster is voorbij, of de reservering is ouder dan 24 uur. F2 rekent dat niet opnieuw uit, maar vergelijkt `now` met de opgeslagen `expires_at` (§9.5). Dat is één aanroep, `lapseOverdue`. Elke reservering vervalt in een eigen savepoint. Mislukt er één, dan draait alleen het schrijfwerk van die reservering terug, komt er een waarschuwing in de log (§16.7) en gaat de run door met de rest; het aantal telt alleen de reserveringen die werkelijk zijn vervallen. F2 bepaalt zelf welke reserveringen over tijd zijn en voert het vervallen uit via de statusmachine; de partij komt dan weer vrij (§9.5). Tot v2.1 tekende dit diagram twee aanroepen, een om de reserveringen op te vragen en een om ze te laten vervallen. Dat kan niet via een contract: een `Reservation` is een klasse van F2 en staat niet in `shared`. Het contract geeft daarom alleen een aantal terug. Daarna verlopen de partijen waarvan de datum is verstreken. Andersom zou een verlopen partij door de tweede stap weer op `LISTED` komen. Het antwoord is een `MaintenanceReport` met twee velden, `lapsedReservations` en `expiredProducts`, en gaat als JSON terug met `200 OK` (B-42). Het aantal in `expiredProducts` kan lager zijn dan het aantal partijen dat stap 2 vond: tussen `findExpiredListings` en `markExpired` kan een afhaler een partij reserveren, en `markExpired` zet alleen partijen om die nog `LISTED` zijn. Dat is geen fout; het rapport toont het werkelijke aantal (B-40). Een tweede aanroep direct erna verandert niets meer. Dezelfde `runMaintenance()` draait ook periodiek, elke vijf minuten, vanuit een coroutine in de scope van de applicatie (B-41). De route in het diagram heet `PricingRoutes`, omdat de beheerendpoints in de package `pricing` van F3 staan (§8.3).
 
 ### 8.6 Kwaliteitsscenario's
 
@@ -1301,7 +1331,7 @@ stateDiagram-v2
     LAPSED --> [*]
 ```
 
-De twee statussen veranderen altijd samen, in één transactie. `ReservationStateMachine` bepaalt of een gebeurtenis (`ReservationEvent`) bij de huidige status van de partij is toegestaan:
+De twee statussen veranderen altijd samen, in één transactie. `ReservationStateMachine` bepaalt of een gebeurtenis (`ReservationEvent`) bij de huidige status van de partij en de reservering is toegestaan. Het is een `object` met een `Map` van toegestane overgangen. `transition(event, productStatus, reservationStatus)` geeft beide nieuwe statussen terug als `To`, of gooit een `IllegalStateTransitionException`; het slaat zelf niets op. Bij `RESERVE` is er nog geen reservering, dus de reserveringsstatus is dan `null`. De tabel is precies de `Map` in de code:
 
 | Gebeurtenis | Partij (`ProductStatus`) | Reservering (`ReservationStatus`) | Wie |
 |-------------|--------------------------|-----------------------------------|-----|
@@ -1312,7 +1342,7 @@ De twee statussen veranderen altijd samen, in één transactie. `ReservationStat
 
 Elke andere combinatie levert een `IllegalStateTransitionException` en daarmee `409 Conflict` (§10.2). Verlopen is geen gebeurtenis van een reservering: de statusbewaking zet een partij met status `LISTED` op `EXPIRED` zodra de datum is verstreken.
 
-Een reservering is maximaal 24 uur geldig. `LAPSE` volgt dus als het afhaalvenster voorbij is of als de reservering 24 uur oud is, wat het eerst komt. Zonder die grens houdt een reservering van dagen vooruit een partij vast tot vlak voor de datum. Komt de afhaler dan niet, dan is de partij alsnog verspild, en dat is precies wat het platform wil voorkomen. De 24 uur zijn een keuze van de profgroep (19 september 2026). Welke reserveringen over tijd zijn, bepaalt F2 achter het contract `ReservationMaintenance` (§12.1, K-5).
+Een reservering is maximaal 24 uur geldig. `LAPSE` volgt dus als het afhaalvenster voorbij is of als de reservering 24 uur oud is, wat het eerst komt. Zonder die grens houdt een reservering van dagen vooruit een partij vast tot vlak voor de datum. Komt de afhaler dan niet, dan is de partij alsnog verspild, en dat is precies wat het platform wil voorkomen. De 24 uur zijn een keuze van de profgroep (19 september 2026). Welke reserveringen over tijd zijn, bepaalt F2 achter het contract `ReservationMaintenance` (§12.1, K-5). Het vervalmoment wordt één keer berekend, bij het reserveren: het vroegste van het moment van reserveren plus 24 uur en het einde van het afhaalvenster. Het staat als `expires_at` bij de reservering. `findOverdue(now)` zoekt daarna de reserveringen met status `ACTIVE` en `expires_at` op of vóór `now`. Een reservering die precies nu vervalt, telt dus als over tijd.
 
 ### 9.6 Opslagkeuzes
 
@@ -1426,6 +1456,8 @@ Alle vier de CRUD-soorten zijn hiermee gedekt (r.202): POST op `/products`, GET 
 
 **De beheerendpoints (B-42, B-43).** `POST /admin/maintenance/expire` antwoordt met `200 OK` en het rapport `MaintenanceReport` als JSON, met de velden `lapsedReservations` en `expiredProducts`. `GET /admin/products` neemt het filter `status` als herhaalde parameter: `?status=LISTED&status=RESERVED`, niet kommagescheiden. De waarden zijn hoofdlettergevoelig en komen uit `ProductStatus`. Zonder parameter geeft de route een lege set door en vertaalt `AdminProductService` die naar "alles behalve `REMOVED`" (B-26). Een onbekende waarde levert `400` met de toegestane waarden in de foutmelding en `field` gelijk aan `status`. Het antwoord is een lijst van `AdminProductResponse` met `id`, `name`, `status`, `supplierName`, `pickupWindowStart` en `pickupWindowEnd`; prijs en persoonsgegevens staan er niet in (§15).
 
+**Zoeken en reserveren (F2).** `GET /products` geeft een lijst. Elke partij heeft `id`, `name`, `category`, `supplier` met `id`, `name`, `latitude` en `longitude`, de prijzen `originalPrice`, `discountPercentage` en `currentPrice` in euro's, `shelfLifeRemainingHours` (hele uren, naar beneden afgerond) en `pickupWindow` met `from` en `until`. Het afhaalvenster heeft dezelfde vorm als in het antwoord van een partij van F1. `POST /reservations` krijgt als body alleen `{ "productId": … }`. Het antwoord `201` is een reservering: `id`, `productId`, `status`, `reservedPrice` in euro's, `reservedAt`, `expiresAt` en `collectedAt`, zonder persoonsgegevens (§15). `GET /reservations` geeft een lijst in dezelfde vorm, de nieuwste eerst. `POST /reservations/{id}/collect` antwoordt `200 OK` met de reservering, nu met `status` `COLLECTED` en een ingevuld `collectedAt`. `DELETE /reservations/{id}` antwoordt `204 No Content` zonder body.
+
 In v1.1 is `/products/{id}/pricing` vervallen. De prijs hoort bij de partij en staat daarom in het antwoord van de partij zelf, als drie velden: `originalPrice`, `discountPercentage` en `currentPrice`. Dat scheelt de app in periode 2 een aanroep per getoonde partij. De afprijslogica blijft van F3; F1 en F2 vragen de prijs op via `PriceProvider` (§12.1).
 
 **Bedragen in de API (B-25).** Intern rekenen we in hele centen (`Money`, ADR-07). De API stuurt en ontvangt bedragen in euro's, bijvoorbeeld `3.49`. Dat geldt voor de request body van `POST /products` en `PUT /products/{id}`, voor het filter `maxPrice` en voor elk antwoord met een prijs. Euro's zijn voor een mens leesbaar in de demo, en de app hoeft niet om te rekenen voor het tonen. De omrekening tussen euro's en centen staat op één plek, in de DTO-laag of in `Money` zelf.
@@ -1434,19 +1466,24 @@ In v1.1 is `/products/{id}/pricing` vervallen. De prijs hoort bij de partij en s
 
 ### 10.2 Validatie en foutafhandeling
 
-Validatie gebeurt op twee niveaus. `RequestValidation` controleert de structuur van de request body — verplichte velden, typen, bereiken. De servicelaag controleert de domeinregels: een datum in het verleden, een afhaalvenster dat na de houdbaarheidsdatum eindigt, een statusovergang die niet mag. Een waarde die niet in een enum voorkomt, is een structurele fout: het verzoek is dan niet te deserialiseren. Een onbekende `category` en een allergeen buiten de EU-lijst leveren dus allebei `400`. Hetzelfde geldt voor een veld dat het request-model niet kent: `ContentNegotiation` staat zonder `ignoreUnknownKeys`, dus een onbekend veld levert `400` op elk endpoint (B-49). De regels die bij een partij zelf horen, controleert de partij: `SurplusProduct.validateForListing()` (§9.10).
+Validatie gebeurt op twee niveaus. Het eerste niveau is de vorm van het verzoek; een fout daarin levert `400`. Een request body die niet te lezen is, komt niet door de deserialisatie: ongeldige JSON, een ontbrekend veld, een waarde die niet in een enum voorkomt, zoals een allergeen buiten de EU-lijst of een onbekende `category` in de body van `POST /products`, en een veld dat het request-model niet kent. `ContentNegotiation` staat namelijk zonder `ignoreUnknownKeys`, dus een onbekend veld levert `400` op elk endpoint (B-49). Daarna controleert `RequestValidation` de inhoud van de body. De afspraak is dat een validator dan een `ValidationException` met `field` gooit, in plaats van `ValidationResult.Invalid` terug te geven; zo noemt het antwoord het veld. Een pad- of queryparameter controleert de route zelf, ook met een `ValidationException`: een id dat geen getal is, en bij zoeken een onbekende `category`, een `maxPrice` die geen bedrag van 0 of meer is en een `minShelfLifeHours` die geen geheel getal van 0 of meer is. De invoer van registreren controleert `RegistrationValidator`, als eerste stap van `RegistrationService` (B-56). Het tweede niveau zijn de domeinregels, in de servicelaag; zij leveren `422` of `409`: een datum in het verleden, een aanbieder die vóór de datum niet open is, een statusovergang die niet mag. De regels die bij een partij zelf horen, controleert de partij: `SurplusProduct.validateForListing()` (§9.10).
 
 De domeinexcepties vormen één hiërarchie in `shared` (GI-5), zodat `StatusPages` ze centraal omzet:
 
-| Exception | Statuscode | Wanneer |
-|-----------|------------|---------|
-| `ValidationException` | 400 | Structurele fout in het verzoek |
-| `DomainRuleException` | 422 | Verzoek is goed gevormd maar schendt een domeinregel |
-| `NotFoundException` | 404 | Opgevraagde bron bestaat niet |
-| `UnauthorizedException` | 401 | Geen of ongeldig token |
-| `ForbiddenException` | 403 | Geldig token, verkeerde rol of geen eigenaar |
-| `IllegalStateTransitionException` | 409 | Statusovergang niet toegestaan |
-| `ConflictException` | 409 | Verzoek botst met wat er al is, bijvoorbeeld een bestaand e-mailadres bij registreren (B-48) |
+| Exception | Statuscode | `code` | Wanneer |
+|-----------|------------|--------|---------|
+| `ValidationException` | 400 | `VALIDATION_ERROR` | Fout in de vorm van het verzoek; `field` noemt het veld als dat aan te wijzen is |
+| `BadRequestException` (Ktor) | 400 | `VALIDATION_ERROR` | De request body is niet te lezen: ongeldige JSON, een ontbrekend veld, een onbekende enumwaarde of een onbekend veld. De melding is altijd "Request is invalid or incomplete", zodat er geen interne klassenamen lekken. `field` is het ontbrekende veld, als kotlinx.serialization dat meldt |
+| `RequestValidationException` (Ktor) | 400 | `VALIDATION_ERROR` | Vangnet: een validator gaf `ValidationResult.Invalid` terug in plaats van een `ValidationException` te gooien. Zonder `field` |
+| `DomainRuleException` | 422 | `DOMAIN_RULE_VIOLATION` | Verzoek is goed gevormd maar schendt een domeinregel; `field` als er een veld aan te wijzen is |
+| `NotFoundException` | 404 | `NOT_FOUND` | Opgevraagde bron bestaat niet |
+| `UnauthorizedException` | 401 | `UNAUTHORIZED` | Geen of ongeldig token, of een mislukte login |
+| `ForbiddenException` | 403 | `FORBIDDEN` | Geldig token, verkeerde rol of geen eigenaar |
+| `IllegalStateTransitionException` | 409 | `CONFLICT` | Statusovergang niet toegestaan |
+| `ConflictException` | 409 | `CONFLICT` | Verzoek botst met wat er al is, bijvoorbeeld een bestaand e-mailadres bij registreren (B-48) |
+| Elke andere exceptie (`Throwable`) | 500 | `INTERNAL_ERROR` | Onverwachte fout. De melding is altijd "An unexpected error occurred"; de stacktrace staat alleen in de log (GI-4, besluit 4.4) |
+
+De kolom `code` geeft de waarde van de enum `ErrorCode` in het foutantwoord. De Android-app reageert op deze waarden, dus ze staan sinds v3.0 in de tabel. De twee excepties van Ktor horen niet bij de hiërarchie in `shared`; `StatusPages` heeft er een eigen regel voor.
 
 `DomainException` is een `abstract` class en geen `sealed` class (B-22). `StatusPages` krijgt per exceptie een eigen regel, het gebruikelijke patroon in Ktor (JetBrains s.r.o., z.j.-k). Daarin zit geen `when` over alle subklassen, en dus ook niets wat een `sealed` class volledig zou kunnen laten controleren. Een partij met status `REMOVED` levert in de publieke API een `NotFoundException` (§9.5).
 
@@ -1496,11 +1533,11 @@ Deze matrix bestaat zodat niemand met een gat het assessment in gaat. Per studen
 | **Feature** | Zoeken en filteren, reserveren, intrekken, ophalen bevestigen |
 | **Gedeelde onderdelen** | GI-2 Applicatie-opzet, GI-4 Foutafhandeling |
 | **Autorisatie** | Schrijft zelf de rolregels voor de endpoints van F2: zoeken is openbaar; reserveren, intrekken en ophalen bevestigen vragen `COLLECTOR`, plus de eigenaarscontrole op de eigen reservering. Het mechanisme komt uit GI-3 |
-| **Eigen klassen** | `Reservation`, `ReservationService`, `ReservationRepository`, `ProductSearchService`, `SearchCriteria`, `ReservationStateMachine`, `ReservationStatus`, `ReservationEvent`, `Page<T>`, `JwtProperties`, en de extension functions `Application.module()`, `configureStatusPages()`, `configureDependencies()`, `configureRequestValidation()` en de overige plugins (GI-2, GI-4) |
-| **Kernmethoden** | `ReservationStateMachine.transition()`, `ProductSearchService.search()`, `ReservationService.reserve()`, `ReservationService.collect()` |
-| **OO-concepten** | Interface (levert het contract `ReservationMaintenance` en implementeert `Repository<T>` uit GI-1 voor de eigen entiteit), generics (`Page<T>`), object declaration (`ReservationStateMachine` als singleton met een `Map` van toegestane overgangen; `ReservationStatus` zelf is een kale enum), polymorfisme via de repository-interface, delegation (`by lazy` op de zoekindex), exception handling |
-| **Kotlin features** | Higher order functions (filterpredicaten als `(ProductView) -> Boolean`), lambda expressions met trailing lambda idiom, `it` als impliciete parameter, named en default arguments in `SearchCriteria`, collections en sequences (`filter`, `sortedBy`, `groupBy`), scope functions (`let`, `run`) |
-| **Eigen testen** | TC-04 filteren op categorie; filteren op maximumprijs gebruikt de afgeprijsde prijs; combinatie van filters werkt als EN; onbekende categorie levert 400; TC-05 reserveren happy flow; dubbele reservering levert 409; reserveren van een verlopen partij levert 409, ook als de status nog LISTED is; zoeken toont geen partij die over de datum is; reserveren na het einde van het afhaalvenster levert 422; van twee gelijktijdige reserveringen slaagt er precies één; TC-06 intrekken door een ander levert 403; statusmachine weigert elke ongeldige overgang; de gereserveerde prijs blijft gelijk nadat de partij in een volgende staffel valt; een reservering ouder dan 24 uur is over tijd, ook binnen het afhaalvenster; TC-11 ophalen bevestigen happy flow; bevestigen van andermans reservering levert 403 |
+| **Eigen klassen** | `Reservation`, `ReservationStatus`, `ReservationEvent`, `ReservationService`, `ReservationMaintenanceService` (implementeert `ReservationMaintenance`), `ReservationStateMachine`, `ReservationRepository` en `ExposedReservationRepository`, `ReservationsTable`, `ProductSearchService`, `SearchCriteria`, `SearchResult`, de DTO's `CreateReservationRequest`, `ReservationResponse` en `SearchResultResponse`, de routes in `ReservationRoutes.kt` (`configureReservationRouting()`) en `SearchRoutes.kt` (`configureSearchRouting()`), `JwtProperties`, `DatabaseSettings`, `ErrorResponse` met `ErrorCode`, en de extension functions `Application.module()`, `configureStatusPages()`, `configureDependencies()`, `configureRequestValidation()` en de overige plugins (GI-2, GI-4) |
+| **Kernmethoden** | `ReservationStateMachine.transition()`, `ProductSearchService.search()`, `ReservationService.reserve()`, `ReservationService.cancel()`, `ReservationService.collect()`, `ReservationService.findOwn()`, `ReservationMaintenanceService.lapseOverdue()` en `ReservationMaintenanceService.lapseActiveFor()` |
+| **OO-concepten** | Interface (levert het contract `ReservationMaintenance` en implementeert `Repository<T>` uit GI-1 voor de eigen entiteit), generics (`ReservationRepository : Repository<Reservation>`), object declaration (`ReservationStateMachine` als singleton met een `Map` van toegestane overgangen; `ReservationStatus` zelf is een kale enum), polymorfisme via de repository-interface, delegation (`by dependencies`, de property delegate van Ktor's DI, in beide routebestanden), data class (`Reservation`, `SearchCriteria`, `SearchResult`, `ReservationStateMachine.To`), exception handling |
+| **Kotlin features** | Higher order functions en lambdas (`filter`, `mapNotNull`, `sortedBy` en `count { }` in de services), de trailing lambda van `dbQuery { }`, `it` als impliciete parameter, named en default arguments (`SearchCriteria` met `null` als standaard, `Reservation` met `ACTIVE`), sequences (`generateSequence` in `StatusPages`), scope functions (`let` bij de queryparameters en de prijzen), extension functions (`Reservation.toResponse()`, `SearchResult.toResponse()`, `Parameters.toSearchCriteria()`, `ApplicationConfig.jwtProperties()` en de functions `Application.configure…()`), coroutines (de `suspend`-services en -repositories, `dbQuery`, en het opnieuw gooien van `CancellationException`) |
+| **Eigen testen** | TC-04 filteren op categorie; filteren op maximumprijs gebruikt de afgeprijsde prijs; combinatie van filters werkt als EN; onbekende categorie levert 400; TC-05 reserveren happy flow; dubbele reservering levert 409; reserveren van een verlopen partij levert 409, ook als de status nog LISTED is; zoeken toont geen partij die over de datum is; reserveren na het einde van het afhaalvenster levert 422; van twee gelijktijdige reserveringen slaagt er precies één; TC-06 intrekken door een ander levert 403; statusmachine weigert elke ongeldige overgang; de gereserveerde prijs blijft gelijk nadat de partij in een volgende staffel valt; een reservering ouder dan 24 uur is over tijd, ook binnen het afhaalvenster; TC-11 ophalen bevestigen happy flow; bevestigen van andermans reservering levert 403; `GET /reservations` toont alleen de eigen reserveringen, zonder token 401, met een andere rol 403; intrekken van een onbekende reservering levert 404, een id dat geen getal is 400, een opgehaalde reservering 409; bevestigen precies op het einde van het afhaalvenster mag, vóór het begin en na het einde levert 422; een reservering die precies op `expiresAt` staat, vervalt; mislukt het opslaan van de reservering, dan gaat de partij terug naar `LISTED`; mislukt het laten vervallen, dan geeft `lapseActiveFor` `false` en gaat `lapseOverdue` door met de rest; een `maxPrice` die geen bedrag is levert 400 met `field`; per statuscode één test van `StatusPages`, en een `500` lekt geen melding, klassenaam of stacktrace; de testen van de configuratie (`JwtProperties`, `DatabaseSettings`) |
 
 ### 11.3 Lonneke van Oers — F3 Prijs, houdbaarheid en statusbewaking
 
@@ -1532,15 +1569,15 @@ Deze matrix bestaat zodat niemand met een gat het assessment in gaat. Per studen
 | Polymorfisme | ✔ | ✔ | ✔ |
 | Encapsulatie | ✔ | | ✔ (`Money`, §11.3) |
 | Generics | ✔ | ✔ | ✔ (`UserRepository` implementeert `Repository<User>`, §11.3) |
-| Object declaration (singleton) | ✔ (companion) | | ✔ |
+| Object declaration (singleton) | ✔ (companion) | ✔ (`ReservationStateMachine`) | ✔ |
 | Delegation | | ✔ | ✔ |
 | Data class | ✔ | ✔ | ✔ |
 | Exception handling | ✔ | ✔ | ✔ |
 | Null safety | ✔ | ✔ | ✔ |
 | Higher order functions / lambdas | ✔ | ✔ | ✔ |
-| Extension functions | ✔ | | ✔ |
+| Extension functions | ✔ | ✔ | ✔ |
 | Scope functions | ✔ | ✔ | ✔ |
-| Coroutines | ✔ | | ✔ |
+| Coroutines | ✔ | ✔ | ✔ |
 | Collections (List/Set/Map) | ✔ | ✔ | ✔ |
 | Named / default arguments | ✔ | ✔ | ✔ |
 
@@ -1585,7 +1622,7 @@ flowchart LR
 | K-2 | F3 → F1 | `PricedProduct` | Alleen lezen | F3 ziet van een partij alleen wat voor de prijs nodig is: categorie, oorspronkelijke prijs en resterende houdbaarheid |
 | K-3 | F2 → F3 | `PriceProvider` | Alleen lezen | F2 vraagt bij het zoeken de prijsopbouw op, om op te filteren en te tonen, en bij het reserveren de actuele prijs, om vast te leggen. F2 kent de afprijsregels niet. Bij een verlopen partij is het antwoord `null` |
 | K-4 | F1 → F3 | `PriceProvider` | Alleen lezen | F1 toont de prijsopbouw in het detail van een partij, maar kent de afprijsregels niet. Nieuw in v1.1, doordat de aparte prijsendpoint is vervallen |
-| K-5 | F3 → F2 | `ReservationMaintenance` | Laten vervallen | De statusbewaking laat alle reserveringen vervallen die over tijd zijn. De beheerder laat de actieve reservering van één partij vervallen voordat hij haar verwijdert (US-09). F2 bepaalt zelf welke reserveringen het zijn en voert het uit via de statusmachine (§9.5) |
+| K-5 | F3 → F2 | `ReservationMaintenance` | Laten vervallen | De statusbewaking laat alle reserveringen vervallen die over tijd zijn. De beheerder laat de actieve reservering van één partij vervallen voordat hij haar verwijdert (US-09). F2 bepaalt zelf welke reserveringen het zijn en voert het uit via de statusmachine (§9.5). Elke reservering vervalt in een eigen savepoint: mislukt het, dan draait alleen het schrijfwerk van die reservering terug. Dat werkt ook binnen de transactie van de aanroeper (`AdminProductService.delete`). Het annuleren van een coroutine wordt nooit afgevangen |
 | K-6 | F3 → F1 | `ProductReader`, `ProductStatusUpdater` | Lezen; de status wijzigen loopt via een apart contract | De statusbewaking vraagt welke partijen over de datum zijn en zet ze op `EXPIRED`. Het beheeroverzicht vraagt partijen op status op. De beheerder zet een partij op `REMOVED` |
 | K-7 | GI-3 → F1 | `SupplierIdLookup` | Alleen lezen | `/auth/login` vraagt bij een account met rol `SUPPLIER` het `supplierId` op, voor het antwoord van besluit 3.8. F1 levert het uit `SUPPLIERS`; GI-3 kent die tabel niet (B-53) |
 
@@ -1610,8 +1647,8 @@ De contracten gebruiken alleen typen uit `shared`. `ProductReader` geeft daarom 
 | `PricedProduct` | `originalPrice`, `category`, `shelfLifeRemaining(clock)` | nee | Wat de prijsberekening nodig heeft, en niet meer |
 | `PriceProvider` | `currentPrice(product): Money?` | nee | De actuele prijs, of `null` bij een verlopen partij |
 | | `priceBreakdown(product): PriceBreakdown?` | nee | Oorspronkelijke prijs, kortingspercentage en actuele prijs, of `null` bij een verlopen partij |
-| `ReservationMaintenance` | `lapseOverdue(now): Int` | ja | Laat elke actieve reservering vervallen die op `now` over tijd is; geeft het aantal |
-| | `lapseActiveFor(productId): Boolean` | ja | Laat de actieve reservering van één partij vervallen, voordat de beheerder haar verwijdert; `false` als dat niet lukt, nooit een exceptie (issue #48) |
+| `ReservationMaintenance` | `lapseOverdue(now): Int` | ja | Laat elke actieve reservering vervallen die op `now` over tijd is (`expires_at` op of vóór `now`); gaat na een mislukte reservering door met de rest en geeft het aantal dat werkelijk is vervallen |
+| | `lapseActiveFor(productId): Boolean` | ja | Laat de actieve reservering van één partij vervallen, voordat de beheerder haar verwijdert; `false` als de partij geen actieve reservering heeft, de partij niet gevonden wordt, de statusmachine de overgang weigert of het schrijven mislukt; nooit een exceptie, behalve het annuleren van de coroutine (issue #48) |
 | `SupplierIdLookup` | `lookupSupplierId(userId): Long?` | ja | Het `supplierId` van het account, of `null` als het account geen aanbieder is (K-7) |
 
 **Waarom `suspend` (B-21).** JDBC blokkeert: de thread die een query uitvoert, staat stil tot het antwoord er is. Ktor verwerkt verzoeken op een klein aantal threads. Daarom schuift de persistentielaag het databasewerk naar een aparte threadpool, met `suspendTransaction` binnen `withContext(Dispatchers.IO)` (GI-1, besluit 1.6). Dat zijn `suspend`-functions, en die kun je alleen aanroepen vanuit een andere `suspend`-function. Een `override` moet dezelfde vorm hebben als de function in de interface; `suspend` toevoegen bij het overschrijven kan niet. Het contract moet het dus al zeggen. `PriceProvider` en de views rekenen alleen en wachten nergens op. Zonder `suspend` zijn ze overal aan te roepen.
@@ -1687,10 +1724,10 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 | # | Besluit | Keuze | Waarom dit een besluit is |
 |---|---------|-------|---------------------------|
 | 2.1 | Dependency injection | Ktor's eigen DI-plugin | Zie ADR-04. |
-| 2.2 | Moduleopbouw | Eén `Application.module()` die per feature een `configureXRouting()` aanroept | Voorkomt dat drie studenten in hetzelfde routingbestand schrijven. |
-| 2.3 | Configuratie | `application.yaml` met omgevingsvariabelen voor het JWT-secret. Onder `jwt` staan `secret` (uit `JWT_SECRET`), `issuer` (`restpartijen-api`), `audience` (`restpartijen-app`) en `validityHours` (`24`). `config` leest ze in als `JwtProperties`; `toString()` toont het secret als `***` | Secrets horen niet in de repository (§16.4). Met een gemaskeerde `toString()` belandt het secret niet per ongeluk in een log (§16.7). Namen afgesproken in het issue over security (B-36). |
+| 2.2 | Moduleopbouw | Eén `Application.module()` die per feature één of meer `configure…Routing()`-functions aanroept, elk met één regel; F2 heeft er twee, `configureReservationRouting()` en `configureSearchRouting()`. De volgorde: configuratie inlezen, `DatabaseFactory.init` met de tabellen, seeddata, plugins (met de periodieke statusbewaking), security, routes | Voorkomt dat drie studenten in hetzelfde routingbestand schrijven. |
+| 2.3 | Configuratie | `application.yaml` met drie secties. Onder `jwt` staan `secret` (uit `JWT_SECRET`), `issuer` (`restpartijen-api`), `audience` (`restpartijen-app`) en `validityHours` (`24`); alle vier zijn verplicht, en `validityHours` is een geheel getal groter dan 0. Onder `database` staan `mode` (uit `DB_MODE`: `memory`, de standaard, of `file`; hoofdletters maken niet uit) en `file` (`./data/restpartijen`); een onbekende `mode` stopt de applicatie. Onder `openFoodFacts` staat `contactEmail` (uit `OFF_CONTACT_EMAIL`, verplicht; §10.3). `config` leest `jwt` in als `JwtProperties` en `database` als `DatabaseSettings`; F1 leest `openFoodFacts` in als `OpenFoodFactsSettings`. `toString()` van `JwtProperties` toont het secret als `***` | Secrets horen niet in de repository (§16.4). Met een gemaskeerde `toString()` belandt het secret niet per ongeluk in een log (§16.7). Namen afgesproken in het issue over security (B-36). |
 | 2.4 | Engine | Netty | Standaardkeuze in de Ktor-projectgenerator; geen reden om af te wijken. |
-| 2.5 | Buildtool | Kotlin Toolchain 0.12.x (gestart op 0.12.0, wrapper nu 0.12.2), één module `jvm/app` met `settings.ktor` | Voorgeschreven door de module (§3.2). We houden de standaardindeling van de toolchain aan: `../server/src` voor productiecode, `../server/test` voor testen en `../server/resources` voor `application.yaml` (JetBrains s.r.o., z.j.-j). De wrapperscripts `kotlin` en `kotlin.bat` staan in de repository, zodat iedereen zonder installatie kan bouwen, ook de assessor. De packages staan als mappen direct onder `../server/src`, zonder `com/restpartijen/api` (§8.3). |
+| 2.5 | Buildtool | Kotlin Toolchain 0.12.x (gestart op 0.12.0, wrapper nu 0.12.2). `project.yaml` in de root van de repository noemt één module, `server`; de module `android` staat er uitgecommentarieerd in, voor periode 2. `../server/module.yaml` maakt van `server` een `jvm/app` met `settings.ktor` | Voorgeschreven door de module (§3.2). We houden de standaardindeling van de toolchain aan: `../server/src` voor productiecode, `../server/test` voor testen en `../server/resources` voor `application.yaml` (JetBrains s.r.o., z.j.-j). De wrapperscripts `kotlin` en `kotlin.bat` staan in de repository, zodat iedereen zonder installatie kan bouwen, ook de assessor. De packages staan als mappen direct onder `../server/src`, zonder `com/restpartijen/api` (§8.3). |
 | 2.6 | Versies van dependencies | Alle versies staan in `../server/module.yaml`; Ktor-artefacten via de BOM van `settings.ktor`. Een catalogus `libs.versions.toml` komt er pas als er een tweede module bij komt (de app in periode 2) | Eén plek voor alle versies voorkomt dat twee studenten dezelfde library in een andere versie toevoegen (JetBrains s.r.o., z.j.-e). Met één module is die ene plek het modulebestand zelf. |
 | 2.7 | Starten | De `main` in `Application.kt` geeft de start door aan `EngineMain` van Netty. Die leest `../server/resources`, en daarin staan de poort en de module `com.restpartijen.api.ApplicationKt.module` | Ktor leest `application.yaml` alleen met de dependency `ktor-server-config-yaml` (JetBrains s.r.o., z.j.-d). De configuratie staat zo vanaf het begin op één plek; het JWT-secret en de schakelaar voor H2 komen er later bij. Uitgevoerd in de startsessie (B-29). |
 
@@ -1741,7 +1778,7 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 |---|---------|-------|---------------------------|
 | 4.1 | Excepties naar statuscodes | Centraal in `StatusPages` | Per route afhandelen zou dezelfde logica drie keer opleveren, met kans op verschillen (JetBrains s.r.o., z.j.-k). |
 | 4.2 | Exceptiehiërarchie | Eén `abstract` class `DomainException` als basis, in `shared` | Een nieuwe exception erft en wordt automatisch correct afgehandeld. `abstract` en niet `sealed`: zie §10.2 (B-22). |
-| 4.3 | Foutantwoord | `{ code, message, field? }` | Één vaste vorm; `field` alleen bij validatiefouten. |
+| 4.3 | Foutantwoord | `{ code, message, field? }`; `code` is een waarde van de enum `ErrorCode` (§10.2) | Één vaste vorm. `field` staat erin bij `400` en `422`, als er een veld aan te wijzen is: ook een `DomainRuleException` kan een veld noemen. |
 | 4.4 | Stacktraces | Nooit in het antwoord, wel in de log | Een stacktrace in een antwoord lekt implementatiedetails. |
 
 **Acceptatiecriteria.**
@@ -1777,7 +1814,7 @@ De docent adviseert om de opzet van de features eerst gezamenlijk uit te werken,
 | 6.4 | Dubbels voor repositories | Fakes, geen mocks. Voor `Repository<T>` is er één generieke `FakeRepository<T>` in `../server/test/testsupport`; `FakeRepositoryTest` laat zien hoe je hem gebruikt | Een fake repository met een `MutableList` is leesbaarder en breekt niet bij elke refactor. Met één generieke fake schrijft niet iedereen een eigen versie (B-33). Mocks worden alleen gebruikt waar gedrag geverifieerd moet worden, zoals de time-out van de externe client. |
 | 6.5 | Tijd in testen | Injecteerbare `kotlin.time.Clock`, nooit rechtstreeks `Clock.System`. Eén uitzondering: een token dat door de JWT-verifier gaat, krijgt `TestClock.fixedNow()`, een klok die één keer de echte tijd leest en daarna stilstaat (B-55) | Zonder vaste klok zijn de afprijsstaffels, het afgeleide afhaalvenster en de statusbewaking niet reproduceerbaar te testen. `Clock` en `Instant` zitten sinds Kotlin 2.3 in de standard library, en de documentatie raadt zelf aan een `Clock` door te geven in plaats van `Clock.System` aan te roepen (JetBrains s.r.o., z.j.-b). Dit is een harde regel, geen voorkeur. De uitzondering bestaat omdat de verifier van java-jwt de verloopdatum tegen de echte tijd controleert; ook dan staat de klok tijdens de test stil (issue #62). |
 | 6.6 | Testdatabase | H2 in-memory, per test leeggemaakt | Elke test start van een bekende toestand; geen volgorde-afhankelijkheid tussen testen. |
-| 6.7 | Plaats van de testen | De map `../server/test` van de module; MockK, `ktor-server-test-host` en `kotlinx-coroutines-test` (voor `runTest` bij `suspend`-contracten) onder `test-dependencies` in `../server/module.yaml` | Dit wijkt af van `../server/src` uit vrijwel elk voorbeeld. Vastleggen voorkomt dat testen op een plek belanden waar de toolchain ze niet vindt (JetBrains s.r.o., z.j.-l). |
+| 6.7 | Plaats van de testen | De map `../server/test` van de module; MockK, `ktor-server-test-host`, `ktor-client-mock` (voor de client van Open Food Facts) en `kotlinx-coroutines-test` (voor `runTest` bij `suspend`-contracten) onder `test-dependencies` in `../server/module.yaml` | Dit wijkt af van `../server/src` uit vrijwel elk voorbeeld. Vastleggen voorkomt dat testen op een plek belanden waar de toolchain ze niet vindt (JetBrains s.r.o., z.j.-l). |
 
 **Wat per laag getest wordt.**
 
@@ -1867,13 +1904,15 @@ Alle invoer wordt gevalideerd voordat zij de domeinlogica bereikt (§10.2): in d
 
 ### 16.6 Afhankelijkheden
 
-De afhankelijkheden worden met versie vastgezet in `../server/module.yaml`, het enige modulebestand van het project (GI-2, besluit 2.6). De Ktor-artefacten krijgen hun versie van de Ktor-BOM die `settings.ktor` aanzet. Er wordt geen automatische scan ingericht; voor een schoolproject zonder productieomgeving is dat niet proportioneel. Het is wel een bekend en bewust geaccepteerd gat.
+De afhankelijkheden worden met versie vastgezet in `../server/module.yaml`, het enige modulebestand van het project (GI-2, besluit 2.6). De Ktor-artefacten krijgen hun versie van de Ktor-BOM die `settings.ktor` aanzet. Naast Kotlin, Ktor, Exposed en H2 (2.4.240) staan daar `logback-classic` 1.5.38 (bijgewerkt voor een CVE in PR #77), `kotlinx-coroutines-core` 1.11.0, `kotlinx-datetime` 0.8.0-0.6.x-compat, de Ktor-client met de engine CIO (§10.3) en de libraries van de wachtwoordhashing (B-34). Voor de testen komen daar `ktor-server-test-host`, `ktor-client-mock`, MockK 1.14.11 en `kotlinx-coroutines-test` 1.11.0 bij. Er wordt geen automatische scan ingericht; voor een schoolproject zonder productieomgeving is dat niet proportioneel. Het is wel een bekend en bewust geaccepteerd gat.
 
 ### 16.7 Logging
 
-Requests worden gelogd via `CallLogging` voor demonstratie en foutzoeken. Wachtwoorden, tokens en de `Authorization`-header worden nooit gelogd.
+Requests worden gelogd via `CallLogging` voor demonstratie en foutzoeken, op niveau INFO. Een regel bevat alleen de statuscode, de methode en het pad, dus wachtwoorden, tokens en de `Authorization`-header worden nooit gelogd. Bij het opstarten logt de applicatie `JwtProperties`, met het secret als `***`. `logback.xml` schrijft naar de console, op niveau INFO.
 
 Daarnaast logt de statusbewaking (B-44). `ExpiryScheduler` heeft een eigen SLF4J-logger en schrijft per run één regel met alleen de twee aantallen uit het rapport. De periodieke lus logt een mislukte run met de exceptie via de logger van de applicatie, zodat de fout zichtbaar is zonder dat de lus stopt (B-41). Geen van beide logt gegevens van een partij of een persoon.
+
+Kan een reservering niet vervallen, omdat het schrijven mislukt, dan logt `ReservationMaintenanceService` een waarschuwing met het id van de reservering en de exceptie (K-5, §12.1). Ook die regel bevat geen persoonsgegevens.
 
 ---
 
@@ -1938,7 +1977,7 @@ Drie tabs met detailschermen daaronder, wat ruim voldoet aan de eis van minimaal
 ### 18.3 Wat de API nu al biedt voor periode 2
 
 - Eén foutmodel voor de hele API (§10.2), zodat de app maar één vorm hoeft af te handelen.
-- `CORS` is geïnstalleerd (ADR-05), zodat de app zonder aanpassing aan de backend kan aansluiten.
+- `CORS` is geïnstalleerd (ADR-05), zodat de app zonder aanpassing aan de backend kan aansluiten. Het staat elke host toe (`anyHost()`), de methoden GET, POST, PUT en DELETE, en de headers `Content-Type` en `Authorization`. `anyHost()` is hier acceptabel, omdat er geen productieomgeving is (§1.6).
 - De prijs wordt server-side berekend, zodat de app geen afprijslogica hoeft te dupliceren.
 - De prijsopbouw staat in het antwoord van de partij zelf, zodat de app voor een lijst of een detailscherm geen extra aanroep per partij nodig heeft.
 - De zoek-endpoint is openbaar, zodat de app aanbod kan tonen voordat de gebruiker inlogt.
