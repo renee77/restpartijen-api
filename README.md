@@ -90,7 +90,7 @@ Set the variables, with the secret you generated above:
 $env:JWT_SECRET = "<your secret>"
 $env:OFF_CONTACT_EMAIL = "you@example.com"
 ```
-(Use a real email address.)
+(Use a real e-mail address.)
 
 Or load them from `.env`:
 
@@ -121,7 +121,7 @@ Set the variables, with the secret you generated above:
 export JWT_SECRET="<your secret>"
 export OFF_CONTACT_EMAIL="you@example.com"
 ```
-(Use a real email address.)
+(Use a real e-mail address.)
 
 Or load them from `.env`:
 
