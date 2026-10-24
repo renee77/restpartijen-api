@@ -1,8 +1,8 @@
-Feature F1: aanbod en productdata. Het model van een partij (`SurplusProduct` met drie soorten), de repository op `ProductsTable`, de implementaties van de contracten `ProductReader`, `ProductStatusUpdater` en `SupplierIdLookup`, en de endpoints onder `/products`.
+Feature F1: offerings and product data. The model of a product (`SurplusProduct` with three kinds), the repository on `ProductsTable`, the implementations of the contracts `ProductReader`, `ProductStatusUpdater` and `SupplierIdLookup`, and the endpoints under `/products`.
 
-De koppeling met Open Food Facts (US-02) en de vertaling van allergenen staan hier ook; de enum `Allergen` zelf staat in `shared`.
+The Open Food Facts integration (US-02) and the translation of allergens live here too; the enum `Allergen` itself lives in `shared`.
 
-De openingstijden van een aanbieder (US-10) horen bij deze package: het model `OpeningHours`, de tabel `supplier_opening_hours`, de endpoints `GET` en `PUT /suppliers/{id}/opening-hours`, en `PickupWindowCalculator`, die het afhaalvenster van een partij uit de openingstijden afleidt.
+The opening hours of a supplier (US-10) belong to this package: the model `OpeningHours`, the table `supplier_opening_hours`, the endpoints `GET` and `PUT /suppliers/{id}/opening-hours`, and `PickupWindowCalculator`, which derives the pickup window of a product from the opening hours.
 
-Eigenaar: Eva
+Owner: Eva
 Feature: F1
