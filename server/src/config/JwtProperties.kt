@@ -7,7 +7,7 @@ import kotlin.time.Duration.Companion.hours
 /**
  * The settings of the `jwt` section in application.yaml.
  *
- * `config` only reads them in; Application.module() copies them into the JwtSettings that security uses.
+ * This package only reads and checks them; Application.module() copies them into the JwtSettings that security uses.
  *
  * @property secret the signing secret from JWT_SECRET, at least 32 bytes.
  * @property issuer the issuer that every token names and every check expects.
@@ -26,8 +26,9 @@ private const val MIN_SECRET_BYTES = 32
 /**
  * Reads the `jwt` section and checks every value.
  *
- * A missing, blank or too short secret, a missing key or a validity that is not a whole number of hours
- * above 0 stops the application with a message that says what to fix. No message contains the secret.
+ * A missing, blank or too short secret, a missing or blank issuer, audience or validityHours, or a validity
+ * that is not a whole number of hours above 0 stops the application with a message that says what to fix.
+ * No message contains the secret.
  */
 fun ApplicationConfig.jwtProperties(): JwtProperties {
     val jwtSecret = propertyOrNull("jwt.secret")?.getString()?.trim()?.ifBlank { null }
