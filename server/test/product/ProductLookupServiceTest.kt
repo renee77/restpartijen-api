@@ -7,6 +7,7 @@ import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.NotFoundException
 import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.MovableClock
+import com.restpartijen.api.testsupport.NUTELLA_BODY
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpHeaders
@@ -283,20 +284,31 @@ class ProductLookupServiceTest {
         assertNull(lookup.name)
     }
 
+    /** A service whose Open Food Facts always answers [status] and [body]. */
     private fun serviceAnswering(status: HttpStatusCode, body: String) = serviceWith(CallCounter(status, body).client)
 
+    /** A service on [client], with [clock] for the caches and the limits. */
     private fun serviceWith(client: OpenFoodFactsClient, clock: Clock = FixedClock(testNow)) =
         ProductLookupService(client, clock)
 
-    // Plays Open Food Facts with one fixed answer and counts how often it was asked.
+    /**
+     * Plays Open Food Facts with one fixed answer and counts how often it was asked.
+     *
+     * @param status the HTTP status of every answer
+     * @param body the JSON body of every answer
+     * @property count how many calls reached Open Food Facts
+     * @property client the OpenFoodFactsClient that counts its calls
+     */
     private class CallCounter(status: HttpStatusCode, body: String) {
         var count = 0
             private set
 
-        val client = openFoodFactsClient(MockEngine {
-            count++
-            respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
-        })
+        val client = openFoodFactsClient(
+            MockEngine {
+                count++
+                respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
+            },
+        )
     }
 
     private companion object {
@@ -306,9 +318,6 @@ class ProductLookupServiceTest {
         const val THIRD_USER = 9L
 
         val nutella = ProductLookup("Nutella", setOf(Allergen.MILK, Allergen.NUTS, Allergen.SOYBEANS), false)
-
-        // Real response of GET /api/v3/product/3017620422003?fields=product_name,allergens_tags, 22 Oct 2026.
-        const val NUTELLA_BODY = """{"code":"3017620422003","errors":[],"product":{"allergens_tags":["en:milk","en:nuts","en:soybeans"],"product_name":"Nutella"},"result":{"id":"product_found","lc_name":"Product found","name":"Product found"},"status":"success","warnings":[]}"""
 
         const val NOT_FOUND_BODY = """{"status":"failure"}"""
     }

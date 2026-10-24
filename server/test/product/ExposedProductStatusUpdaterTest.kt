@@ -20,7 +20,7 @@ class ExposedProductStatusUpdaterTest {
 
     private val updater = ExposedProductStatusUpdater()
 
-    // Stores the products the tests change; its own behaviour is covered by ExposedProductRepositoryTest.
+    /** Stores the products the tests change; its own behaviour is covered by ExposedProductRepositoryTest. */
     private val repository = ExposedProductRepository(FixedClock(testNow))
 
     @Test

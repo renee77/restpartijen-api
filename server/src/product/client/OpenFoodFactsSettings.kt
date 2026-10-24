@@ -2,7 +2,7 @@ package com.restpartijen.api.product.client
 
 import io.ktor.server.config.ApplicationConfig
 
-// One address, no spaces or control characters: it goes into a header, so a line break must never get in.
+/** One address, no spaces or control characters: it goes into a header, so a line break must never get in. */
 private val CONTACT_EMAIL = Regex("""[^\s@]+@[^\s@]+\.[^\s@]+""")
 
 /**

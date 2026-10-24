@@ -5,14 +5,13 @@ import com.restpartijen.api.persistence.SuppliersTable
 import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.product.dto.ProductResponse
+import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.product.repository.ExposedProductRepository
 import com.restpartijen.api.product.repository.ExposedSupplierRepository
-import com.restpartijen.api.product.model.OpeningHours
 import com.restpartijen.api.product.repository.ProductAllergensTable
 import com.restpartijen.api.product.repository.ProductRepository
 import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.product.repository.SupplierRepository
-import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
@@ -34,9 +33,9 @@ import kotlinx.datetime.LocalTime
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
-import kotlin.test.assertTrue
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.time.Clock
 
 /**
@@ -45,24 +44,26 @@ import kotlin.time.Clock
  */
 class PlaceProductRouteTest {
 
-    // Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp.
+    /** Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp. */
     private val tokenClock = FixedClock(Clock.System.now())
 
-    // Fakes by default; the database test passes the Exposed repositories instead.
+    /** Starts the F1 routes with fakes by default; the database test passes the Exposed repositories instead. */
     private fun Application.testApp(
         products: ProductRepository = fakeProductRepository(),
-        suppliers: SupplierRepository = fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId),
+        suppliers: SupplierRepository = fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID),
     ) = productRoutesTestApp(tokenClock, products, suppliers)
 
-    private fun tokenFor(role: Role, userId: Long = supplierUserId) = productToken(role, tokenClock, userId)
+    /** A token for [userId] with [role], made with [tokenClock]. */
+    private fun tokenFor(role: Role, userId: Long = SUPPLIER_USER_ID) = productToken(role, tokenClock, userId)
 
-    // A valid body: best-before three days after testNow. No pickup window: the API derives it (US-10).
+    /** A valid body: best-before three days after testNow. No pickup window: the API derives it (US-10). */
     private val validBody = """
         {"category": "FRESH", "name": "Volkoren brood", "originalPrice": 3.49,
          "bestBeforeAt": "2026-10-04", "quantity": 2,
          "allergens": ["CEREALS_CONTAINING_GLUTEN"]}
     """
 
+    /** Sends POST /api/v1/products with [body], and with [token] as bearer token when it is given. */
     private suspend fun ApplicationTestBuilder.place(body: String = validBody, token: String? = null): HttpResponse =
         client.post("/api/v1/products") {
             token?.let { bearerAuth(it) }
@@ -256,7 +257,7 @@ class PlaceProductRouteTest {
     fun `a supplier that is not open before bestBeforeAt gives 422`() = testApplication {
         // Arrange: open on Saturday only, and the product expires on Thursday 1 October (§5.10)
         val saturday = OpeningHours(DayOfWeek.SATURDAY, opensAt = LocalTime(9, 0), closesAt = LocalTime(18, 0))
-        application { testApp(suppliers = fakeSupplierRepository(aSupplier, supplierUserId, listOf(saturday))) }
+        application { testApp(suppliers = fakeSupplierRepository(aSupplier, SUPPLIER_USER_ID, listOf(saturday))) }
         val body = validBody.replace("\"2026-10-04\"", "\"2026-10-01\"")
 
         // Act
@@ -303,7 +304,11 @@ class PlaceProductRouteTest {
     fun `the price in euros is stored in cents`() = testApplication {
         // Arrange: a real database with a supplier, and the Exposed repositories behind the service
         createEmptyTestDatabase(
-            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, SupplierOpeningHoursTable,
+            UsersTable,
+            SuppliersTable,
+            ProductsTable,
+            ProductAllergensTable,
+            SupplierOpeningHoursTable,
         )
         val userId = insertUser(Role.SUPPLIER)
         // A supplier always has opening hours (US-10); without them the product gets no pickup window.

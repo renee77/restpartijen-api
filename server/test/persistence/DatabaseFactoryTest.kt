@@ -12,11 +12,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+/** File mode of the database: the data must survive a restart. */
 class DatabaseFactoryTest {
 
-    // A fresh temporary folder per test, so the test never touches the real data/ folder.
+    /** A fresh temporary folder per test, so the test never touches the real data/ folder. */
     private val tempDir = createTempDirectory("restpartijen-test")
 
+    /** Deletes the temporary folder with its database files after every test. */
     @AfterTest
     fun removeTempDir() {
         tempDir.toFile().deleteRecursively()
@@ -27,7 +29,7 @@ class DatabaseFactoryTest {
         // Arrange
         val settings = DatabaseSettings(
             mode = DbMode.FILE,
-            filePath = tempDir.resolve("testdb").toString()
+            filePath = tempDir.resolve("testdb").toString(),
         )
         DatabaseFactory.init(settings, TestTable)
         transaction {

@@ -5,16 +5,21 @@ import com.restpartijen.api.persistence.Repository
 /**
  * In-memory Repository for tests: shows the interface works without a database (E3).
  * Deleting removes the item; soft-delete is left to the real implementations.
+ *
+ * @param T the stored item type.
+ * @param initialItems the items the fake starts with.
+ * @property idOf reads the id of an item.
+ * @property withId returns a copy of an item with the given id, as the database would on create.
  */
 class FakeRepository<T>(
     private val idOf: (T) -> Long,
     private val withId: (T, Long) -> T,
-    initialItems: List<T> = emptyList()
+    initialItems: List<T> = emptyList(),
 ) : Repository<T> {
 
     private val items = initialItems.toMutableList()
 
-    // Continue after the highest id already present, like an auto-increment column.
+    /** The id for the next create: after the highest id already present, like an auto-increment column. */
     private var nextId = (initialItems.maxOfOrNull(idOf) ?: 0L) + 1
 
     override suspend fun findById(id: Long): T? = items.find { idOf(it) == id }

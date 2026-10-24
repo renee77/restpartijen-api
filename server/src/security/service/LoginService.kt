@@ -2,9 +2,9 @@ package com.restpartijen.api.security.service
 
 import com.restpartijen.api.security.dto.LoginResponse
 import com.restpartijen.api.security.repository.UserRepository
-import com.restpartijen.api.shared.UnauthorizedException
-import com.restpartijen.api.shared.SupplierIdLookup
 import com.restpartijen.api.shared.Role
+import com.restpartijen.api.shared.SupplierIdLookup
+import com.restpartijen.api.shared.UnauthorizedException
 
 /**
  * Checks a user's credentials and issues a JWT (decision 3.8).
@@ -12,26 +12,31 @@ import com.restpartijen.api.shared.Role
  * An unknown email and a wrong password give exactly the same error,
  * so a caller cannot use login to find out which emails are registered.
  *
- * @param userRepository used to look up the user by email
- * @param passwordHasher verifies the plain password against the stored Argon2id hash
- * @param jwtConfig builds the signed token; the clock and validity come from its settings
+ * @property userRepository used to look up the user by email
+ * @property passwordHasher verifies the plain password against the stored Argon2id hash
+ * @property jwtConfig builds the signed token with its own clock and the validity from its settings
+ * @property supplierIdLookup finds the supplier id of a SUPPLIER user (A15)
  */
 class LoginService(
     private val userRepository: UserRepository,
     private val passwordHasher: PasswordHasher,
     private val jwtConfig: JwtConfig,
-    private val supplierIdLookup: SupplierIdLookup
-    ) {
+    private val supplierIdLookup: SupplierIdLookup,
+) {
     companion object {
-        // One shared message for every failed login. Never make this depend on whether the email exists, or the error would leak that information.
+        /**
+         * One shared message for every failed login. Never make this depend on whether the email exists, or the
+         * error would leak that information.
+         */
         const val INVALID_CREDENTIALS = "Invalid email or password"
     }
 
     /**
      * Logs a user in.
      *
-     * @return the token and the role of the user (the role is also in the token,
-     *         but the app can show the right screens without decoding it)
+     * @return the token, the role of the user (the role is also in the token,
+     *         but the app can show the right screens without decoding it) and,
+     *         for a supplier, the supplier id
      * @throws UnauthorizedException when the email is unknown, the user is removed,
      *         or the password is wrong (all three give the same message)
      */

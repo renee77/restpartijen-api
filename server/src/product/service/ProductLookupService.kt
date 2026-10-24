@@ -8,14 +8,19 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
 
-// Allergens on Open Food Facts rarely change; after a day a correction there still comes through
-// (decision Eva, 22 Oct).
+/**
+ * How long a found product is remembered. Allergens on Open Food Facts rarely change; after a day a correction
+ * there still comes through (decision Eva, 22 Oct).
+ */
 private val FOUND_TIME_TO_LIVE = 24.hours
 
-// Short, because someone may add the product to Open Food Facts; long enough to absorb retries (decision Eva, 22 Oct).
+/**
+ * How long an unknown barcode is remembered. Short, because someone may add the product to Open Food Facts;
+ * long enough to absorb retries (decision Eva, 22 Oct).
+ */
 private val NOT_FOUND_TIME_TO_LIVE = 60.seconds
 
-// Enough for every barcode in a demo or a busy day, small enough to never fill the memory.
+/** The most barcodes each cache holds: enough for a demo or a busy day, small enough to never fill the memory. */
 private const val MAX_BARCODES = 1_000
 
 /**
@@ -25,18 +30,20 @@ private const val MAX_BARCODES = 1_000
  * The order keeps calls to Open Food Facts rare: a found product (24 hours), then a known unknown barcode
  * (60 seconds), then the limit of 10 per minute and 5 per supplier, and only then the call itself.
  *
- * @param openFoodFacts fetches the name and allergen tags for a barcode (§10.3)
+ * @property openFoodFacts fetches the name and allergen tags for a barcode (§10.3)
  * @param clock decides when a cached answer expires and when a call leaves the limit window (GI-6)
  */
-class ProductLookupService(
-    private val openFoodFacts: OpenFoodFactsClient,
-    clock: Clock,
-) {
+class ProductLookupService(private val openFoodFacts: OpenFoodFactsClient, clock: Clock) {
+    /** Suggestions for barcodes Open Food Facts knows, remembered for [FOUND_TIME_TO_LIVE]. */
     private val found = ExpiringCache<ProductLookup>(clock, FOUND_TIME_TO_LIVE, MAX_BARCODES)
 
-    // Nothing to store but the fact that the barcode is unknown.
+    /**
+     * Barcodes Open Food Facts does not know, remembered for [NOT_FOUND_TIME_TO_LIVE].
+     * Nothing to store but the fact that the barcode is unknown.
+     */
     private val notFound = ExpiringCache<Unit>(clock, NOT_FOUND_TIME_TO_LIVE, MAX_BARCODES)
 
+    /** Keeps the calls to Open Food Facts within the limits per minute. */
     private val rateLimiter = OpenFoodFactsRateLimiter(clock)
 
     /**
@@ -63,17 +70,20 @@ class ProductLookupService(
                 found.put(barcode, lookup)
                 lookup
             }
+
             // Only briefly remembered: someone may add the product to Open Food Facts later.
             LookupResult.NotFound -> {
                 notFound.put(barcode, Unit)
                 throw NotFoundException(NOT_FOUND_MESSAGE)
             }
+
             // Not cached, or a time-out or rate limit would stick.
             LookupResult.Unavailable -> ProductLookup.MANUAL_ENTRY
         }
     }
 
     private companion object {
+        /** The 404 message for an unknown barcode, the same whether it came from the cache or from Open Food Facts. */
         const val NOT_FOUND_MESSAGE = "No product found for this barcode"
     }
 }

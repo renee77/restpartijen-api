@@ -9,6 +9,7 @@ import io.ktor.server.testing.testApplication
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+/** The real module() registers the F2 routes: a missing route would give 404. */
 class ReservationModuleTest {
 
     @Test

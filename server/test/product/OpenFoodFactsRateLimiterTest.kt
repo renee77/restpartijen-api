@@ -131,7 +131,7 @@ class OpenFoodFactsRateLimiterTest {
         assertTrue(info.formattedMessage.contains("3 refused"), info.formattedMessage)
     }
 
-    // Collects what the limiter logs during one test; detached afterwards so tests do not see each other's logs.
+    /** Collects what the limiter logs during one test; detached afterwards so tests do not see each other's logs. */
     private fun captureLogEvents(): ListAppender<ILoggingEvent> {
         val logger = LoggerFactory.getLogger(OpenFoodFactsRateLimiter::class.java) as Logger
         return ListAppender<ILoggingEvent>().apply { start() }.also {
@@ -140,8 +140,10 @@ class OpenFoodFactsRateLimiterTest {
         }
     }
 
+    /** The appenders this test attached, so [detachAppenders] can remove them. */
     private val attached = mutableListOf<ListAppender<ILoggingEvent>>()
 
+    /** Removes the appenders of this test from the logger after each test. */
     @AfterTest
     fun detachAppenders() {
         val logger = LoggerFactory.getLogger(OpenFoodFactsRateLimiter::class.java) as Logger

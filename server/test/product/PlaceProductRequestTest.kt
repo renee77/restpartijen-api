@@ -9,7 +9,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration.Companion.days
 import kotlin.time.Instant
 
 /**
@@ -18,9 +17,8 @@ import kotlin.time.Instant
  */
 class PlaceProductRequestTest {
 
-    private fun aRequest(
-        originalPrice: Double = 3.49,
-    ) = PlaceProductRequest(
+    /** A valid request; a test passes only the price it is about. */
+    private fun aRequest(originalPrice: Double = 3.49) = PlaceProductRequest(
         category = ProductCategory.FRESH,
         name = "Volkoren brood",
         originalPrice = originalPrice,

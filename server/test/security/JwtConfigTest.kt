@@ -8,12 +8,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Instant
 
+/** JwtConfig.createToken: the token carries the user id and the role, and nothing else of our own. */
 class JwtConfigTest {
     @Test
     fun `token only contains userId and role`() {
         // Arrange: use a fixed clock for predictable token timestamps
         val testClock = FixedClock(
-            Instant.parse("2026-10-20T12:00:00Z")
+            Instant.parse("2026-10-20T12:00:00Z"),
         )
         // Arrange the configuration with default test settings and a test clock
         val jwtConfig = JwtConfig(TestJwtSettings.default, testClock)

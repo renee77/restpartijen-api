@@ -4,6 +4,8 @@ import kotlin.math.roundToLong
 /**
  * An amount in whole euro cents (decision ADR-07, B-13).
  * Create it only through fromCents or fromEuros.
+ *
+ * @property cents the amount in whole euro cents; never negative
  */
 @JvmInline
 value class Money private constructor(val cents: Long) {
@@ -11,7 +13,7 @@ value class Money private constructor(val cents: Long) {
         require(cents >= 0) { "An amount cannot be negative" }
     }
 
-    /** Turning the given double into cents */
+    /** The amount in euros, for a response that shows prices in euros (B-25). */
     fun toEuros(): Double = cents / 100.0
 
     /**

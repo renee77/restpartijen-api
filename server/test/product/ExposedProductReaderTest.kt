@@ -16,10 +16,10 @@ import kotlin.time.Duration.Companion.days
  */
 class ExposedProductReaderTest {
 
-    // Stores the products the tests read; its own behaviour is covered by ExposedProductRepositoryTest.
+    /** Stores the products the tests read; its own behaviour is covered by ExposedProductRepositoryTest. */
     private val repository = ExposedProductRepository(FixedClock(testNow))
 
-    // The reader passes findById on to the repository, so both promise exactly the same.
+    /** The reader passes findById on to the repository, so both promise exactly the same. */
     private val reader = ExposedProductReader(repository)
 
     @Test

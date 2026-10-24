@@ -1,4 +1,4 @@
-De plek waar alle instellingen die van buiten de applicatie komen worden vastgelegd en omgezet naar een Kotlin object.
-Deze objecten worden op andere locaties in de applicatie gebruikt.
-Gedeelde package (GI-2)
-Verantwoordelijk: Stefan
+The place where every setting that comes from outside the application is captured and turned into a Kotlin object.
+These objects are used elsewhere in the application.
+Shared package (GI-2)
+Responsible: Stefan

@@ -1,19 +1,23 @@
 package com.restpartijen.api.security.routes
 
 import com.restpartijen.api.security.dto.LoginRequest
-import com.restpartijen.api.security.service.RegistrationService
+import com.restpartijen.api.security.dto.RegisterRequest
 import com.restpartijen.api.security.dto.toResponse
+import com.restpartijen.api.security.service.LoginService
+import com.restpartijen.api.security.service.RegistrationService
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
-import io.ktor.server.routing.post
-import io.ktor.server.routing.routing
-import com.restpartijen.api.security.dto.RegisterRequest
-import com.restpartijen.api.security.service.LoginService
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
+import io.ktor.server.routing.post
+import io.ktor.server.routing.routing
 
-fun Application.configureAuthRouting () {
+/**
+ * GI-3 routes, open without a token: registering a collector account (201 with the new user)
+ * and logging in (200 with a token).
+ */
+fun Application.configureAuthRouting() {
     val service: RegistrationService by dependencies
     val loginService: LoginService by dependencies
     routing {
@@ -23,12 +27,12 @@ fun Application.configureAuthRouting () {
             val user = service.register(
                 email = request.email,
                 password = request.password,
-                display_name = request.displayName
+                displayName = request.displayName,
             )
 
             call.respond(
                 HttpStatusCode.Created,
-                user.toResponse()
+                user.toResponse(),
             )
         }
     }

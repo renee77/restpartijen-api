@@ -11,10 +11,12 @@ import kotlin.test.assertTrue
 import kotlin.time.Clock
 import kotlin.time.Instant
 
+/** ExpiryScheduler with fakes behind the contracts (US-08): the order of the steps, the clock and the report. */
 class ExpirySchedulerTest {
 
-    // Counts how often the clock is asked for the time
+    /** Counts how often the clock is asked for the time; it always answers the same moment. */
     private class CountingClock : Clock {
+        /** How often [now] was called. */
         var calls = 0
         override fun now(): Instant {
             calls++

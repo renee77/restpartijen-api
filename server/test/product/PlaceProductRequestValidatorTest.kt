@@ -9,7 +9,6 @@ import kotlinx.datetime.LocalDate
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.time.Duration.Companion.days
 
 /**
  * The shape check of POST /api/v1/products, registered in RequestValidation (§10.2, ADR-05, issue #46).
@@ -19,6 +18,7 @@ import kotlin.time.Duration.Companion.days
  */
 class PlaceProductRequestValidatorTest {
 
+    /** A valid request; a test passes only the values it is about. */
     private fun aRequest(
         name: String = "Volkoren brood",
         barcode: String? = null,
@@ -33,7 +33,7 @@ class PlaceProductRequestValidatorTest {
         barcode = barcode,
     )
 
-    // Runs the validator and returns the field it names; fails the test when nothing is thrown.
+    /** Runs the validator and returns the field it names; fails the test when nothing is thrown. */
     private fun fieldOfError(request: PlaceProductRequest): String? =
         assertFailsWith<ValidationException> { validatePlaceProductRequest(request) }.field
 

@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+/** ReservationStateMachine against the table in §9.5: the four allowed transitions and nothing else. */
 class ReservationStateMachineTest {
 
     @Test

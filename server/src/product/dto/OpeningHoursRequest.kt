@@ -12,13 +12,13 @@ import kotlinx.serialization.Serializable
  *
  * Typed fields instead of strings, like LocalDate and Allergen in PlaceProductRequest: an unknown day
  * or a time that is not ISO 8601 cannot be read, so the JSON reader already gives a 400.
+ *
+ * @property day the day of the week, such as MONDAY
+ * @property opensAt the local opening time, in whole minutes
+ * @property closesAt the local closing time, in whole minutes
  */
 @Serializable
-data class OpeningHoursRequest(
-    val day: DayOfWeek,
-    val opensAt: LocalTime,
-    val closesAt: LocalTime,
-)
+data class OpeningHoursRequest(val day: DayOfWeek, val opensAt: LocalTime, val closesAt: LocalTime)
 
 /**
  * Turns the request into a command; it only translates. The service builds OpeningHours from it after the
@@ -37,6 +37,7 @@ fun requireWholeMinutes(request: OpeningHoursRequest) {
     requireWholeMinute(request.closesAt, field = "closesAt")
 }
 
+/** Refuses [time] when it has seconds or nanoseconds, with a ValidationException (400) that names [field]. */
 private fun requireWholeMinute(time: LocalTime, field: String) {
     if (time.second != 0 || time.nanosecond != 0) {
         throw ValidationException("$field must be whole minutes, for example \"08:00\"", field = field)

@@ -42,35 +42,37 @@ import kotlin.time.Clock
  */
 class UpdateProductRouteTest {
 
-    // Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp.
+    /** Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp. */
     private val tokenClock = FixedClock(Clock.System.now())
 
-    private fun tokenFor(role: Role, userId: Long = supplierUserId) = productToken(role, tokenClock, userId)
+    /** A token for [userId] with [role], made with [tokenClock]. */
+    private fun tokenFor(role: Role, userId: Long = SUPPLIER_USER_ID) = productToken(role, tokenClock, userId)
 
-    // A valid body: every field of POST except category, best-before three days after testNow.
+    /** A valid body: every field of POST except category, best-before three days after testNow. */
     private val validBody = """
         {"name": "Wit brood", "originalPrice": 2.49,
          "bestBeforeAt": "2026-10-04", "quantity": 5,
          "allergens": ["MILK"]}
     """
 
+    /** Sends PUT /api/v1/products/[id] with [body], and with [token] as bearer token when it is given. */
     private suspend fun ApplicationTestBuilder.update(
         id: String,
         body: String = validBody,
         token: String? = null,
-    ): HttpResponse =
-        client.put("/api/v1/products/$id") {
-            token?.let { bearerAuth(it) }
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
+    ): HttpResponse = client.put("/api/v1/products/$id") {
+        token?.let { bearerAuth(it) }
+        contentType(ContentType.Application.Json)
+        setBody(body)
+    }
 
     @Test
     fun `a supplier updates an own product and gets 200 with the updated product`() = testApplication {
         // Arrange: TC-03
         application {
             productRoutesTestApp(
-                tokenClock, fakeProductRepository(aProduct(id = 1, category = ProductCategory.FROZEN)),
+                tokenClock,
+                fakeProductRepository(aProduct(id = 1, category = ProductCategory.FROZEN)),
             )
         }
 
@@ -91,7 +93,11 @@ class UpdateProductRouteTest {
     fun `the update reaches the database, with the price in cents`() = testApplication {
         // Arrange: a real database and the Exposed repositories behind the service
         createEmptyTestDatabase(
-            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, SupplierOpeningHoursTable,
+            UsersTable,
+            SuppliersTable,
+            ProductsTable,
+            ProductAllergensTable,
+            SupplierOpeningHoursTable,
         )
         val userId = insertUser(Role.SUPPLIER)
         val supplierId = insertSupplier(userId)
@@ -132,7 +138,9 @@ class UpdateProductRouteTest {
 
         // Act
         val response = update(
-            "1", body = validBody.replace("\"Wit brood\"", "\"\""), token = tokenFor(Role.SUPPLIER),
+            "1",
+            body = validBody.replace("\"Wit brood\"", "\"\""),
+            token = tokenFor(Role.SUPPLIER),
         )
 
         // Assert

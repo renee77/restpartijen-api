@@ -11,8 +11,10 @@ import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+/** requireRole and currentUser() on the test app: unknown roles, allowed and refused roles, and the current user. */
 class RoleAuthTests {
-    // Test with a token that has a role not defined in the Role enum. This should also result in a 401 Unauthorized response.
+    // Test with a token that has a role not defined in the Role enum. This should also result in a 401 Unauthorized
+    // response.
     @Test
     fun `token with invalid role gets 401`() = testApplication {
         // Arrange: set up the test application with security and a protected route
@@ -29,7 +31,6 @@ class RoleAuthTests {
         val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
         assertEquals("Authentication required", error.message)
     }
-
 
     // Happy path -> Someone with a valid role for the route get access (in this case, a collector).
     @Test
@@ -62,16 +63,15 @@ class RoleAuthTests {
             role = Role.ADMIN,
         )
 
-        // Act: Make a GET request to the role-protected route with a valid token that has the required role
+        // Act: Make a GET request to the role-protected route with a valid token that lacks the required role
         val response = client.get("/test/role-protected-collector") {
             bearerAuth(token)
         }
 
-        // Assert. Verify that the decoded token contains the expected userId and role.
+        // Assert: the error body says that the role is not allowed (the 403 message)
         val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText()).message
         assertEquals("Insufficient role", error)
     }
-
 
     // Happy path -> Current user information can be retrieved from a valid token.
     @Test

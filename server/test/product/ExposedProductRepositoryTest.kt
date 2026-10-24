@@ -1,10 +1,10 @@
 package com.restpartijen.api.product
 
+import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.product.model.AmbientProduct
 import com.restpartijen.api.product.model.FreshProduct
 import com.restpartijen.api.product.model.FrozenProduct
 import com.restpartijen.api.product.repository.ExposedProductRepository
-import com.restpartijen.api.persistence.ProductsTable
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
@@ -113,9 +113,11 @@ class ExposedProductRepositoryTest {
         // Arrange
         val supplier = emptyDatabaseWithSupplier()
         // create() is part of the Arrange here: it only fills the database for findAll.
-        val bread = repository.create(aProduct(supplier = supplier, allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN)))
+        val bread = repository.create(
+            aProduct(supplier = supplier, allergens = setOf(Allergen.CEREALS_CONTAINING_GLUTEN)),
+        )
         val spinach = repository.create(
-            aProduct(supplier = supplier, category = ProductCategory.FROZEN, name = "Diepvries spinazie")
+            aProduct(supplier = supplier, category = ProductCategory.FROZEN, name = "Diepvries spinazie"),
         )
 
         // Act
@@ -143,7 +145,7 @@ class ExposedProductRepositoryTest {
         val supplier = emptyDatabaseWithSupplier()
         val bread = repository.create(aProduct(supplier = supplier))
         val spinach = repository.create(
-            aProduct(supplier = supplier, category = ProductCategory.FROZEN, name = "Diepvries spinazie")
+            aProduct(supplier = supplier, category = ProductCategory.FROZEN, name = "Diepvries spinazie"),
         )
         val changedSpinach = aProduct(
             id = spinach.id,
@@ -212,7 +214,7 @@ class ExposedProductRepositoryTest {
         val supplier = emptyDatabaseWithSupplier()
         val bread = repository.create(aProduct(supplier = supplier))
         val spinach = repository.create(
-            aProduct(supplier = supplier, category = ProductCategory.FROZEN, name = "Diepvries spinazie")
+            aProduct(supplier = supplier, category = ProductCategory.FROZEN, name = "Diepvries spinazie"),
         )
 
         // Act
@@ -287,6 +289,7 @@ class ExposedProductRepositoryTest {
         assertDeleteRefused(ProductStatus.EXPIRED)
     }
 
+    /** Checks that delete refuses a stored product with [status] and leaves that status in the table. */
     private suspend fun assertDeleteRefused(status: ProductStatus) {
         // Arrange: create always stores LISTED, so the status is set in the table directly
         val supplier = emptyDatabaseWithSupplier()
@@ -335,6 +338,7 @@ class ExposedProductRepositoryTest {
         assertUpdateRefused(ProductStatus.EXPIRED)
     }
 
+    /** Checks that update refuses a stored product with [status] and leaves the product unchanged. */
     private suspend fun assertUpdateRefused(status: ProductStatus) {
         // Arrange: create always stores LISTED, so the status is set in the table directly
         val supplier = emptyDatabaseWithSupplier()
@@ -360,7 +364,7 @@ class ExposedProductRepositoryTest {
         val bread = repository.create(aProduct(supplier = supplier))
         repository.create(aProduct(supplier = otherSupplier, name = "Croissant"))
         val spinach = repository.create(
-            aProduct(supplier = supplier, category = ProductCategory.FROZEN, name = "Diepvries spinazie")
+            aProduct(supplier = supplier, category = ProductCategory.FROZEN, name = "Diepvries spinazie"),
         )
 
         // Act

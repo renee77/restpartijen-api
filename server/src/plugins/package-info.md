@@ -1,4 +1,4 @@
-Hier worden de Ktor plugins geinstalleerd. De plugins gelden voor elk verzoek. Denk aan error verwerking, omzetter naar json.
+The Ktor plugins are installed here. The plugins apply to every request, for example error handling and the conversion to JSON.
 
-Gedeelde package (GI-2, GI-4)
-Verantwoordelijk: Stefan
+Shared package (GI-2, GI-4)
+Responsible: Stefan

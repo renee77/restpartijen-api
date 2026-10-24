@@ -2,11 +2,11 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.plugins.ErrorCode
 import com.restpartijen.api.plugins.ErrorResponse
-import com.restpartijen.api.product.client.OpenFoodFactsClient
 import com.restpartijen.api.product.dto.ProductLookupResponse
 import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
+import com.restpartijen.api.testsupport.NUTELLA_BODY
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.bearerAuth
@@ -31,23 +31,27 @@ import kotlin.time.Clock
  */
 class LookupProductRouteTest {
 
-    // Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp.
+    /** Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp. */
     private val tokenClock = FixedClock(Clock.System.now())
 
+    /** A token for [role], made with [tokenClock]. */
     private fun tokenFor(role: Role) = productToken(role, tokenClock)
 
+    /** Sends GET /api/v1/products/lookup/[barcode], by default with a supplier token. */
     private suspend fun ApplicationTestBuilder.lookup(
         barcode: String,
         token: String? = tokenFor(Role.SUPPLIER),
-    ): HttpResponse =
-        client.get("/api/v1/products/lookup/$barcode") { token?.let { bearerAuth(it) } }
+    ): HttpResponse = client.get("/api/v1/products/lookup/$barcode") { token?.let { bearerAuth(it) } }
 
+    /** Starts the F1 routes with Open Food Facts played by a MockEngine that always answers [status] and [body]. */
     private fun ApplicationTestBuilder.appWithOpenFoodFacts(status: HttpStatusCode, body: String) = application {
         productRoutesTestApp(
             tokenClock,
-            openFoodFacts = openFoodFactsClient(MockEngine {
-                respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
-            }),
+            openFoodFacts = openFoodFactsClient(
+                MockEngine {
+                    respond(body, status, headersOf(HttpHeaders.ContentType, "application/json"))
+                },
+            ),
         )
     }
 
@@ -126,7 +130,10 @@ class LookupProductRouteTest {
 
         // Assert: only supplier 7 reached its limit, so the route passes on the user of each token
         assertEquals(true, Json.decodeFromString<ProductLookupResponse>(sameSupplier.bodyAsText()).manualEntryRequired)
-        assertEquals(false, Json.decodeFromString<ProductLookupResponse>(otherSupplier.bodyAsText()).manualEntryRequired)
+        assertEquals(
+            false,
+            Json.decodeFromString<ProductLookupResponse>(otherSupplier.bodyAsText()).manualEntryRequired,
+        )
     }
 
     @Test
@@ -218,8 +225,5 @@ class LookupProductRouteTest {
 
     private companion object {
         const val NUTELLA_BARCODE = "3017620422003"
-
-        // Real response of GET /api/v3/product/3017620422003?fields=product_name,allergens_tags, 22 Oct 2026.
-        const val NUTELLA_BODY = """{"code":"3017620422003","errors":[],"product":{"allergens_tags":["en:milk","en:nuts","en:soybeans"],"product_name":"Nutella"},"result":{"id":"product_found","lc_name":"Product found","name":"Product found"},"status":"success","warnings":[]}"""
     }
 }

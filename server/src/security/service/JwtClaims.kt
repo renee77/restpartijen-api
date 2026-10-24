@@ -5,7 +5,10 @@ import com.restpartijen.api.shared.Role
 
 /** The claim names in our tokens and the one way to read them back (GI-3, decision 3.3). */
 object JwtClaims {
+    /** Claim with the id of the user the token belongs to. */
     const val USER_ID = "userId"
+
+    /** Claim with the name of the user's Role. */
     const val ROLE = "role"
 
     /** The user id in the token, or null when the claim is missing. */

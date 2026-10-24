@@ -1,12 +1,12 @@
-Feature F3: prijs, houdbaarheid en statusbewaking, plus de beheerdersendpoints.
+Feature F3: price, shelf life and status monitoring, plus the admin endpoints.
 
-- `model`: de afprijsstaffels (`DiscountPolicy` met drie implementaties, `DiscountTier`, `DiscountPolicyResolver`) en `MaintenanceReport`.
-- `service`: `PricingService` (implementeert `PriceProvider`), `ExpiryScheduler` (de statusbewaking, US-08) en `AdminProductService` (beheeroverzicht en verwijderen als beheerder, US-09).
-- `routes`: `configurePricingRouting()` met `GET /admin/products`, `DELETE /admin/products/{id}` en `POST /admin/maintenance/expire`.
+- `model`: the discount tiers (`DiscountPolicy` with three implementations, `DiscountTier`, `DiscountPolicyResolver`) and `MaintenanceReport`.
+- `service`: `PricingService` (implements `PriceProvider`), `ExpiryScheduler` (the status monitoring, US-08) and `AdminProductService` (admin overview and removal by an admin, US-09).
+- `routes`: `configurePricingRouting()` with `GET /admin/products`, `DELETE /admin/products/{id}` and `POST /admin/maintenance/expire`.
 - `dto`: `AdminProductResponse`.
-- `MaintenanceLoop.kt`: de periodieke run van de statusbewaking (B-41).
+- `MaintenanceLoop.kt`: the periodic run of the status monitoring (B-41).
 
-Verwijderen als beheerder gebruikt twee contracten achter elkaar, in één transactie: eerst de reservering laten vervallen via `ReservationMaintenance`, daarna de partij op `REMOVED` zetten via `ProductStatusUpdater` (§5.9, B-38, B-39).
+Removal by an admin uses two contracts in a row, in one transaction: first the reservation lapses through `ReservationMaintenance`, then the product is set to `REMOVED` through `ProductStatusUpdater` (§5.9, B-38, B-39).
 
-Eigenaar: Lonneke
+Owner: Lonneke
 Feature: F3

@@ -32,16 +32,20 @@ import kotlin.time.Clock
  */
 class DeleteProductRouteTest {
 
-    // Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp.
+    /** Fixed during the test (GI-6, decision 6.5), but at the real "now" (#62); see productRoutesTestApp. */
     private val tokenClock = FixedClock(Clock.System.now())
 
-    private fun tokenFor(role: Role, userId: Long = supplierUserId) = productToken(role, tokenClock, userId)
+    /** A token for [userId] with [role], made with [tokenClock]. */
+    private fun tokenFor(role: Role, userId: Long = SUPPLIER_USER_ID) = productToken(role, tokenClock, userId)
 
+    /** Sends DELETE /api/v1/products/[id], with [token] as bearer token when it is given. */
     private suspend fun ApplicationTestBuilder.deleteProduct(id: String, token: String? = null): HttpResponse =
         client.delete("/api/v1/products/$id") { token?.let { bearerAuth(it) } }
 
-    // A real database with one supplier and the Exposed repositories, for the tests that check the stored status.
-    // Returns the user id of the supplier and the id of its LISTED product.
+    /**
+     * A real database with one supplier and the Exposed repositories, for the tests that check the stored status.
+     * Returns the user id of the supplier and the id of its LISTED product.
+     */
     private fun databaseWithProduct(): Pair<Long, Long> {
         createEmptyTestDatabase(UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable)
         val userId = insertUser(Role.SUPPLIER)
@@ -55,7 +59,9 @@ class DeleteProductRouteTest {
         val (userId, productId) = databaseWithProduct()
         application {
             productRoutesTestApp(
-                tokenClock, ExposedProductRepository(FixedClock(testNow)), ExposedSupplierRepository(),
+                tokenClock,
+                ExposedProductRepository(FixedClock(testNow)),
+                ExposedSupplierRepository(),
             )
         }
 
@@ -74,7 +80,9 @@ class DeleteProductRouteTest {
         setStatus(productId, ProductStatus.REMOVED)
         application {
             productRoutesTestApp(
-                tokenClock, ExposedProductRepository(FixedClock(testNow)), ExposedSupplierRepository(),
+                tokenClock,
+                ExposedProductRepository(FixedClock(testNow)),
+                ExposedSupplierRepository(),
             )
         }
 

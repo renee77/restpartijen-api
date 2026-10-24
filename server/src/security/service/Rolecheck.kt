@@ -9,16 +9,21 @@ import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.server.routing.Route
 
+/** Configuration of the RoleCheck plugin. */
 class RoleCheckConfig {
+    /** The roles that may use the route; requireRole fills it, and it may not stay empty. */
     var roles: Set<Role> = setOf()
 }
 
-// Runs right after authentication. A role that is not allowed is thrown as ForbiddenException;
-// StatusPages turns it into a 403.
+/**
+ * Runs right after authentication. A role that is not allowed is thrown as ForbiddenException;
+ * StatusPages turns it into a 403.
+ */
 private val RoleCheck = createRouteScopedPlugin("RoleCheck", ::RoleCheckConfig) {
     val allowedRoles = pluginConfig.roles
     require(allowedRoles.isNotEmpty()) { "requireRole needs at least one role" }
-    // The plugin runs after authentication, so the principal is available. It checks the role claim in the JWT and compares it to the allowed roles.
+    // The plugin runs after authentication, so the principal is available when authentication succeeded. It checks
+    // the role claim in the JWT and compares it to the allowed roles.
     on(AuthenticationChecked) { call ->
         // No principal means authentication failed; the challenge already answers that with a 401.
         val principal = call.principal<JWTPrincipal>() ?: return@on
@@ -31,12 +36,16 @@ private val RoleCheck = createRouteScopedPlugin("RoleCheck", ::RoleCheckConfig) 
         }
     }
 }
-// A function to require a role on a route.
-// It wraps the route in an authenticate block and installs the RoleCheck plugin.
-// A vararg is used because a route can require multiple roles. The build block is the route's content.
+
+/**
+ * A function to require a role on a route.
+ * It wraps the route in an authenticate block and installs the RoleCheck plugin.
+ * A vararg is used because a route can require multiple roles. The build block is the route's content.
+ * No valid token gives 401, a role that is not in [roles] gives 403.
+ */
 fun Route.requireRole(vararg roles: Role, build: Route.() -> Unit) {
     // Wrap the route in an authenticate block and install the RoleCheck plugin with the required roles.
-    authenticate (PROVIDER_NAME) {
+    authenticate(PROVIDER_NAME) {
         install(RoleCheck) {
             this.roles = roles.toSet()
         }

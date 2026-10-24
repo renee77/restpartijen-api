@@ -4,13 +4,25 @@ import com.restpartijen.api.persistence.dbQuery
 import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationEvent
 import com.restpartijen.api.reservation.repository.ReservationRepository
-import com.restpartijen.api.shared.*
+import com.restpartijen.api.shared.DomainRuleException
+import com.restpartijen.api.shared.ForbiddenException
+import com.restpartijen.api.shared.IllegalStateTransitionException
+import com.restpartijen.api.shared.NotFoundException
+import com.restpartijen.api.shared.PriceProvider
+import com.restpartijen.api.shared.ProductReader
+import com.restpartijen.api.shared.ProductStatusUpdater
 import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
 /**
  * Reserving a product (US-05). Talks to other features only through the contracts in shared (K-1, K-3).
  * Throws a DomainException for every refusal; StatusPages turns it into the status code (§10.2).
+ *
+ * @property productReader reads the product to check its status and pickup window
+ * @property statusUpdater changes the product status together with the reservation
+ * @property priceProvider fixes the current price at the moment of reserving
+ * @property reservations stores and reads the reservations
+ * @property clock decides what "now" is
  */
 class ReservationService(
     private val productReader: ProductReader,
@@ -19,6 +31,16 @@ class ReservationService(
     private val reservations: ReservationRepository,
     private val clock: Clock,
 ) {
+    /**
+     * Reserves a whole product for [collectorId] (US-05, §5.5) at its current price.
+     * The product becomes RESERVED and the new reservation ACTIVE, in one transaction.
+     * The reservation lapses after 24 hours, or at the end of the pickup window if that is earlier.
+     *
+     * @throws NotFoundException when the product is unknown or REMOVED (404)
+     * @throws IllegalStateTransitionException when the product is not LISTED, has expired,
+     *         or was just reserved by someone else (409)
+     * @throws DomainRuleException when the pickup window has ended (422)
+     */
     suspend fun reserve(productId: Long, collectorId: Long): Reservation = dbQuery {
         // 404: unknown, or REMOVED (findById returns null for REMOVED, B-32)
         val product = productReader.findById(productId)
@@ -86,7 +108,10 @@ class ReservationService(
         }
     }
 
-    /** Confirms the pickup of an own reservation (US-11, §5.11): both the reservation and the product become COLLECTED. */
+    /**
+     * Confirms the pickup of an own reservation (US-11, §5.11): both the reservation and the product become
+     * COLLECTED.
+     */
     suspend fun collect(reservationId: Long, collectorId: Long): Reservation = dbQuery {
         val reservation = reservations.findById(reservationId)
             ?: throw NotFoundException("Reservation $reservationId not found")

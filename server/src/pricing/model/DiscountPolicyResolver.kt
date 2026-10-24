@@ -11,13 +11,17 @@ import com.restpartijen.api.shared.ProductCategory
  */
 object DiscountPolicyResolver {
 
-    // Initializes the map only when it is accessed for the first time.
-    // The initialized map is then reused for subsequent accesses.
+    /**
+     * One policy per product category.
+     *
+     * Initializes the map only when it is accessed for the first time.
+     * The initialized map is then reused for subsequent accesses.
+     */
     private val policies: Map<ProductCategory, DiscountPolicy> by lazy {
         mapOf(
             ProductCategory.FRESH to FreshDiscountPolicy(),
             ProductCategory.FROZEN to FrozenDiscountPolicy(),
-            ProductCategory.AMBIENT to AmbientDiscountPolicy()
+            ProductCategory.AMBIENT to AmbientDiscountPolicy(),
         )
     }
 
@@ -29,5 +33,5 @@ object DiscountPolicyResolver {
      * @throws IllegalStateException if no policy is registered for the category
      */
     fun resolve(category: ProductCategory): DiscountPolicy =
-        policies[category] ?: error("Geen korting geregistreerd voor de categorie: $category")
+        policies[category] ?: error("No discount policy registered for category: $category")
 }

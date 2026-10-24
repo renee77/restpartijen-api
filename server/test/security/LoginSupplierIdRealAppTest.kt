@@ -25,13 +25,16 @@ import kotlin.test.assertTrue
 /** The supplierId in the login answer on the real application (decision 3.8, A15, §18.4). */
 class LoginSupplierIdRealAppTest {
 
+    /** The one demo password of all seed accounts (SeedData, README.md). */
     private val demoPassword = "Demo-Restpartij-2026"
 
+    /** Starts the real module() with the test configuration. */
     private fun ApplicationTestBuilder.startApp() {
         environment { config = testConfig() }
         application { module() }
     }
 
+    /** Logs in as a seed account and returns the whole login answer. */
     private suspend fun ApplicationTestBuilder.login(email: String): LoginResponse {
         val response = client.post("/api/v1/auth/login") {
             contentType(ContentType.Application.Json)

@@ -18,10 +18,11 @@ import kotlin.time.Instant
 /**
  * ProductReader for other features (K-1, K-6), on the database of F1.
  * findById passes on to the repository, so both promise exactly the same.
+ *
+ * @property repository answers findById, so a REMOVED product is not found here either
  */
 class ExposedProductReader(private val repository: ProductRepository) : ProductReader {
-    override suspend fun findById(id: Long): ProductView? =
-        repository.findById(id)
+    override suspend fun findById(id: Long): ProductView? = repository.findById(id)
 
     override suspend fun findAvailable(now: Instant): List<ProductView> =
         productsWhere((ProductsTable.status eq ProductStatus.LISTED) and (ProductsTable.bestBeforeAt greater now))
@@ -33,8 +34,10 @@ class ExposedProductReader(private val repository: ProductRepository) : ProductR
         productsWhere(ProductsTable.status inList statuses)
 }
 
-// Every query of this reader: products with their supplier, filtered by [condition].
-// Each function above only decides the condition; fetching and mapping rows happens here, in one transaction.
+/**
+ * Every query of this reader: products with their supplier, filtered by [condition].
+ * Each function of this reader only decides the condition; fetching and mapping rows happens here, in one transaction.
+ */
 private suspend fun productsWhere(condition: Op<Boolean>): List<ProductView> = dbQuery {
     (ProductsTable innerJoin SuppliersTable).selectAll()
         .where { condition }

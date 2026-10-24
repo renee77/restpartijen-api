@@ -28,10 +28,10 @@ import com.restpartijen.api.testsupport.FakeRepository
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.insertSupplier
 import com.restpartijen.api.testsupport.insertUser
-import kotlinx.datetime.DayOfWeek
-import kotlinx.datetime.LocalTime
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.mock.MockEngine
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalTime
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -45,26 +45,29 @@ import kotlin.time.Instant
  *
  * Delegation (`by`) passes every Repository call on to the fake, so no repository logic is repeated here.
  * The product-specific queries of ProductRepository are implemented here on top of findAll.
+ *
+ * @param products the products the fake starts with, under their own ids
  */
 fun fakeProductRepository(vararg products: SurplusProduct): ProductRepository {
     val store = FakeRepository(
         idOf = { it.id },
         withId = { product, id -> product.withId(id) },
-        initialItems = products.toList()
+        initialItems = products.toList(),
     )
     return object : ProductRepository, Repository<SurplusProduct> by store {
-        // The same rule as the real query (A4): only the current offer of this supplier.
-        override suspend fun findBySupplier(supplierId: Long): List<SurplusProduct> =
-            findAll().filter {
-                it.supplier.id == supplierId && it.status in setOf(ProductStatus.LISTED, ProductStatus.RESERVED)
-            }
+        /** The same rule as the real query (A4): only the current offer of this supplier. */
+        override suspend fun findBySupplier(supplierId: Long): List<SurplusProduct> = findAll().filter {
+            it.supplier.id == supplierId && it.status in setOf(ProductStatus.LISTED, ProductStatus.RESERVED)
+        }
 
-        // The same rule as the real delete (§5.3): only a LISTED product can be deleted, otherwise false.
-        // Removing it from the list matches what callers see of the soft delete: findById no longer finds it.
+        /**
+         * The same rule as the real delete (§5.3): only a LISTED product can be deleted, otherwise false.
+         * Removing it from the list matches what callers see of the soft delete: findById no longer finds it.
+         */
         override suspend fun delete(id: Long): Boolean =
             store.findById(id)?.status == ProductStatus.LISTED && store.delete(id)
 
-        // The same rule as the real update (A13): only a LISTED product changes, otherwise false.
+        /** The same rule as the real update (A13): only a LISTED product changes, otherwise false. */
         override suspend fun update(item: SurplusProduct): Boolean =
             store.findById(item.id)?.status == ProductStatus.LISTED && store.update(item)
     }
@@ -107,27 +110,30 @@ fun fakeSupplierRepository(
     supplier: SupplierSummary? = aSupplier,
     ownerUserId: Long = 7,
     openingHours: List<OpeningHours> = anOpenWeek,
-): SupplierRepository =
-    object : SupplierRepository {
-        // Opening hours per supplier id. Replaced as a whole and returned from Monday to Sunday,
-        // like the real repository, so a test sees the same behaviour.
-        private val hoursBySupplier = mutableMapOf<Long, List<OpeningHours>>().apply {
-            if (supplier != null) put(supplier.id, openingHours)
-        }
-
-        override suspend fun findByUserId(userId: Long): SupplierSummary? = supplier.takeIf { userId == ownerUserId }
-        override suspend fun exists(supplierId: Long): Boolean = supplier?.id == supplierId
-        override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
-        override suspend fun getOpeningHours(supplierId: Long): List<OpeningHours> =
-            hoursBySupplier[supplierId].orEmpty().sortedBy { it.day }
-        override suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>) {
-            hoursBySupplier[supplierId] = openingHours
-        }
+): SupplierRepository = object : SupplierRepository {
+    /**
+     * Opening hours per supplier id. Replaced as a whole and returned from Monday to Sunday,
+     * like the real repository, so a test sees the same behaviour.
+     */
+    private val hoursBySupplier = mutableMapOf<Long, List<OpeningHours>>().apply {
+        if (supplier != null) put(supplier.id, openingHours)
     }
+
+    override suspend fun findByUserId(userId: Long): SupplierSummary? = supplier.takeIf { userId == ownerUserId }
+    override suspend fun exists(supplierId: Long): Boolean = supplier?.id == supplierId
+    override suspend fun lookupSupplierId(userId: Long): Long? = findByUserId(userId)?.id
+    override suspend fun getOpeningHours(supplierId: Long): List<OpeningHours> =
+        hoursBySupplier[supplierId].orEmpty().sortedBy { it.day }
+    override suspend fun updateOpeningHours(supplierId: Long, openingHours: List<OpeningHours>) {
+        hoursBySupplier[supplierId] = openingHours
+    }
+}
 
 /** A price breakdown with a real discount: 3.50 with 40% off is 2.10 (§5.7). */
 val aBreakdown = PriceBreakdown(
-    originalPrice = Money.fromCents(350), discountPercentage = 40, currentPrice = Money.fromCents(210),
+    originalPrice = Money.fromCents(350),
+    discountPercentage = 40,
+    currentPrice = Money.fromCents(210),
 )
 
 /**
@@ -176,7 +182,7 @@ fun SurplusProduct.withId(id: Long): SurplusProduct = ProductFactory.create(
  * SurplusProduct is not a data class, so equals() compares identity instead of content.
  */
 fun SurplusProduct.fields(): List<Any?> = listOf(
-    id, category, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens
+    id, category, supplier, name, barcode, originalPrice, bestBeforeAt, quantity, status, pickupWindow, allergens,
 )
 
 /**

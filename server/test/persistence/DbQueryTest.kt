@@ -12,11 +12,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+/** dbQuery runs its block as one transaction: all or nothing. */
 class DbQueryTest {
 
-    // A fresh file database per test, so no other test can leave rows behind.
+    /** A fresh file database per test, so no other test can leave rows behind. */
     private val tempDir = createTempDirectory("restpartijen-test")
 
+    /** Deletes the temporary folder with its database files after every test. */
     @AfterTest
     fun removeTempDir() {
         tempDir.toFile().deleteRecursively()
@@ -27,7 +29,7 @@ class DbQueryTest {
         // Arrange
         val settings = DatabaseSettings(
             mode = DbMode.FILE,
-            filePath = tempDir.resolve("testdb").toString()
+            filePath = tempDir.resolve("testdb").toString(),
         )
         DatabaseFactory.init(settings, TestTable)
 

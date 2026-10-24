@@ -17,7 +17,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,13 +28,16 @@ import kotlin.test.assertTrue
  */
 class AdminProductsRealAppTest {
 
+    /** The one demo password of all seed accounts (SeedData, README.md). */
     private val demoPassword = "Demo-Restpartij-2026"
 
+    /** Starts the real module() with the test configuration. */
     private fun ApplicationTestBuilder.startApp() {
         environment { config = testConfig() }
         application { module() }
     }
 
+    /** Logs in as a seed account and returns the token. */
     private suspend fun ApplicationTestBuilder.loginAs(email: String): String {
         val response = client.post("/api/v1/auth/login") {
             contentType(ContentType.Application.Json)

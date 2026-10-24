@@ -1,8 +1,13 @@
 package com.restpartijen.api.pricing
 
 import com.restpartijen.api.plugins.ErrorCode
+import com.restpartijen.api.plugins.ErrorResponse
+import com.restpartijen.api.pricing.dto.AdminProductResponse
 import com.restpartijen.api.security.TestTokens
+import com.restpartijen.api.shared.ProductStatus
+import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
@@ -10,29 +15,28 @@ import io.ktor.server.testing.testApplication
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import com.restpartijen.api.plugins.ErrorResponse
-import com.restpartijen.api.pricing.dto.AdminProductResponse
-import com.restpartijen.api.security.TestClock
-import com.restpartijen.api.shared.ProductStatus
 import kotlin.test.assertTrue
-import com.restpartijen.api.testsupport.createEmptyTestDatabase
-import io.ktor.client.request.delete
 
+/**
+ * GET and DELETE /api/v1/admin/products on the pricing test app (US-09): the real route and the real
+ * AdminProductService, with fakes behind the service that each test controls.
+ */
 class AdminProductEndpointTest {
+    /** A valid ADMIN token for user 1. */
     val token = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = "ADMIN")
 
-    private fun tokenFor(role: String) =
-        TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = role)
+    /** A valid token for user 1 with the given role name. */
+    private fun tokenFor(role: String) = TestTokens().createTestTokenWithRoleName(userId = 1L, roleName = role)
 
     @Test
     fun `No token gives a 401`() = testApplication {
-        // Arrange: test app with the real pricing round and fakes behind the service.
+        // Arrange: test app with the real pricing route and fakes behind the service.
         application { setUpPricingTestApp(productReader = FakeProductReader(emptyList())) }
 
         // Act: call the endpoint without a token
         val response = client.get("/api/v1/admin/products")
 
-        // Assert: the response status should be 401 Unauthorized, indicating that the token's role is not valid
+        // Assert: the error body says that authentication is required (the 401 message)
         val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText())
         assertEquals("Authentication required", error.message)
     }
@@ -51,7 +55,7 @@ class AdminProductEndpointTest {
             bearerAuth(collectorToken)
         }
 
-        // Assert. Verify that the decoded token contains the expected userId and role.
+        // Assert: the error body says that the role is not allowed (the 403 message)
         val error = Json.decodeFromString<ErrorResponse>(response.bodyAsText()).message
         assertEquals("Insufficient role", error)
     }
@@ -75,8 +79,8 @@ class AdminProductEndpointTest {
         val reader = FakeProductReader(
             products = listOf(
                 FakeProductView(1, ProductStatus.LISTED),
-                FakeProductView(2, ProductStatus.REMOVED)
-            )
+                FakeProductView(2, ProductStatus.REMOVED),
+            ),
         )
         application { setUpPricingTestApp(productReader = reader) }
 
@@ -93,13 +97,13 @@ class AdminProductEndpointTest {
     }
 
     @Test
-    fun `status listed only shows the listed products` () = testApplication {
+    fun `status listed only shows the listed products`() = testApplication {
         // Arrange
         val reader = FakeProductReader(
             products = listOf(
                 FakeProductView(1, ProductStatus.LISTED),
-                FakeProductView(2, ProductStatus.COLLECTED)
-            )
+                FakeProductView(2, ProductStatus.COLLECTED),
+            ),
         )
         application { setUpPricingTestApp(productReader = reader) }
 
@@ -116,7 +120,7 @@ class AdminProductEndpointTest {
     }
 
     @Test
-    fun `Call without status shows all products save for the removed ones` () = testApplication {
+    fun `Call without status shows all products save for the removed ones`() = testApplication {
         // Arrange
         val reader = FakeProductReader(
             products = listOf(
@@ -124,8 +128,8 @@ class AdminProductEndpointTest {
                 FakeProductView(2, ProductStatus.COLLECTED),
                 FakeProductView(3, ProductStatus.REMOVED),
                 FakeProductView(4, ProductStatus.RESERVED),
-                FakeProductView(5, ProductStatus.EXPIRED)
-            )
+                FakeProductView(5, ProductStatus.EXPIRED),
+            ),
         )
         application { setUpPricingTestApp(productReader = reader) }
 
@@ -138,11 +142,14 @@ class AdminProductEndpointTest {
         assertEquals(HttpStatusCode.OK, response.status)
         val products = Json.decodeFromString<List<AdminProductResponse>>(response.bodyAsText())
         assertEquals(listOf(1L, 2L, 4L, 5L), products.map { it.id })
-        assertEquals(setOf(ProductStatus.LISTED, ProductStatus.COLLECTED, ProductStatus.EXPIRED, ProductStatus.RESERVED), reader.requestedStatuses)
+        assertEquals(
+            setOf(ProductStatus.LISTED, ProductStatus.COLLECTED, ProductStatus.EXPIRED, ProductStatus.RESERVED),
+            reader.requestedStatuses,
+        )
     }
 
     @Test
-    fun `Calls with two statuses will show all the products that have that status` () = testApplication {
+    fun `Calls with two statuses will show all the products that have that status`() = testApplication {
         // Arrange
         val reader = FakeProductReader(
             products = listOf(
@@ -150,8 +157,8 @@ class AdminProductEndpointTest {
                 FakeProductView(2, ProductStatus.COLLECTED),
                 FakeProductView(3, ProductStatus.REMOVED),
                 FakeProductView(4, ProductStatus.RESERVED),
-                FakeProductView(5, ProductStatus.EXPIRED)
-            )
+                FakeProductView(5, ProductStatus.EXPIRED),
+            ),
         )
         application { setUpPricingTestApp(productReader = reader) }
 
@@ -296,7 +303,7 @@ class AdminProductEndpointTest {
         createEmptyTestDatabase()
         application {
             setUpPricingTestApp(
-                productReader = FakeProductReader(products = listOf(FakeProductView(1, ProductStatus.REMOVED)))
+                productReader = FakeProductReader(products = listOf(FakeProductView(1, ProductStatus.REMOVED))),
             )
         }
 

@@ -2,6 +2,7 @@ package com.restpartijen.api.testsupport
 
 import io.ktor.server.config.MapApplicationConfig
 
+/** A test value for every setting that module() requires; the secret has exactly 32 bytes, the shortest accepted. */
 private val testValues = listOf(
     "jwt.secret" to "0123456789abcdef0123456789abcdef",
     "jwt.issuer" to "test-issuer",

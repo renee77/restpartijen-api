@@ -12,10 +12,16 @@ import com.restpartijen.api.shared.SupplierSummary
  */
 interface SupplierRepository : SupplierIdLookup {
 
-    /** The supplier of [userId] as a summary, or null if this user has no supplier. Used by US-01. */
+    /**
+     * The supplier of [userId] as a summary, or null if this user has no supplier.
+     * Used by US-01, and by the ownership check of US-03 and US-10.
+     */
     suspend fun findByUserId(userId: Long): SupplierSummary?
 
-    /** Whether a supplier with [supplierId] is stored. Used by US-03 to give a 404 for an unknown supplier (A4). */
+    /**
+     * Whether a supplier with [supplierId] is stored.
+     * Used by US-03 (A4) and US-10 to give a 404 for an unknown supplier.
+     */
     suspend fun exists(supplierId: Long): Boolean
 
     /**

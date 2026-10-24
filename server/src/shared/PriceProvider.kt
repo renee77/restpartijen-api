@@ -8,6 +8,9 @@ package com.restpartijen.api.shared
  * Both return null when the product has expired (B-18).
  */
 interface PriceProvider {
+    /** The price of [product] now, after its discount; null when it has expired. */
     fun currentPrice(product: PricedProduct): Money?
+
+    /** The original price, discount and current price of [product] now; null when it has expired. */
     fun priceBreakdown(product: PricedProduct): PriceBreakdown?
 }

@@ -6,6 +6,10 @@ import kotlin.time.Instant
 /**
  * Fake of F2's ReservationMaintenance (K-5): fixed answers, no database.
  * Every call is written to [calls]; share the list with FakeProductStatusUpdater to check the order.
+ *
+ * @property lapsedCount what lapseOverdue returns
+ * @property lapseActiveSucceeds what lapseActiveFor returns
+ * @property calls every call in order, for example "lapseActiveFor(1)"
  */
 class FakeReservationMaintenance(
     private val lapsedCount: Int = 0,

@@ -20,12 +20,12 @@ import kotlin.time.Instant
  * their price breakdown. The pickup window of a placed or updated product is derived by PickupWindowCalculator
  * (US-10).
  *
- * @param repository stores and finds products
- * @param suppliers finds the supplier that belongs to the user in the token (US-01),
+ * @property repository stores and finds products
+ * @property suppliers finds the supplier that belongs to the user in the token (US-01),
  *   whether a supplier exists (US-03), and its opening hours (US-10)
- * @param priceProvider gives the price breakdown of a product; F3 calculates it, F1 only asks (K-4, SD-3)
- * @param ownershipGuard checks that a supplier only changes or deletes an own product (US-03, §16.2)
- * @param clock decides what "now" is for the listing rules and the pickup window (GI-6, decision 6.5)
+ * @property priceProvider gives the price breakdown of a product; F3 calculates it, F1 only asks (K-4, SD-3)
+ * @property ownershipGuard checks that a supplier only changes or deletes an own product (US-03, §16.2)
+ * @property clock decides what "now" is for the listing rules and the pickup window (GI-6, decision 6.5)
  */
 class ProductService(
     private val repository: ProductRepository,
@@ -172,24 +172,38 @@ class ProductService(
         return toDetail(updatedProduct)
     }
 
-    // Shared by createProduct and updateProduct, so both give the same 422s. The calculator finds the window;
-    // the service decides what a missing window means for the supplier.
+    /**
+     * The pickup window for a product of [supplierId] with [bestBeforeAt], derived from the opening hours now.
+     *
+     * Shared by createProduct and updateProduct, so both give the same 422s. The calculator finds the window;
+     * the service decides what a missing window means for the supplier.
+     *
+     * @throws DomainRuleException when bestBeforeAt has passed, or the supplier is not open before it (422)
+     */
     private suspend fun derivePickupWindow(supplierId: Long, bestBeforeAt: Instant): PickupWindow {
         val openingHours = suppliers.getOpeningHours(supplierId)
         return when (val result = PickupWindowCalculator.calculate(openingHours, clock.now(), bestBeforeAt)) {
             is PickupWindowResult.Found -> result.window
+
             // The same field and message as validateForListing, so the answer does not depend on the order.
             PickupWindowResult.Expired -> throw DomainRuleException(BEST_BEFORE_PASSED, field = "bestBeforeAt")
+
             // An empty week is NeverOpen too, but then the date is not the cause: say what is.
             PickupWindowResult.NeverOpen -> throw DomainRuleException(
-                if (openingHours.isEmpty()) "The supplier has no opening hours yet"
-                else "The supplier is not open before bestBeforeAt",
+                if (openingHours.isEmpty()) {
+                    "The supplier has no opening hours yet"
+                } else {
+                    "The supplier is not open before bestBeforeAt"
+                },
                 field = "bestBeforeAt",
             )
         }
     }
 
-    // Shared by every function that returns products, so the EXPIRED rule lives in one place.
+    /**
+     * The [product] with its price breakdown and the status to show.
+     * Shared by every function that returns products, so the EXPIRED rule lives in one place.
+     */
     private fun toDetail(product: SurplusProduct): ProductDetail {
         val price = priceProvider.priceBreakdown(product)
         val status =

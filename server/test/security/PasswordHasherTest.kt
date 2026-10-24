@@ -2,14 +2,15 @@ package com.restpartijen.api.security
 
 import com.restpartijen.api.security.service.PasswordHasher
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
-import kotlin.test.assertFalse
 
+/** PasswordHasher: hashing, verifying and salting with Argon2id (decision 3.4). */
 class PasswordHasherTest {
     // Happy path: Hash a password and it gets verified succesfully.
     @Test
-    fun `test the right password` () {
+    fun `test the right password`() {
         // Arrange: get the password hasher and a sample password.
         val hash = PasswordHasher()
         val password = "secretPassword123!"
@@ -19,12 +20,11 @@ class PasswordHasherTest {
 
         // Assert: Verify that the hashed password matches the original password.
         assertTrue(hash.verifyPassword(password, hashedPassword))
-}
+    }
 
-
-    // Sad path: Verify a password against a wrong hash.
+    // Sad path: a wrong password does not match the hash of another password.
     @Test
-    fun `test the password with wrong hash` () {
+    fun `test the password with wrong hash`() {
         // Arrange: get the password hasher and a sample password.
         val hash = PasswordHasher()
         val password = "secret456!"
@@ -38,7 +38,7 @@ class PasswordHasherTest {
 
     // Check that a password is not hashed to the same value every time (salting).
     @Test
-    fun `test that hashing the same password twice produces different hashes` () {
+    fun `test that hashing the same password twice produces different hashes`() {
         // Arrange: get the password hasher and a sample password.
         val hash = PasswordHasher()
         val password = "secretPassword123!"

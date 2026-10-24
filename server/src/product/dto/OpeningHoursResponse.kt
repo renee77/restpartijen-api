@@ -9,13 +9,13 @@ import kotlinx.serialization.Serializable
  *
  * Plain strings, like category and status in ProductResponse, so the JSON does not depend on how
  * kotlinx.datetime serializes its types. LocalTime.toString gives ISO 8601, "08:00" without seconds.
+ *
+ * @property day the name of the day of the week, such as "MONDAY"
+ * @property opensAt the local opening time, such as "08:00"
+ * @property closesAt the local closing time, such as "21:00"
  */
 @Serializable
-data class OpeningHoursResponse(
-    val day: String,
-    val opensAt: String,
-    val closesAt: String,
-)
+data class OpeningHoursResponse(val day: String, val opensAt: String, val closesAt: String)
 
 /** Maps one open day to the API response; it only translates. */
 fun OpeningHours.toResponse() = OpeningHoursResponse(day.name, opensAt.toString(), closesAt.toString())

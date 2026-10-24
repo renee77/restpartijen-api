@@ -12,6 +12,20 @@ import kotlinx.serialization.Serializable
  * The price is in euros (B-25); times are ISO-8601 text, like ReservationResponse.
  * Only the supplier id: the client needs nothing more about the supplier here.
  * discountPercentage and currentPrice come from PriceProvider (§5.7, §10.1); both are null when expired (B-18).
+ *
+ * @property id the id of the product
+ * @property supplierId the id of the supplier that offers it
+ * @property category the name of the product kind, such as "FRESH"
+ * @property name the product name
+ * @property barcode the barcode on the package, or null
+ * @property originalPrice the price in euros before any discount
+ * @property bestBeforeAt the moment the best-before date ends, as ISO-8601 text
+ * @property quantity how many units are offered
+ * @property status the status to show, such as "LISTED"; EXPIRED for an expired LISTED product
+ * @property pickupWindow when the product can be collected
+ * @property allergens the EU allergens the product contains
+ * @property discountPercentage the current discount, from 0 to 100; null when expired
+ * @property currentPrice the price in euros after the discount; null when expired
  */
 @Serializable
 data class ProductResponse(
@@ -30,7 +44,12 @@ data class ProductResponse(
     val currentPrice: Double?,
 )
 
-/** The pickup window in a response; the service derives it, so there is no request counterpart (US-10). */
+/**
+ * The pickup window in a response; the service derives it, so there is no request counterpart (US-10).
+ *
+ * @property from the start of the window, as ISO-8601 text
+ * @property until the end of the window, as ISO-8601 text
+ */
 @Serializable
 data class PickupWindowResponse(val from: String, val until: String)
 

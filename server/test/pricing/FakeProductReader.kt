@@ -5,7 +5,12 @@ import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.shared.ProductView
 import kotlin.time.Instant
 
-/** Fake of F1's ProductReader: lists in memory, and it remembers which statuses were asked for. */
+/**
+ * Fake of F1's ProductReader: lists in memory, and it remembers which statuses were asked for.
+ *
+ * @property expiredListings what findExpiredListings returns, whatever the moment
+ * @property products the products that findById, findAvailable and findByStatus search in
+ */
 class FakeProductReader(
     private val expiredListings: List<ProductView> = emptyList(),
     private val products: List<ProductView> = emptyList(),

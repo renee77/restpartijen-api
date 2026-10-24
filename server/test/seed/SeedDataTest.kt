@@ -29,74 +29,114 @@ import kotlin.time.Instant
  */
 class SeedDataTest {
 
-    // Whole hours: the database may store fewer digits than Instant has.
+    /** The fixed moment of seeding. Whole hours: the database may store fewer digits than Instant has. */
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
-    // The one demo password of all six accounts; README.md and requests.http name it too.
+    /** The one demo password of all six accounts; README.md and requests.http name it too. */
     private val demoPassword = "Demo-Restpartij-2026"
 
     private val hasher = PasswordHasher()
 
-    // The rows as plain values, so the tests can filter and count them without Exposed.
+    /** A user row as plain values, so the tests can filter and count rows without Exposed. */
     private data class UserRow(val id: Long, val email: String, val role: Role, val passwordHash: String)
+
+    /** A supplier row as plain values; see [UserRow]. */
     private data class SupplierRow(val id: Long, val userId: Long)
+
+    /** A product row as plain values; see [UserRow]. */
     private data class ProductRow(
-        val id: Long, val supplierId: Long, val category: ProductCategory, val priceCents: Long,
-        val bestBeforeAt: Instant, val status: ProductStatus, val pickupFrom: Instant, val pickupUntil: Instant,
-    )
-    private data class ReservationRow(
-        val productId: Long, val collectorId: Long, val priceCents: Long,
-        val reservedAt: Instant, val expiresAt: Instant, val status: ReservationStatus, val collectedAt: Instant?,
+        val id: Long,
+        val supplierId: Long,
+        val category: ProductCategory,
+        val priceCents: Long,
+        val bestBeforeAt: Instant,
+        val status: ProductStatus,
+        val pickupFrom: Instant,
+        val pickupUntil: Instant,
     )
 
+    /** A reservation row as plain values; see [UserRow]. */
+    private data class ReservationRow(
+        val productId: Long,
+        val collectorId: Long,
+        val priceCents: Long,
+        val reservedAt: Instant,
+        val expiresAt: Instant,
+        val status: ReservationStatus,
+        val collectedAt: Instant?,
+    )
+
+    /** All stored users. */
     private fun users() = transaction {
         UsersTable.selectAll().map {
             UserRow(it[UsersTable.id], it[UsersTable.email], it[UsersTable.role], it[UsersTable.passwordHash])
         }
     }
 
+    /** All stored suppliers. */
     private fun suppliers() = transaction {
         SuppliersTable.selectAll().map { SupplierRow(it[SuppliersTable.id], it[SuppliersTable.userId]) }
     }
 
+    /** All stored products. */
     private fun products() = transaction {
         ProductsTable.selectAll().map {
             ProductRow(
-                it[ProductsTable.id], it[ProductsTable.supplierId], it[ProductsTable.category],
-                it[ProductsTable.originalPriceCents], it[ProductsTable.bestBeforeAt], it[ProductsTable.status],
-                it[ProductsTable.pickupFrom], it[ProductsTable.pickupUntil],
+                it[ProductsTable.id],
+                it[ProductsTable.supplierId],
+                it[ProductsTable.category],
+                it[ProductsTable.originalPriceCents],
+                it[ProductsTable.bestBeforeAt],
+                it[ProductsTable.status],
+                it[ProductsTable.pickupFrom],
+                it[ProductsTable.pickupUntil],
             )
         }
     }
 
+    /** All stored reservations. */
     private fun reservations() = transaction {
         ReservationsTable.selectAll().map {
             ReservationRow(
-                it[ReservationsTable.productId], it[ReservationsTable.collectorId], it[ReservationsTable.reservedPriceCents],
-                it[ReservationsTable.reservedAt], it[ReservationsTable.expiresAt], it[ReservationsTable.status],
+                it[ReservationsTable.productId],
+                it[ReservationsTable.collectorId],
+                it[ReservationsTable.reservedPriceCents],
+                it[ReservationsTable.reservedAt],
+                it[ReservationsTable.expiresAt],
+                it[ReservationsTable.status],
                 it[ReservationsTable.collectedAt],
             )
         }
     }
 
+    /** The id of the user with [email]. */
     private fun userId(email: String) = users().single { it.email == email }.id
 
+    /** The id of the supplier that belongs to the account with [email]. */
     private fun supplierIdOf(email: String) = suppliers().single { it.userId == userId(email) }.id
 
+    /** The discount of this product at [now], computed by the real pricing policy. */
     private fun ProductRow.discountPercentage() =
         DiscountPolicyResolver.resolve(category).discountPercentage(bestBeforeAt - now)
 
-    // Integer division is precise enough: the tests only compare this price with a limit.
+    /** The price at [now]. Integer division is precise enough: the tests only compare this price with a limit. */
     private fun ProductRow.currentPriceCents() = priceCents * (100 - discountPercentage()) / 100
 
+    /** Whether the pickup window is open at [now]. */
     private fun ProductRow.windowIsOpen() = pickupFrom <= now && now < pickupUntil
 
+    /** Whether the best-before moment is still after [now]. */
     private fun ProductRow.isFresh() = bestBeforeAt > now
 
+    /** Fills a fresh, empty database with the seed data at [now] before every test. */
     @BeforeTest
     fun seedAnEmptyDatabase() {
         createEmptyTestDatabase(
-            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, ReservationsTable,
+            UsersTable,
+            SuppliersTable,
+            ProductsTable,
+            ProductAllergensTable,
+            ReservationsTable,
             SupplierOpeningHoursTable,
         )
         SeedData.seedIfEmpty(FixedClock(now), hasher)
@@ -198,9 +238,26 @@ class SeedDataTest {
         products().forEach { product ->
             val statuses = reservationsByProduct[product.id].orEmpty().map { it.status }
             when (product.status) {
-                ProductStatus.RESERVED -> assertEquals(1, statuses.count { it == ReservationStatus.ACTIVE }, "Product ${product.id}")
-                ProductStatus.COLLECTED -> assertEquals(1, statuses.count { it == ReservationStatus.COLLECTED }, "Product ${product.id}")
-                else -> assertTrue(ReservationStatus.ACTIVE !in statuses, "Product ${product.id} has an ACTIVE reservation")
+                ProductStatus.RESERVED -> assertEquals(
+                    1,
+                    statuses.count {
+                        it == ReservationStatus.ACTIVE
+                    },
+                    "Product ${product.id}",
+                )
+
+                ProductStatus.COLLECTED -> assertEquals(
+                    1,
+                    statuses.count {
+                        it == ReservationStatus.COLLECTED
+                    },
+                    "Product ${product.id}",
+                )
+
+                else -> assertTrue(
+                    ReservationStatus.ACTIVE !in statuses,
+                    "Product ${product.id} has an ACTIVE reservation",
+                )
             }
         }
     }
@@ -232,7 +289,7 @@ class SeedDataTest {
         assertTrue(
             products().any {
                 it.status == ProductStatus.LISTED && it.isFresh() && it.priceCents > 300 && it.currentPriceCents() < 300
-            }
+            },
         )
     }
 
@@ -263,7 +320,10 @@ class SeedDataTest {
                 continue
             }
             val product = productById.getValue(reservation.productId)
-            assertTrue(collectedAt != null, "COLLECTED reservation of product ${reservation.productId} has no collectedAt")
+            assertTrue(
+                collectedAt != null,
+                "COLLECTED reservation of product ${reservation.productId} has no collectedAt",
+            )
             assertTrue(collectedAt >= reservation.reservedAt, "Collected before it was reserved")
             assertTrue(collectedAt in product.pickupFrom..product.pickupUntil, "Collected outside the pickup window")
         }
@@ -283,7 +343,7 @@ class SeedDataTest {
             reservations().any {
                 it.status == ReservationStatus.ACTIVE && it.reservedAt == now - 20.hours &&
                     it.priceCents > productById.getValue(it.productId).currentPriceCents()
-            }
+            },
         )
     }
 
@@ -294,8 +354,18 @@ class SeedDataTest {
         val products = products()
         val reservations = reservations()
 
-        assertTrue(products.any { it.status == ProductStatus.LISTED && !it.isFresh() }, "No listed product past its date")
-        assertTrue(products.any { it.status == ProductStatus.RESERVED && !it.isFresh() }, "No reserved product past its date")
+        assertTrue(
+            products.any {
+                it.status == ProductStatus.LISTED && !it.isFresh()
+            },
+            "No listed product past its date",
+        )
+        assertTrue(
+            products.any {
+                it.status == ProductStatus.RESERVED && !it.isFresh()
+            },
+            "No reserved product past its date",
+        )
         // lapseOverdue: one past its pickup window, one older than 24 hours.
         val overdue = reservations.filter { it.status == ReservationStatus.ACTIVE && it.expiresAt <= now }
         assertTrue(overdue.any { it.reservedAt > now - 24.hours }, "No reservation past its pickup window")

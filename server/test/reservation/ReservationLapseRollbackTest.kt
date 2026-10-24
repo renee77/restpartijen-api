@@ -27,13 +27,15 @@ import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 
 /**
- * K-5 / issue #48: lapsing returns false and never throws, and on false nothing of the lapse stays behind.
+ * K-5 / issue #48: a failing lapse returns false instead of throwing, and on false nothing of the lapse
+ * stays behind.
  * Real database for the product status; storing the reservation is made to fail on purpose.
  */
 class ReservationLapseRollbackTest {
 
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
+    /** A fresh, empty database for every test. */
     @BeforeTest
     fun setup() = createEmptyTestDatabase(UsersTable, SuppliersTable, ProductsTable, ReservationsTable)
 
@@ -89,8 +91,12 @@ class ReservationLapseRollbackTest {
     private fun serviceWith(productIds: List<Long>, failingReservationIds: Set<Long>): ReservationMaintenanceService {
         val stored = productIds.mapIndexed { index, productId ->
             Reservation(
-                index + 1L, productId, collectorId = 7, reservedPrice = Money.fromCents(199),
-                reservedAt = now - 25.hours, expiresAt = now - 1.hours,
+                index + 1L,
+                productId,
+                collectorId = 7,
+                reservedPrice = Money.fromCents(199),
+                reservedAt = now - 25.hours,
+                expiresAt = now - 1.hours,
             )
         }
         val fake = FakeReservationRepository(stored)
@@ -98,12 +104,19 @@ class ReservationLapseRollbackTest {
             override suspend fun update(item: Reservation): Boolean =
                 if (item.id in failingReservationIds) false else fake.update(item)
         }
-        val reader = FakeProductReader(productIds.map {
-            FakeProduct(id = it, status = ProductStatus.RESERVED, pickupWindow = PickupWindow(now - 2.days, now + 2.days))
-        })
+        val reader = FakeProductReader(
+            productIds.map {
+                FakeProduct(
+                    id = it,
+                    status = ProductStatus.RESERVED,
+                    pickupWindow = PickupWindow(now - 2.days, now + 2.days),
+                )
+            },
+        )
         return ReservationMaintenanceService(reader, TableStatusUpdater(), reservations)
     }
 
+    /** Stores a new product row with status RESERVED and returns its id. */
     private fun reservedProductRow(): Long {
         val productId = insertProduct()
         transaction {
@@ -112,6 +125,7 @@ class ReservationLapseRollbackTest {
         return productId
     }
 
+    /** The status of this product, read straight from the database. */
     private fun statusOf(productId: Long): ProductStatus = transaction {
         ProductsTable.selectAll().where { ProductsTable.id eq productId }.single()[ProductsTable.status]
     }

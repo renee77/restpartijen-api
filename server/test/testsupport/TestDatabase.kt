@@ -5,7 +5,7 @@ import com.restpartijen.api.config.DbMode
 import com.restpartijen.api.persistence.DatabaseFactory
 import org.jetbrains.exposed.v1.core.Table
 
-// Counts the test databases created so far; each call raises it, so every name is new.
+/** Counts the test databases created so far; each call raises it, so every name is new. */
 private var databaseCount = 0
 
 /**
@@ -20,6 +20,6 @@ fun createEmptyTestDatabase(vararg tables: Table) {
         // filePath is only used in file mode, so it stays empty here.
         DatabaseSettings(mode = DbMode.MEMORY, filePath = ""),
         *tables,
-        name = "test-${databaseCount}"
+        name = "test-$databaseCount",
     )
 }

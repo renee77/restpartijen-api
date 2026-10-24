@@ -8,8 +8,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.hours
 
+/** Reading and checking the `jwt` section, and keeping the secret out of messages and logs. */
 class JwtPropertiesTest {
-    // Exactly 32 characters = 32 bytes: the shortest secret that is accepted
+    /** Exactly 32 characters = 32 bytes: the shortest secret that is accepted. */
     private val validSecret = "0123456789abcdef0123456789abcdef"
 
     @Test
@@ -84,7 +85,7 @@ class JwtPropertiesTest {
         for (key in listOf("jwt.issuer", "jwt.audience", "jwt.validityHours")) {
             // Arrange: a complete config with one key left out
             val config = MapApplicationConfig(
-                *completeConfig().filterKeys { it != key }.toList().toTypedArray()
+                *completeConfig().filterKeys { it != key }.toList().toTypedArray(),
             )
             // Act
             val exception = assertFailsWith<IllegalStateException> { config.jwtProperties() }
@@ -93,6 +94,7 @@ class JwtPropertiesTest {
         }
     }
 
+    /** A valid value for every key of the `jwt` section, for a test that leaves one out. */
     private fun completeConfig() = mapOf(
         "jwt.secret" to validSecret,
         "jwt.issuer" to "test-issuer",

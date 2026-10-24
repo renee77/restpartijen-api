@@ -6,6 +6,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+/**
+ * RegistrationValidator: the rules of every field (A11). The password and e-mail limits are tested on both
+ * sides of the boundary; the display name one character above and one character below its maximum.
+ */
 class RegistrationValidatorTest {
 
     // Password tests
@@ -26,21 +30,20 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `password of 8 characters is accepted` () {
+    fun `password of 8 characters is accepted`() {
         // Arrange: a password that is exactly 8 characters
         val justRight = "justrigh"
-
 
         // Act + Assert: no exception means the input is valid
         RegistrationValidator.validate(
             email = "test@mail.com",
             password = justRight,
-            displayName = "TestName"
-            )
+            displayName = "TestName",
+        )
     }
 
     @Test
-    fun `password of 64 characters is accepted` () {
+    fun `password of 64 characters is accepted`() {
         // Arrange: A password that is exactly 64 characters.
         val justRightLong = "a".repeat(RegistrationValidator.PASSWORD_MAX_LENGTH)
 
@@ -48,7 +51,7 @@ class RegistrationValidatorTest {
         RegistrationValidator.validate(
             email = "test@mail.com",
             password = justRightLong,
-            displayName = "TesterTime"
+            displayName = "TesterTime",
         )
     }
 
@@ -69,25 +72,25 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `password does not get trimmed` () {
-        // Arrange: A password that is exactly 64 characters.
+    fun `password does not get trimmed`() {
+        // Arrange: a password of 12 spaces; trimmed, it would be empty and too short
         val justSpaces = " ".repeat(12)
 
         // Act and Assert: No exception
         RegistrationValidator.validate(
             email = "test@mail.com",
             password = justSpaces,
-            displayName = "TesterTime"
+            displayName = "TesterTime",
         )
     }
 
     // Email Tests
     @Test
-    fun `blank e-mail is rejected` () {
+    fun `blank e-mail is rejected`() {
         // Arrange: an email without any input, just blank
         val emptyMail = ""
 
-        // Act + Assert: validation must throw, and the error points at the password field
+        // Act + Assert: validation must throw, and the error points at the email field
         val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = emptyMail,
@@ -99,11 +102,11 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `email without @ is rejected` () {
+    fun `email without @ is rejected`() {
         // Arrange: an email without an @
         val mail = "NotReallyAMail.com"
 
-        // Act + Assert: validation must throw, and the error points at the password field
+        // Act + Assert: validation must throw, and the error points at the email field
         val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = mail,
@@ -115,11 +118,11 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `email without dot is rejected` () {
+    fun `email without dot is rejected`() {
         // Arrange: an email without a .
         val mail = "NotReally@AMail"
 
-        // Act + Assert: validation must throw, and the error points at the password field
+        // Act + Assert: validation must throw, and the error points at the email field
         val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = mail,
@@ -131,11 +134,11 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `e-mail with spaces is rejected` () {
+    fun `e-mail with spaces is rejected`() {
         // Arrange: an email with spaces
         val spaceMail = "ThisIs NotAMail"
 
-        // Act + Assert: validation must throw, and the error points at the password field
+        // Act + Assert: validation must throw, and the error points at the email field
         val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = spaceMail,
@@ -147,7 +150,7 @@ class RegistrationValidatorTest {
     }
 
     @Test
-    fun `email of 254 characters is accepted` () {
+    fun `email of 254 characters is accepted`() {
         // Arrange: An email that is exactly 254 characters.
         val domain = "@mail.com"
         val justRightLong = "a".repeat(RegistrationValidator.EMAIL_MAX_LENGTH - domain.length) + domain
@@ -156,7 +159,7 @@ class RegistrationValidatorTest {
         RegistrationValidator.validate(
             email = justRightLong,
             password = "TestPassword",
-            displayName = "TesterTime"
+            displayName = "TesterTime",
         )
     }
 
@@ -165,7 +168,7 @@ class RegistrationValidatorTest {
         // Arrange: an email one character above the maximum, and otherwise valid input
         val tooLong = "testmail@word." + "a".repeat(RegistrationValidator.EMAIL_MAX_LENGTH - 13)
 
-        // Act + Assert: validation must throw, and the error points at the password field
+        // Act + Assert: validation must throw, and the error points at the email field
         val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = tooLong,
@@ -178,11 +181,11 @@ class RegistrationValidatorTest {
 
     // Username Tests
     @Test
-    fun `blank username is rejected` () {
-        // Arrange: an email without any input, just blank
+    fun `blank username is rejected`() {
+        // Arrange: a display name without any input, just blank
         val emptyName = ""
 
-        // Act + Assert: validation must throw, and the error points at the password field
+        // Act + Assert: validation must throw, and the error points at the displayName field
         val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = "test@email.com",
@@ -198,12 +201,12 @@ class RegistrationValidatorTest {
         // Arrange: a username one character above the maximum, and otherwise valid input
         val tooLong = "a".repeat(RegistrationValidator.DISPLAY_NAME_MAX_LENGTH + 1)
 
-        // Act + Assert: validation must throw, and the error points at the password field
+        // Act + Assert: validation must throw, and the error points at the displayName field
         val exception = assertFailsWith<ValidationException> {
             RegistrationValidator.validate(
                 email = "test@mailtest.com",
                 password = "TestPassword",
-                displayName = tooLong
+                displayName = tooLong,
             )
         }
         assertEquals("displayName", exception.field)
@@ -211,15 +214,14 @@ class RegistrationValidatorTest {
 
     @Test
     fun `username of 50 characters is accepted`() {
-        // Arrange: a username one character at the maximum, and otherwise valid input
+        // Arrange: a username one character below the maximum, and otherwise valid input
         val justRight = "a".repeat(RegistrationValidator.DISPLAY_NAME_MAX_LENGTH - 1)
 
         // Act and Assert: No exception
-            RegistrationValidator.validate(
-                email = "test@mailtest.com",
-                password = "TestPassword",
-                displayName = justRight
-            )
-
+        RegistrationValidator.validate(
+            email = "test@mailtest.com",
+            password = "TestPassword",
+            displayName = justRight,
+        )
     }
 }

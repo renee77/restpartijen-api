@@ -7,16 +7,17 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-// Minimal entity for these tests, so the generic fake is tested without depending on a feature.
+/** Minimal entity for these tests, so the generic fake is tested without depending on a feature. */
 private data class Item(val id: Long, val name: String)
 
+/** The generic FakeRepository behaves as the Repository contract describes; also an example of its use. */
 class FakeRepositoryTest {
 
-    // Builds a fake for Item, so each test only states its starting data.
+    /** Builds a fake for Item, so each test only states its starting data. */
     private fun repositoryWith(vararg items: Item) = FakeRepository<Item>(
         idOf = { it.id },
         withId = { item, id -> item.copy(id = id) },
-        initialItems = items.toList()
+        initialItems = items.toList(),
     )
 
     @Test
@@ -36,7 +37,7 @@ class FakeRepositoryTest {
         // Arrange
         val repository = repositoryWith(
             Item(id = 1, name = "Volkoren brood"),
-            Item(id = 2, name = "Aardappels")
+            Item(id = 2, name = "Aardappels"),
         )
 
         // Act
@@ -46,9 +47,9 @@ class FakeRepositoryTest {
         assertEquals(
             listOf(
                 Item(id = 1, name = "Volkoren brood"),
-                Item(id = 2, name = "Aardappels")
+                Item(id = 2, name = "Aardappels"),
             ),
-            items
+            items,
         )
     }
 
@@ -72,7 +73,7 @@ class FakeRepositoryTest {
         // Arrange
         val repository = repositoryWith(
             Item(id = 1, name = "Volkoren brood"),
-            Item(id = 2, name = "Aardappels")
+            Item(id = 2, name = "Aardappels"),
         )
 
         // Act
@@ -83,9 +84,9 @@ class FakeRepositoryTest {
         assertEquals(
             listOf(
                 Item(id = 1, name = "Volkoren brood"),
-                Item(id = 2, name = "Wit brood")
+                Item(id = 2, name = "Wit brood"),
             ),
-            repository.findAll()
+            repository.findAll(),
         )
     }
 
@@ -119,7 +120,7 @@ class FakeRepositoryTest {
         // Ids 1 and 5: the next id must be 6, not 3 (the number of items plus one).
         val repository = repositoryWith(
             Item(id = 1, name = "Volkoren brood"),
-            Item(id = 5, name = "Aardappels")
+            Item(id = 5, name = "Aardappels"),
         )
 
         // Act
@@ -147,7 +148,7 @@ class FakeRepositoryTest {
         // Arrange
         val repository = repositoryWith(
             Item(id = 1, name = "Volkoren brood"),
-            Item(id = 2, name = "Aardappels")
+            Item(id = 2, name = "Aardappels"),
         )
         repository.delete(2)
 
@@ -176,7 +177,7 @@ class FakeRepositoryTest {
         // Arrange
         val repository = repositoryWith(
             Item(id = 1, name = "Volkoren brood"),
-            Item(id = 2, name = "Aardappels")
+            Item(id = 2, name = "Aardappels"),
         )
 
         // Act

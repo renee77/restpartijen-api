@@ -14,9 +14,13 @@ import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 
+/** The JwtConfig of the test apps: the default test settings, and the fixed clock for tokens it creates itself. */
 val jwtConfig = JwtConfig(TestJwtSettings.default, TestClock.fixed)
 
-// Test app: same error handling as production, security is installed, one protected route.
+/**
+ * Test app: same error handling as production, security is installed, and three test routes: one that only needs a
+ * token, one that needs the COLLECTOR role and one that answers with the current user.
+ */
 fun Application.setUpTestApp() {
     configureSerialization()
     configureStatusPages()

@@ -3,36 +3,39 @@ package com.restpartijen.api
 import com.restpartijen.api.config.databaseSettings
 import com.restpartijen.api.config.jwtProperties
 import com.restpartijen.api.persistence.DatabaseFactory
+import com.restpartijen.api.persistence.ProductsTable
+import com.restpartijen.api.persistence.SuppliersTable
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.plugins.configureCallLogging
 import com.restpartijen.api.plugins.configureCors
 import com.restpartijen.api.plugins.configureDependencies
 import com.restpartijen.api.plugins.configureRequestValidation
 import com.restpartijen.api.plugins.configureSerialization
 import com.restpartijen.api.plugins.configureStatusPages
-import com.restpartijen.api.product.repository.ProductAllergensTable
-import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.pricing.configureMaintenanceLoop
 import com.restpartijen.api.pricing.routes.configurePricingRouting
-import com.restpartijen.api.persistence.ProductsTable
-import com.restpartijen.api.persistence.SuppliersTable
+import com.restpartijen.api.product.repository.ProductAllergensTable
+import com.restpartijen.api.product.repository.SupplierOpeningHoursTable
 import com.restpartijen.api.product.routes.configureProductRouting
-import com.restpartijen.api.persistence.UsersTable
-import com.restpartijen.api.security.routes.configureAuthRouting
-import com.restpartijen.api.security.configureSecurityModule
-import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.reservation.repository.ReservationsTable
 import com.restpartijen.api.reservation.routes.configureReservationRouting
 import com.restpartijen.api.reservation.routes.configureSearchRouting
+import com.restpartijen.api.security.configureSecurityModule
+import com.restpartijen.api.security.routes.configureAuthRouting
+import com.restpartijen.api.security.service.JwtSettings
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.seed.SeedData
-import io.ktor.server.application.*
-import io.ktor.server.netty.*
+import io.ktor.server.application.Application
+import io.ktor.server.application.log
+import io.ktor.server.netty.EngineMain
 import kotlin.time.Clock
 
 /**
  * Entry point of the application.
  * Hands control to Ktor's Netty EngineMain, which reads resources/application.yaml
  * for the port and the module(s) to load.
+ *
+ * @param args command-line arguments, passed on to EngineMain unchanged.
  */
 fun main(args: Array<String>) {
     EngineMain.main(args)
@@ -57,7 +60,7 @@ fun Application.module() {
         ProductsTable,
         ProductAllergensTable,
         SupplierOpeningHoursTable,
-        ReservationsTable
+        ReservationsTable,
     )
 
     SeedData.seedIfEmpty(clock = Clock.System, hasher = PasswordHasher())
@@ -78,7 +81,7 @@ fun Application.module() {
             issuer = jwtProperties.issuer,
             audience = jwtProperties.audience,
             validity = jwtProperties.validity,
-        )
+        ),
     )
 
     // 4. ROUTES

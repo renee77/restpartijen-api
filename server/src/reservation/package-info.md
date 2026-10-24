@@ -1,4 +1,4 @@
-Feature F2: zoeken en reserveren. Het reserveringstraject van een partij: reserveren, intrekken en ophalen bevestigen, met `ReservationStateMachine` die bewaakt welke statusovergangen mogen (§9.5). Levert het contract `ReservationMaintenance` aan F3.
+Feature F2: search and reserve. The reservation flow of a product: reserving, cancelling and confirming the pickup, with `ReservationStateMachine` guarding which status transitions are allowed (§9.5). Provides the contract `ReservationMaintenance` to F3.
 
-Eigenaar: Stefan
+Owner: Stefan
 Feature: F2

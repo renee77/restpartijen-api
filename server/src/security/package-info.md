@@ -1,4 +1,4 @@
-GI-3: authenticatie en rollen. Deze package maakt en controleert JWT-tokens (`JwtConfig`, `JwtSettings`), hasht wachtwoorden met Argon2id (`PasswordHasher`), levert de rolcheck voor routes (`requireRole`) en de endpoints `/auth/register` en `/auth/login`. Er wordt niets versleuteld: wachtwoorden worden gehasht en tokens ondertekend (§16.1).
+GI-3: authentication and roles. This package creates and verifies JWT tokens (`JwtConfig`, `JwtSettings`), hashes passwords with Argon2id (`PasswordHasher`), provides the role check for routes (`requireRole`) and the endpoints `/auth/register` and `/auth/login`. Nothing is encrypted: passwords are hashed and tokens are signed (§16.1).
 
-Eigenaar: Lonneke (gedeeld onderdeel)
-GI-3 Authenticatie en rollen
+Owner: Lonneke (shared part)
+GI-3 Authentication and roles

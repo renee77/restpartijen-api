@@ -45,20 +45,39 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
 /**
- * Blok 5: POST /api/v1/reservations through all layers, with fakes behind the service.
- * Only COLLECTOR may reserve (§5.5, decision 3.6).
+ * The reservation endpoints through all layers, with fakes behind the service: reserving
+ * (POST /api/v1/reservations), the own reservations (GET), cancelling (DELETE /{id}) and confirming
+ * a pickup (POST /{id}/collect). Only a COLLECTOR may use them (§5.5, decision 3.6).
  */
 class ReservationRoutesTest {
 
-    // Arrange: a clock that stands still during the test but starts at the real "now",
-    // because the JWT verifier checks token expiry against the real time (#62)
+    /**
+     * A clock that stands still during the test but starts at the real "now",
+     * because the JWT verifier checks token expiry against the real time (#62).
+     */
     private val testClock = TestClock.fixedNow()
     private val now = testClock.now()
+
+    /** A pickup window that opened an hour ago and closes in five hours. */
     private val openWindow = PickupWindow(now - 1.hours, now + 5.hours)
+
+    /** Shared with the app, so a test can check which status changes the service made. */
     private val statusUpdater = FakeProductStatusUpdater()
 
-    private fun Application.testApp(products: List<ProductView>, reservations: List<Reservation> = emptyList(), price: Money? = Money.fromCents(299)) {
-        createEmptyTestDatabase()     // The service opens its own transaction (GI-1, decision 1.4), so even with fakes it needs a database.
+    /**
+     * The real reservation routes and service, with fakes behind the service and the test clock.
+     *
+     * @param products what the product reader knows
+     * @param reservations the reservations that are stored from the start
+     * @param price the current price of every product; null means "expired"
+     */
+    private fun Application.testApp(
+        products: List<ProductView>,
+        reservations: List<Reservation> = emptyList(),
+        price: Money? = Money.fromCents(299),
+    ) {
+        // The service opens its own transaction (GI-1, decision 1.4), so even with fakes it needs a database.
+        createEmptyTestDatabase()
         configureSerialization()
         configureStatusPages()
         configureSecurity(JwtConfig(TestJwtSettings.default, testClock))
@@ -73,12 +92,13 @@ class ReservationRoutesTest {
         configureReservationRouting()
     }
 
-    private fun ApplicationTestBuilder.setUp(vararg products: ProductView) =
-        application { testApp(products.toList()) }
+    /** Starts the test app with these products, no reservations and the default price. */
+    private fun ApplicationTestBuilder.setUp(vararg products: ProductView) = application { testApp(products.toList()) }
 
-    private fun tokenFor(role: Role) =
-        TestTokens().createTestToken(userId = 7L, role = role, clock = testClock)
+    /** A valid token for user 7 with this role. */
+    private fun tokenFor(role: Role) = TestTokens().createTestToken(userId = 7L, role = role, clock = testClock)
 
+    /** POST /api/v1/reservations for this product, with the token if one is given. */
     private suspend fun ApplicationTestBuilder.reserve(productId: Long, token: String? = null): HttpResponse =
         client.post("/api/v1/reservations") {
             token?.let { bearerAuth(it) }
@@ -86,21 +106,30 @@ class ReservationRoutesTest {
             setBody("""{"productId": $productId}""")
         }
 
+    /** GET /api/v1/reservations, with the token if one is given. */
     private suspend fun ApplicationTestBuilder.ownReservations(token: String? = null): HttpResponse =
         client.get("/api/v1/reservations") { token?.let { bearerAuth(it) } }
 
+    /** DELETE /api/v1/reservations/{id}; the id is text, so a test can also send one that is not a number. */
     private suspend fun ApplicationTestBuilder.cancel(reservationId: String, token: String? = null): HttpResponse =
         client.delete("/api/v1/reservations/$reservationId") { token?.let { bearerAuth(it) } }
 
+    /** POST /api/v1/reservations/{id}/collect, with the token if one is given. */
     private suspend fun ApplicationTestBuilder.collect(reservationId: String, token: String? = null): HttpResponse =
         client.post("/api/v1/reservations/$reservationId/collect") { token?.let { bearerAuth(it) } }
 
-    // Reservation 1 on product 1. tokenFor() belongs to collector 7, so collectorId 7 means "mine".
+    /** Reservation 1 on product 1. tokenFor() belongs to collector 7, so collectorId 7 means "mine". */
     private fun reservation(collectorId: Long = 7, status: ReservationStatus = ReservationStatus.ACTIVE) = Reservation(
-        1, productId = 1, collectorId = collectorId, reservedPrice = Money.fromCents(299),
-        reservedAt = now - 1.hours, expiresAt = now + 5.hours, status = status,
+        1,
+        productId = 1,
+        collectorId = collectorId,
+        reservedPrice = Money.fromCents(299),
+        reservedAt = now - 1.hours,
+        expiresAt = now + 5.hours,
+        status = status,
     )
 
+    /** Product 1, RESERVED, with an open pickup window: the product of [reservation]. */
     private val reservedProduct = FakeProduct(id = 1, pickupWindow = openWindow, status = ProductStatus.RESERVED)
 
     @Test
@@ -172,8 +201,12 @@ class ReservationRoutesTest {
     fun `a collector only sees their own reservations`() = testApplication {
         // Arrange: one reservation of collector 7 (the token), one of collector 8
         val mine = Reservation(
-            1, productId = 1, collectorId = 7, reservedPrice = Money.fromCents(299),
-            reservedAt = now - 1.hours, expiresAt = now + 5.hours,
+            1,
+            productId = 1,
+            collectorId = 7,
+            reservedPrice = Money.fromCents(299),
+            reservedAt = now - 1.hours,
+            expiresAt = now + 5.hours,
         )
         val theirs = mine.copy(id = 2, productId = 2, collectorId = 8)
         application { testApp(products = emptyList(), reservations = listOf(mine, theirs)) }
@@ -191,11 +224,18 @@ class ReservationRoutesTest {
     fun `the reserved price stays the same when the current price drops`() = testApplication {
         // Arrange: reserved at 4.50 twenty hours ago; the price provider now says 2.99
         val reservation = Reservation(
-            1, productId = 1, collectorId = 7, reservedPrice = Money.fromCents(450),
-            reservedAt = now - 20.hours, expiresAt = now + 4.hours,
+            1,
+            productId = 1,
+            collectorId = 7,
+            reservedPrice = Money.fromCents(450),
+            reservedAt = now - 20.hours,
+            expiresAt = now + 4.hours,
         )
         application {
-            testApp(products = listOf(FakeProduct(id = 1, pickupWindow = openWindow)), reservations = listOf(reservation))
+            testApp(
+                products = listOf(FakeProduct(id = 1, pickupWindow = openWindow)),
+                reservations = listOf(reservation),
+            )
         }
 
         // Act
@@ -268,7 +308,9 @@ class ReservationRoutesTest {
         // Assert: 204, the product went back to LISTED, and the reservation shows as CANCELLED
         assertEquals(HttpStatusCode.NoContent, response.status)
         assertTrue(1L in statusUpdater.listed, "service did not put the product back to LISTED")
-        val own = Json.decodeFromString<List<ReservationResponse>>(ownReservations(tokenFor(Role.COLLECTOR)).bodyAsText())
+        val own = Json.decodeFromString<List<ReservationResponse>>(
+            ownReservations(tokenFor(Role.COLLECTOR)).bodyAsText(),
+        )
         assertEquals(ReservationStatus.CANCELLED, own.single().status)
     }
 
@@ -308,7 +350,10 @@ class ReservationRoutesTest {
         // Arrange: an own reservation that was already picked up, so its product is COLLECTED too
         val collectedProduct = FakeProduct(id = 1, pickupWindow = openWindow, status = ProductStatus.COLLECTED)
         application {
-            testApp(products = listOf(collectedProduct), reservations = listOf(reservation(status = ReservationStatus.COLLECTED)))
+            testApp(
+                products = listOf(collectedProduct),
+                reservations = listOf(reservation(status = ReservationStatus.COLLECTED)),
+            )
         }
         // Act
         val response = cancel("1", token = tokenFor(Role.COLLECTOR))
@@ -339,18 +384,19 @@ class ReservationRoutesTest {
     }
 
     @Test
-    fun `a collector confirms the pickup inside the window and gets 200 with the reservation COLLECTED (TC-11)`() = testApplication {
-        // Arrange: openWindow runs from 1 hour ago to 5 hours from now
-        application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation())) }
-        // Act
-        val response = collect("1", token = tokenFor(Role.COLLECTOR))
-        // Assert: the moment comes from the test clock, and the product was marked COLLECTED too
-        assertEquals(HttpStatusCode.OK, response.status)
-        val body = Json.decodeFromString<ReservationResponse>(response.bodyAsText())
-        assertEquals(ReservationStatus.COLLECTED, body.status)
-        assertEquals(now.toString(), body.collectedAt)
-        assertEquals(listOf(1L), statusUpdater.collected)
-    }
+    fun `a collector confirms the pickup inside the window and gets 200 with the reservation COLLECTED (TC-11)`() =
+        testApplication {
+            // Arrange: openWindow runs from 1 hour ago to 5 hours from now
+            application { testApp(products = listOf(reservedProduct), reservations = listOf(reservation())) }
+            // Act
+            val response = collect("1", token = tokenFor(Role.COLLECTOR))
+            // Assert: the moment comes from the test clock, and the product was marked COLLECTED too
+            assertEquals(HttpStatusCode.OK, response.status)
+            val body = Json.decodeFromString<ReservationResponse>(response.bodyAsText())
+            assertEquals(ReservationStatus.COLLECTED, body.status)
+            assertEquals(now.toString(), body.collectedAt)
+            assertEquals(listOf(1L), statusUpdater.collected)
+        }
 
     @Test
     fun `the confirmed pickup is stored, so the own reservations show it as COLLECTED`() = testApplication {
@@ -359,7 +405,9 @@ class ReservationRoutesTest {
         // Act
         collect("1", token = tokenFor(Role.COLLECTOR))
         // Assert: read back through GET, not from the collect answer
-        val own = Json.decodeFromString<List<ReservationResponse>>(ownReservations(tokenFor(Role.COLLECTOR)).bodyAsText())
+        val own = Json.decodeFromString<List<ReservationResponse>>(
+            ownReservations(tokenFor(Role.COLLECTOR)).bodyAsText(),
+        )
         assertEquals(ReservationStatus.COLLECTED, own.single().status)
         assertEquals(now.toString(), own.single().collectedAt)
     }
@@ -367,7 +415,12 @@ class ReservationRoutesTest {
     @Test
     fun `confirming before the pickup window starts gives 422 and changes nothing`() = testApplication {
         // Arrange: the window opens in 1 hour
-        val notYetOpen = FakeProduct(id = 1, pickupWindow = PickupWindow(now + 1.hours, now + 5.hours), status = ProductStatus.RESERVED)
+        val notYetOpen =
+            FakeProduct(
+                id = 1,
+                pickupWindow = PickupWindow(now + 1.hours, now + 5.hours),
+                status = ProductStatus.RESERVED,
+            )
         application { testApp(products = listOf(notYetOpen), reservations = listOf(reservation())) }
         // Act
         val response = collect("1", token = tokenFor(Role.COLLECTOR))
@@ -379,7 +432,12 @@ class ReservationRoutesTest {
     @Test
     fun `confirming after the pickup window ended gives 422 and changes nothing`() = testApplication {
         // Arrange: the window closed 1 hour ago, but the maintenance has not lapsed the reservation yet
-        val closed = FakeProduct(id = 1, pickupWindow = PickupWindow(now - 5.hours, now - 1.hours), status = ProductStatus.RESERVED)
+        val closed =
+            FakeProduct(
+                id = 1,
+                pickupWindow = PickupWindow(now - 5.hours, now - 1.hours),
+                status = ProductStatus.RESERVED,
+            )
         application { testApp(products = listOf(closed), reservations = listOf(reservation())) }
         // Act
         val response = collect("1", token = tokenFor(Role.COLLECTOR))
@@ -391,7 +449,8 @@ class ReservationRoutesTest {
     @Test
     fun `confirming exactly when the window ends is still allowed`() = testApplication {
         // Arrange: edge case, until counts as inside, like reserve() (§5.5)
-        val endsNow = FakeProduct(id = 1, pickupWindow = PickupWindow(now - 5.hours, now), status = ProductStatus.RESERVED)
+        val endsNow =
+            FakeProduct(id = 1, pickupWindow = PickupWindow(now - 5.hours, now), status = ProductStatus.RESERVED)
         application { testApp(products = listOf(endsNow), reservations = listOf(reservation())) }
         // Act
         val response = collect("1", token = tokenFor(Role.COLLECTOR))
@@ -411,7 +470,9 @@ class ReservationRoutesTest {
             testApplication {
                 // Arrange: inside the window, so only the status can cause the refusal
                 val product = FakeProduct(id = 1, pickupWindow = openWindow, status = productStatus)
-                application { testApp(products = listOf(product), reservations = listOf(reservation(status = reservationStatus))) }
+                application {
+                    testApp(products = listOf(product), reservations = listOf(reservation(status = reservationStatus)))
+                }
                 // Act
                 val response = collect("1", token = tokenFor(Role.COLLECTOR))
                 // Assert

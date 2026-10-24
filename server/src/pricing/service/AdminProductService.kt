@@ -9,11 +9,27 @@ import com.restpartijen.api.shared.ProductStatusUpdater
 import com.restpartijen.api.shared.ProductView
 import com.restpartijen.api.shared.ReservationMaintenance
 
+/**
+ * The admin's product management (US-09): the overview and removing a product.
+ * Talks to F1 and F2 only through the contracts in shared.
+ *
+ * @property productReader reads the products for the overview and the status check before removing
+ * @property productStatusUpdater sets a product to REMOVED
+ * @property reservationMaintenance lapses the reservation of a reserved product before it is removed
+ */
 class AdminProductService(
     private val productReader: ProductReader,
     private val productStatusUpdater: ProductStatusUpdater,
-    private val reservationMaintenance: ReservationMaintenance
+    private val reservationMaintenance: ReservationMaintenance,
 ) {
+    /**
+     * Removes a product (B-19). A RESERVED product first has its reservation lapsed;
+     * the lapse and the removal run in one transaction, so a failed removal undoes the lapse too.
+     *
+     * @throws NotFoundException when the product is unknown or already REMOVED (404)
+     * @throws IllegalStateTransitionException when the product is COLLECTED or EXPIRED,
+     *         or when it could not be set to REMOVED (409)
+     */
     suspend fun delete(productId: Long) {
         dbQuery {
             // 404: unknown, or already REMOVED (findById returns null for REMOVED, B-32)
@@ -22,12 +38,14 @@ class AdminProductService(
 
             when (product.status) {
                 ProductStatus.LISTED -> Unit
+
                 // A reserved product first releases its reservation
                 ProductStatus.RESERVED -> reservationMaintenance.lapseActiveFor(productId)
+
                 // 409: end states cannot be removed
                 ProductStatus.COLLECTED, ProductStatus.EXPIRED, ProductStatus.REMOVED ->
                     throw IllegalStateTransitionException(
-                        "Product $productId cannot be removed in status ${product.status}"
+                        "Product $productId cannot be removed in status ${product.status}",
                     )
             }
 
@@ -38,6 +56,10 @@ class AdminProductService(
         }
     }
 
+    /**
+     * The products for the admin overview (B-26).
+     * An empty [statuses] means no filter: every status except REMOVED.
+     */
     suspend fun overview(statuses: Set<ProductStatus>): List<ProductView> {
         if (statuses.isEmpty()) {
             return productReader.findByStatus(ProductStatus.entries.toSet() - ProductStatus.REMOVED)

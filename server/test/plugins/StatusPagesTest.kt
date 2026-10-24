@@ -26,7 +26,7 @@ import kotlin.test.assertFalse
  * Each test route throws one exception; StatusPages must turn it into the right status and body.
  */
 class StatusPagesTest {
-    // Only the two plugins under test plus throwing routes: no module(), so no config or database needed.
+    /** Only the two plugins under test plus throwing routes: no module(), so no config or database needed. */
     private fun Application.testApp() {
         configureSerialization()
         configureStatusPages()
@@ -42,10 +42,11 @@ class StatusPagesTest {
         }
     }
 
+    /** Starts the test application of [testApp]. */
     private fun ApplicationTestBuilder.setUp() = application { testApp() }
 
-    private suspend fun HttpResponse.errorBody(): ErrorResponse =
-        Json.decodeFromString<ErrorResponse>(bodyAsText())
+    /** Reads the body as the one error shape. */
+    private suspend fun HttpResponse.errorBody(): ErrorResponse = Json.decodeFromString<ErrorResponse>(bodyAsText())
 
     @Test
     fun `ValidationException gives 400 with the field`() = testApplication {

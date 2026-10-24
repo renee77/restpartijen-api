@@ -21,15 +21,23 @@ import kotlin.test.assertNull
  * TC-07 on the real application: GET /api/v1/products/{id} shows the three price fields in euros,
  * and an expired product gives 200 with EXPIRED and no price (US-07, §5.7, B-18).
  *
- * The seed data puts one product in every staffel, well away from a boundary, so the expected
+ * The seed data puts one product in every discount tier, well away from a boundary, so the expected
  * discount does not depend on the exact second. module() shares one database between tests,
  * so nothing here changes data.
  */
 class ProductPriceRealAppTest {
 
-    // One product per staffel (§9.4), with the price it must show. Amounts in cents, like Money.
+    /**
+     * One product per discount tier (§9.4), with the price it must show. Amounts in cents, like Money.
+     *
+     * @property name the seed product name
+     * @property originalCents the price without discount
+     * @property percentage the discount the product must show
+     * @property currentCents the price after discount
+     */
     private data class Case(val name: String, val originalCents: Long, val percentage: Int, val currentCents: Long)
 
+    /** The seed products of every category, from no discount up to the highest tier. */
     private val cases = listOf(
         // FRESH: more than 48 hours, 48, 24 and 12 hours or less
         Case("Halfvolle melk 1 liter", 249, 0, 249),
@@ -46,6 +54,7 @@ class ProductPriceRealAppTest {
         Case("Beschuit", 149, 40, 89),
     )
 
+    /** Starts the real module() with the test configuration. */
     private fun ApplicationTestBuilder.startApp() {
         environment { config = testConfig() }
         application { module() }
@@ -59,10 +68,10 @@ class ProductPriceRealAppTest {
         }
     }
 
-    private suspend fun ApplicationTestBuilder.detail(name: String) =
-        client.get("/api/v1/products/${idOf(name)}")
+    /** GET /api/v1/products/{id} for the seed product with this name. */
+    private suspend fun ApplicationTestBuilder.detail(name: String) = client.get("/api/v1/products/${idOf(name)}")
 
-    // Euros in the answer, whole cents inside (B-25)
+    /** Euros in the answer, whole cents inside (B-25). Rounds, so a value like 2.39 does not become 238. */
     private fun Double.toCents(): Long = (this * 100).roundToLong()
 
     @Test

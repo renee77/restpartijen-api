@@ -11,6 +11,13 @@ import kotlin.time.Instant
  * longest shelf life and the discount rules, so another category would be another product.
  * The route builds this from UpdateProductRequest; the service never sees the JSON format.
  * There is no pickup window: the service derives it again with the moment of updating (US-10).
+ *
+ * @property name the product name
+ * @property originalPrice the price before any discount
+ * @property bestBeforeAt the moment the best-before date ends
+ * @property quantity how many units are offered
+ * @property barcode the barcode on the package, or null for a product without one
+ * @property allergens the EU allergens the product contains
  */
 data class UpdateProductCommand(
     val name: String,

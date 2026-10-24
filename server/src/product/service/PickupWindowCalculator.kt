@@ -19,7 +19,11 @@ import kotlin.time.Instant
  * Sealed, so a `when` on it must handle every case; the service turns each reason into its own 422.
  */
 sealed interface PickupWindowResult {
-    /** The supplier is open at some moment between now and bestBeforeAt. */
+    /**
+     * The supplier is open at some moment between now and bestBeforeAt.
+     *
+     * @property window from the first open moment to the last closing moment before bestBeforeAt
+     */
     data class Found(val window: PickupWindow) : PickupWindowResult
 
     /** bestBeforeAt is not after now, so there is no time left at all. */
@@ -114,7 +118,7 @@ object PickupWindowCalculator {
         error("No closing moment before $bestBeforeAt, although an open moment was found")
     }
 
-    // A local time on a date becomes an instant here, so summer and winter time are handled.
+    /** A local time on a date becomes an instant here, so summer and winter time are handled. */
     private fun atLocalTime(date: LocalDate, time: LocalTime): Instant =
         LocalDateTime(date, time).toInstant(PLATFORM_TIME_ZONE)
 }

@@ -35,13 +35,17 @@ import kotlin.time.Clock
 
 /**
  * The opening-hours routes of US-10 (§5.10), with the fake SupplierRepository behind the service.
- * The fake knows aSupplier (id 1), owned by supplierUserId.
+ * The fake knows aSupplier (id 1), owned by SUPPLIER_USER_ID.
  * Order of the checks for PUT: role (401/403), body shape (400), supplier exists (404), own supplier (403),
  * week rules (422); then 200 with the stored week. Only the owner hears about the week rules.
  */
 class OpeningHoursRoutesTest {
 
-    // GET needs no token, but productRoutesTestApp also starts the security plugin.
+    /**
+     * Signs the PUT tokens through [tokenFor]. productRoutesTestApp also hands it to the security plugin,
+     * so the GET tests pass it too, although they send no token. Starts at the real "now", because the
+     * JWT verifier checks expiry against the real time (#62).
+     */
     private val tokenClock = FixedClock(Clock.System.now())
 
     // --- GET /api/v1/suppliers/{id}/opening-hours ---
@@ -49,7 +53,7 @@ class OpeningHoursRoutesTest {
     @Test
     fun `GET opening hours returns 200 with the week as JSON, without a token`() = testApplication {
         // Arrange
-        val suppliers = fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId)
+        val suppliers = fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID)
         suppliers.updateOpeningHours(aSupplier.id, listOf(monday, saturday))
         application { productRoutesTestApp(tokenClock, suppliers = suppliers) }
 
@@ -94,34 +98,35 @@ class OpeningHoursRoutesTest {
 
     // --- PUT /api/v1/suppliers/{id}/opening-hours ---
 
-    // Saturday first, so a sorted answer proves the stored week is returned instead of the request.
+    /** Saturday first, so a sorted answer proves the stored week is returned instead of the request. */
     private val validBody = """
         [{"day": "SATURDAY", "opensAt": "09:00", "closesAt": "18:00"},
          {"day": "MONDAY", "opensAt": "08:00", "closesAt": "21:00"}]
     """
 
-    private fun tokenFor(role: Role, userId: Long = supplierUserId) = productToken(role, tokenClock, userId)
+    /** A token for [userId] with [role], made with [tokenClock]. */
+    private fun tokenFor(role: Role, userId: Long = SUPPLIER_USER_ID) = productToken(role, tokenClock, userId)
 
+    /** Sends PUT /api/v1/suppliers/[id]/opening-hours with [body], by default as the owning supplier. */
     private suspend fun ApplicationTestBuilder.replace(
         id: String = aSupplier.id.toString(),
         body: String = validBody,
         token: String? = tokenFor(Role.SUPPLIER),
-    ): HttpResponse =
-        client.put("/api/v1/suppliers/$id/opening-hours") {
-            token?.let { bearerAuth(it) }
-            contentType(ContentType.Application.Json)
-            setBody(body)
-        }
+    ): HttpResponse = client.put("/api/v1/suppliers/$id/opening-hours") {
+        token?.let { bearerAuth(it) }
+        contentType(ContentType.Application.Json)
+        setBody(body)
+    }
 
-    // A fake that already holds a week, so a refused request can be checked to leave it alone.
+    /** A fake that already holds a week, so a refused request can be checked to leave it alone. */
     private suspend fun suppliersWithSaturday(): SupplierRepository =
-        fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId)
+        fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID)
             .also { it.updateOpeningHours(aSupplier.id, listOf(saturday)) }
 
     @Test
     fun `PUT opening hours of the own supplier returns 200 with the stored week`() = testApplication {
         // Arrange: TC-10
-        val suppliers = fakeSupplierRepository(aSupplier, ownerUserId = supplierUserId)
+        val suppliers = fakeSupplierRepository(aSupplier, ownerUserId = SUPPLIER_USER_ID)
         application { productRoutesTestApp(tokenClock, suppliers = suppliers) }
 
         // Act

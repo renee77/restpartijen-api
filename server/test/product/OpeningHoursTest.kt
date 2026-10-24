@@ -9,6 +9,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
+/** Unit test for OpeningHours itself: the closing time must come after the opening time (§5.10). */
 class OpeningHoursTest {
 
     // --- closing time after opening time (§5.10) ---

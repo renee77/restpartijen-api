@@ -2,6 +2,7 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.product.client.LookupResult
 import com.restpartijen.api.product.client.OpenFoodFactsClient
+import com.restpartijen.api.testsupport.NUTELLA_BODY
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
@@ -134,12 +135,15 @@ class OpenFoodFactsClientTest {
                 body.close()
             } catch (e: ClosedByteChannelException) {
                 // Expected: the client hung up after 64 KiB, which is what this test wants to see. The parent class,
-                // because the hang-up can land in writeFully (ClosedWriteChannelException) or in flush (review round 3).
+                // because the hang-up can land in writeFully (ClosedWriteChannelException) or in flush
+                // (review round 3).
             }
         }
-        val client = openFoodFactsClient(MockEngine {
-            respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
-        })
+        val client = openFoodFactsClient(
+            MockEngine {
+                respond(body, HttpStatusCode.OK, headersOf(HttpHeaders.ContentType, "application/json"))
+            },
+        )
 
         // Act
         val result = client.fetchProduct(NUTELLA_BARCODE)
@@ -179,10 +183,12 @@ class OpenFoodFactsClientTest {
         // Arrange
         // The API answers directly; a redirect could send the call to another host.
         val requests = mutableListOf<HttpRequestData>()
-        val client = openFoodFactsClient(MockEngine { request ->
-            requests += request
-            respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "https://example.org/elsewhere"))
-        })
+        val client = openFoodFactsClient(
+            MockEngine { request ->
+                requests += request
+                respond("", HttpStatusCode.Found, headersOf(HttpHeaders.Location, "https://example.org/elsewhere"))
+            },
+        )
 
         // Act
         val result = client.fetchProduct(NUTELLA_BARCODE)
@@ -198,10 +204,12 @@ class OpenFoodFactsClientTest {
         // The route allows only digits, but the client must not rely on that: a slash or question mark
         // in the barcode may never add a path segment or a query parameter.
         val requests = mutableListOf<HttpRequestData>()
-        val client = openFoodFactsClient(MockEngine { request ->
-            requests += request
-            respondJson(HttpStatusCode.NotFound, NOT_FOUND_BODY)
-        })
+        val client = openFoodFactsClient(
+            MockEngine { request ->
+                requests += request
+                respondJson(HttpStatusCode.NotFound, NOT_FOUND_BODY)
+            },
+        )
 
         // Act
         client.fetchProduct("1234567/../admin?x=1")
@@ -325,10 +333,12 @@ class OpenFoodFactsClientTest {
     fun `fetchProduct returns Unavailable when Open Food Facts answers too late`() = runTest {
         // Arrange
         // Longer than the 3 second time-out of the client, so the client has to give up first.
-        val client = openFoodFactsClient(MockEngine {
-            delay(10.seconds)
-            respondJson(HttpStatusCode.OK, NUTELLA_BODY)
-        })
+        val client = openFoodFactsClient(
+            MockEngine {
+                delay(10.seconds)
+                respondJson(HttpStatusCode.OK, NUTELLA_BODY)
+            },
+        )
 
         // Act
         val result = client.fetchProduct(NUTELLA_BARCODE)
@@ -337,35 +347,42 @@ class OpenFoodFactsClientTest {
         assertEquals(LookupResult.Unavailable, result)
     }
 
+    /** A client whose Open Food Facts always answers [status] and [body]. */
     private fun clientResponding(status: HttpStatusCode, body: String) =
         openFoodFactsClient(MockEngine { respondJson(status, body) })
 
-    // The one request the client sends for [barcode], answered with the real Nutella body.
+    /** The one request the client sends for [barcode], answered with the real Nutella body. */
     private suspend fun requestSentFor(barcode: String): HttpRequestData {
         val requests = mutableListOf<HttpRequestData>()
-        val client = openFoodFactsClient(MockEngine { request ->
-            requests += request
-            respondJson(HttpStatusCode.OK, NUTELLA_BODY)
-        })
+        val client = openFoodFactsClient(
+            MockEngine { request ->
+                requests += request
+                respondJson(HttpStatusCode.OK, NUTELLA_BODY)
+            },
+        )
         client.fetchProduct(barcode)
         return requests.single()
     }
 
-    private fun MockRequestHandleScope.respondJson(status: HttpStatusCode, body: String): HttpResponseData =
-        respond(
-            content = body,
-            status = status,
-            headers = headersOf(HttpHeaders.ContentType, "application/json"),
-        )
+    /** Answers [status] with [body] as JSON, as Open Food Facts does. */
+    private fun MockRequestHandleScope.respondJson(status: HttpStatusCode, body: String): HttpResponseData = respond(
+        content = body,
+        status = status,
+        headers = headersOf(HttpHeaders.ContentType, "application/json"),
+    )
 
     private companion object {
         const val NUTELLA_BARCODE = "3017620422003"
         const val UNKNOWN_BARCODE = "8712345678906"
 
-        // Real response of GET /api/v3/product/3017620422003?fields=product_name,allergens_tags.
-        const val NUTELLA_BODY = """{"code":"3017620422003","errors":[],"product":{"allergens_tags":["en:milk","en:nuts","en:soybeans"],"product_name":"Nutella"},"result":{"id":"product_found","lc_name":"Product found","name":"Product found"},"status":"success","warnings":[]}"""
-
-        // Real response of GET /api/v3/product/8712345678906?fields=product_name,allergens_tags.
-        const val NOT_FOUND_BODY = """{"code":"8712345678906","errors":[{"field":{"id":"code","value":"8712345678906"},"impact":{"id":"failure","lc_name":"Failure","name":"Failure"},"message":{"id":"product_not_found","lc_name":"","name":""}}],"result":{"id":"product_not_found","lc_name":"Product not found","name":"Product not found"},"status":"failure","warnings":[]}"""
+        /** Real response of GET /api/v3/product/8712345678906?fields=product_name,allergens_tags. */
+        const val NOT_FOUND_BODY =
+            """{"code":"8712345678906","errors":[""" +
+                """{"field":{"id":"code","value":"8712345678906"},"impact":""" +
+                """{"id":"failure","lc_name":"Failure","name":"Failure"},"message":""" +
+                """{"id":"product_not_found","lc_name":"","name":""}}],"result":""" +
+                """{"id":"product_not_found","lc_name":"Product not found","name":"Product not found"}""" +
+                // The rest has no { or [ to split before and does not fit on the line above.
+                ""","status":"failure","warnings":[]}"""
     }
 }

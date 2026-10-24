@@ -11,12 +11,12 @@ import org.jetbrains.exposed.v1.core.Table
  * zero to fourteen allergens (§9.8).
  */
 object ProductAllergensTable : Table("product_allergens") {
-    // The product this allergen belongs to; the database rejects an id that is not in ProductsTable.
+    /** The product this allergen belongs to; the database rejects an id that is not in ProductsTable. */
     val productId = long("product_id").references(ProductsTable.id)
 
-    // Stored by name (for example "MILK"); only the fourteen EU allergen groups fit.
+    /** Stored by name (for example "MILK"); only the fourteen EU allergen groups fit. */
     val allergen = enumerationByName<Allergen>("allergen", length = 30)
 
-    // Composite key: a product lists each allergen at most once.
+    /** Composite key: a product lists each allergen at most once. */
     override val primaryKey = PrimaryKey(productId, allergen)
 }

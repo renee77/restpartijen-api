@@ -30,11 +30,15 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Instant
 
-/** GET /api/v1/products through the route, with fakes behind the service (US-04, §5.4). No database: search opens no transaction. */
+/**
+ * GET /api/v1/products through the route, with fakes behind the service (US-04, §5.4). No database: search opens
+ * no transaction.
+ */
 class SearchRoutesTest {
 
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
+    /** The real search route and service over these products, with every price at 1.99 and a fixed clock. */
     private fun ApplicationTestBuilder.setUp(vararg products: ProductView) = application {
         configureSerialization()
         configureStatusPages()
@@ -83,7 +87,11 @@ class SearchRoutesTest {
         // Assert
         assertEquals(HttpStatusCode.BadRequest, response.status)
         assertEquals(
-            ErrorResponse(ErrorCode.VALIDATION_ERROR, "Unknown category 'fresh'. Allowed values: FRESH, FROZEN, AMBIENT", "category"),
+            ErrorResponse(
+                ErrorCode.VALIDATION_ERROR,
+                "Unknown category 'fresh'. Allowed values: FRESH, FROZEN, AMBIENT",
+                "category",
+            ),
             Json.decodeFromString<ErrorResponse>(response.bodyAsText()),
         )
     }

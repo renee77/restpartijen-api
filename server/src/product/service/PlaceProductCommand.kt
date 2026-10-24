@@ -14,6 +14,14 @@ import kotlin.time.Instant
  *
  * Barcode and allergens are optional (§11.1). There is no pickup window: the service derives it from the
  * opening hours of the supplier, bestBeforeAt and the moment of placing (US-10).
+ *
+ * @property category the product kind; it decides the subclass that is built
+ * @property name the product name
+ * @property originalPrice the price before any discount
+ * @property bestBeforeAt the moment the best-before date ends
+ * @property quantity how many units are offered
+ * @property barcode the barcode on the package, or null for a product without one
+ * @property allergens the EU allergens the product contains
  */
 data class PlaceProductCommand(
     val category: ProductCategory,

@@ -2,20 +2,24 @@ package com.restpartijen.api.pricing.routes
 
 import com.restpartijen.api.pricing.dto.toAdminResponse
 import com.restpartijen.api.pricing.service.AdminProductService
+import com.restpartijen.api.pricing.service.ExpiryScheduler
+import com.restpartijen.api.security.service.requireRole
+import com.restpartijen.api.shared.ProductStatus
+import com.restpartijen.api.shared.Role.ADMIN
+import com.restpartijen.api.shared.ValidationException
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.Application
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.response.respond
-import io.ktor.server.routing.post
-import io.ktor.server.routing.routing
-import com.restpartijen.api.security.service.requireRole
-import com.restpartijen.api.shared.Role.ADMIN
-import com.restpartijen.api.pricing.service.ExpiryScheduler
-import com.restpartijen.api.shared.ProductStatus
-import com.restpartijen.api.shared.ValidationException
-import io.ktor.http.HttpStatusCode
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.routing
 
+/**
+ * F3 admin routes (US-08, US-09): the manual maintenance run, the product overview and removing a product.
+ * Every route requires the ADMIN role; no token gives 401, another role 403.
+ */
 fun Application.configurePricingRouting() {
     val adminProductService: AdminProductService by dependencies
     val service: ExpiryScheduler by dependencies
@@ -49,9 +53,8 @@ fun Application.configurePricingRouting() {
 }
 
 /** Turns query text into a status, or throws a 400 that lists the allowed values (§5.9). */
-private fun String.toProductStatus(): ProductStatus =
-    ProductStatus.entries.find { it.name == this }
-        ?: throw ValidationException(
-            "Unknown status '$this'. Allowed values: ${ProductStatus.entries.joinToString()}",
-            field = "status"
-        )
+private fun String.toProductStatus(): ProductStatus = ProductStatus.entries.find { it.name == this }
+    ?: throw ValidationException(
+        "Unknown status '$this'. Allowed values: ${ProductStatus.entries.joinToString()}",
+        field = "status",
+    )

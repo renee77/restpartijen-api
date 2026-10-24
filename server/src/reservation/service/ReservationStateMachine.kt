@@ -20,24 +20,44 @@ import com.restpartijen.api.shared.ProductStatus.RESERVED
  */
 object ReservationStateMachine {
 
-    /** Where a transition starts. reservation is null for RESERVE: there is no reservation yet. */
+    /**
+     * Where a transition starts. reservation is null for RESERVE: there is no reservation yet.
+     *
+     * @property event what happens
+     * @property product the current product status
+     * @property reservation the current reservation status, or null when there is no reservation yet
+     */
     private data class From(
         val event: ReservationEvent,
         val product: ProductStatus,
-        val reservation: ReservationStatus?
+        val reservation: ReservationStatus?,
     )
 
-    /** Where a transition ends: both statuses change together, in one transaction. */
+    /**
+     * Where a transition ends: both statuses change together, in one transaction.
+     *
+     * @property product the new product status
+     * @property reservation the new reservation status
+     */
     data class To(val product: ProductStatus, val reservation: ReservationStatus)
 
+    /** The allowed transitions; a combination that is not a key here is refused. */
     private val transitions: Map<From, To> = mapOf(
         From(RESERVE, LISTED, null) to To(RESERVED, ACTIVE),
         From(COLLECT, RESERVED, ACTIVE) to To(ProductStatus.COLLECTED, ReservationStatus.COLLECTED),
         From(CANCEL, RESERVED, ACTIVE) to To(LISTED, CANCELLED),
-        From(LAPSE, RESERVED, ACTIVE) to To(LISTED, LAPSED)
+        From(LAPSE, RESERVED, ACTIVE) to To(LISTED, LAPSED),
     )
 
+    /**
+     * The new statuses after [event], given the current [product] and [reservation] status.
+     * Changes nothing itself: the caller stores both new statuses.
+     *
+     * @throws IllegalStateTransitionException when the combination is not allowed (409)
+     */
     fun transition(event: ReservationEvent, product: ProductStatus, reservation: ReservationStatus?): To =
         transitions[From(event, product, reservation)]
-            ?: throw IllegalStateTransitionException("$event is not allowed for product $product and reservation $reservation")
+            ?: throw IllegalStateTransitionException(
+                "$event is not allowed for product $product and reservation $reservation",
+            )
 }

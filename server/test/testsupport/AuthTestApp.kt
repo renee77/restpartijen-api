@@ -17,14 +17,13 @@ import kotlin.time.Instant
 val authTestNow: Instant = Instant.parse("2026-01-15T10:30:00Z")
 
 /**
- * Same plugin chain as production for the auth routes, with the real services on the test database.
- * Call createEmptyTestDatabase(UsersTable) first.
+ * The auth routes with the production plugins they need (serialization and StatusPages)
+ * and the real services on the test database. Call createEmptyTestDatabase(UsersTable) first.
+ *
+ * @param jwtConfig the token mechanism LoginService signs with.
+ * @param supplierIdLookup the lookup login uses for a supplier's id; by default a fake that knows no supplier.
  */
-fun Application.setUpAuthTestApp(
-    jwtConfig: JwtConfig,
-    supplierIdLookup: SupplierIdLookup = FakeSupplierIdLookup()
-
-    ) {
+fun Application.setUpAuthTestApp(jwtConfig: JwtConfig, supplierIdLookup: SupplierIdLookup = FakeSupplierIdLookup()) {
     configureSerialization()
     configureStatusPages()
     dependencies {

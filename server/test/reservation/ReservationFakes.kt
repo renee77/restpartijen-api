@@ -1,9 +1,9 @@
 package com.restpartijen.api.reservation
 
-import com.restpartijen.api.reservation.model.Reservation
-import com.restpartijen.api.reservation.repository.ReservationRepository
 import com.restpartijen.api.persistence.Repository
+import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationStatus
+import com.restpartijen.api.reservation.repository.ReservationRepository
 import com.restpartijen.api.shared.Money
 import com.restpartijen.api.shared.PickupWindow
 import com.restpartijen.api.shared.PriceBreakdown
@@ -20,7 +20,18 @@ import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Instant
 
-/** A product as F2 sees it, with sensible defaults so a test only sets what matters. */
+/**
+ * A product as F2 sees it, with sensible defaults so a test only sets what matters.
+ * Its shelf life runs until the end of the pickup window, so [pickupWindow] also sets the remaining shelf life.
+ *
+ * @property id the product id
+ * @property pickupWindow when the product can be collected
+ * @property status the product status
+ * @property name the product name
+ * @property supplier the supplier, with a fixed name and location
+ * @property originalPrice the price without discount
+ * @property category the product category
+ */
 data class FakeProduct(
     override val id: Long,
     override val pickupWindow: PickupWindow,
@@ -33,8 +44,17 @@ data class FakeProduct(
     override fun shelfLifeRemaining(clock: Clock): Duration = pickupWindow.until - clock.now()
 }
 
+/**
+ * Fake of F1's ProductReader over a fixed list. Like the real one, a REMOVED product counts as not found;
+ * it knows no expired listings.
+ *
+ * @property products the products it searches in
+ */
 class FakeProductReader(private val products: List<ProductView>) : ProductReader {
-    override suspend fun findById(id: Long): ProductView? = products.find { it.id == id && it.status != ProductStatus.REMOVED }
+    override suspend fun findById(id: Long): ProductView? = products.find {
+        it.id == id &&
+            it.status != ProductStatus.REMOVED
+    }
     override suspend fun findAvailable(now: Instant): List<ProductView> =
         products.filter { it.status == ProductStatus.LISTED }
 
@@ -43,10 +63,18 @@ class FakeProductReader(private val products: List<ProductView>) : ProductReader
         products.filter { it.status in statuses }
 }
 
-/** Records which products were reserved, so a test can check the service really called it. */
+/**
+ * Records which products were reserved, listed again or collected, so a test can check the service
+ * really called it. Those calls always succeed; markExpired and markRemoved change nothing.
+ */
 class FakeProductStatusUpdater : ProductStatusUpdater {
+    /** The ids that markReserved was called with, in order. */
     val reserved = mutableListOf<Long>()
+
+    /** The ids that markListed was called with, in order. */
     val listed = mutableListOf<Long>()
+
+    /** The ids that markCollected was called with, in order. */
     val collected = mutableListOf<Long>()
     override suspend fun markReserved(productId: Long): Boolean = reserved.add(productId)
     override suspend fun markListed(productId: Long): Boolean = listed.add(productId)
@@ -55,18 +83,28 @@ class FakeProductStatusUpdater : ProductStatusUpdater {
     override suspend fun markRemoved(productId: Long): Boolean = false
 }
 
-/** Always returns the same price; null means "expired", as in the real contract. */
+/**
+ * Always returns the same price; null means "expired", as in the real contract.
+ * The breakdown shows no discount: the original and the current price are both [price].
+ *
+ * @property price the price for every product, or null for "expired"
+ */
 class FakePriceProvider(private val price: Money?) : PriceProvider {
     override fun currentPrice(product: PricedProduct): Money? = price
-    override fun priceBreakdown(product: PricedProduct): PriceBreakdown? =
-        price?.let { PriceBreakdown(it, 0, it) }
+    override fun priceBreakdown(product: PricedProduct): PriceBreakdown? = price?.let { PriceBreakdown(it, 0, it) }
 }
 
-/** In-memory reservations, reusing Eva's generic FakeRepository via delegation. */
+/**
+ * In-memory reservations, reusing Eva's generic FakeRepository via delegation.
+ *
+ * @param initial the reservations that are stored from the start
+ */
 class FakeReservationRepository(initial: List<Reservation> = emptyList()) :
     ReservationRepository,
     Repository<Reservation> by FakeRepository(
-        idOf = { it.id }, withId = { r, id -> r.copy(id = id) }, initialItems = initial,
+        idOf = { it.id },
+        withId = { r, id -> r.copy(id = id) },
+        initialItems = initial,
     ) {
 
     override suspend fun findOverdue(now: Instant): List<Reservation> =

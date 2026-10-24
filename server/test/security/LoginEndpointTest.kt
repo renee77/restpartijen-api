@@ -1,10 +1,11 @@
 package com.restpartijen.api.security
 
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.plugins.ErrorCode
 import com.restpartijen.api.plugins.ErrorResponse
 import com.restpartijen.api.security.dto.LoginResponse
-import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.security.service.JwtConfig
+import com.restpartijen.api.security.service.PROVIDER_NAME
 import com.restpartijen.api.security.service.configureSecurity
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
@@ -30,20 +31,24 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-import com.restpartijen.api.security.service.PROVIDER_NAME
 
+/**
+ * POST /api/v1/auth/login through the real routes and services on an empty H2 database (decision 3.8),
+ * plus one protected route to prove the issued token is accepted.
+ */
 class LoginEndpointTest {
-    // Arrange: use a fixed clock for predictable token timestamps
+    /** A clock that stands still from the real "now", for predictable token timestamps that the verifier accepts. */
     val testClock = TestClock.fixedNow()
-    private suspend fun HttpResponse.errorBody(): ErrorResponse =
-        Json.decodeFromString<ErrorResponse>(bodyAsText())
+
+    /** Reads the error body of a refused request. */
+    private suspend fun HttpResponse.errorBody(): ErrorResponse = Json.decodeFromString<ErrorResponse>(bodyAsText())
 
     // Testbasics
     private val email = "login@mail.com"
     private val password = "MyTestPassword123"
     private val jwtConfig = JwtConfig(TestJwtSettings.default, testClock)
 
-    // Setting up the TestApp and the routing, for this test
+    /** Setting up the TestApp and the routing, for this test. */
     private fun ApplicationTestBuilder.setUpLoginApp() {
         application {
             setUpAuthTestApp(jwtConfig)
@@ -57,18 +62,19 @@ class LoginEndpointTest {
         }
     }
 
-    private suspend fun HttpClient.registerDefaultUser() =
-        post("/api/v1/auth/register") {
-            contentType(ContentType.Application.Json)
-            setBody("""{"email":"$email","password":"$password","displayName":"TestName"}""")
-        }
+    /** Registers the account with [email] and [password], so a test can log in with it. */
+    private suspend fun HttpClient.registerDefaultUser() = post("/api/v1/auth/register") {
+        contentType(ContentType.Application.Json)
+        setBody("""{"email":"$email","password":"$password","displayName":"TestName"}""")
+    }
 
-    private suspend fun HttpClient.login(json: String): HttpResponse =
-        post("/api/v1/auth/login") {
-            contentType(ContentType.Application.Json)
-            setBody(json)
-        }
+    /** POST /api/v1/auth/login with this raw JSON body. */
+    private suspend fun HttpClient.login(json: String): HttpResponse = post("/api/v1/auth/login") {
+        contentType(ContentType.Application.Json)
+        setBody(json)
+    }
 
+    /** A login body as JSON; by default with the credentials of the registered account. */
     private fun loginBody(email: String = this.email, password: String = this.password) =
         """{"email":"$email","password":"$password"}"""
 

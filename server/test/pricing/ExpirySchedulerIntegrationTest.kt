@@ -14,8 +14,8 @@ import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationsTable
 import com.restpartijen.api.reservation.service.ReservationMaintenanceService
-import com.restpartijen.api.seed.SeedData
 import com.restpartijen.api.security.service.PasswordHasher
+import com.restpartijen.api.seed.SeedData
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
@@ -25,9 +25,9 @@ import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Instant
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 /**
  * The status monitoring on a real H2 database with the seed data and the real implementations
@@ -41,11 +41,16 @@ class ExpirySchedulerIntegrationTest {
 
     private lateinit var scheduler: ExpiryScheduler
 
+    /** Builds a fresh seeded database and the scheduler with the real F1 and F2 parts. */
     @BeforeTest
     fun setUp() {
         // Every test gets its own empty database, filled with the seed data for this one moment
         createEmptyTestDatabase(
-            UsersTable, SuppliersTable, ProductsTable, ProductAllergensTable, ReservationsTable,
+            UsersTable,
+            SuppliersTable,
+            ProductsTable,
+            ProductAllergensTable,
+            ReservationsTable,
             SupplierOpeningHoursTable,
         )
         SeedData.seedIfEmpty(clock, PasswordHasher())
@@ -54,7 +59,9 @@ class ExpirySchedulerIntegrationTest {
         val productReader = ExposedProductReader(ExposedProductRepository(clock))
         val statusUpdater = ExposedProductStatusUpdater()
         val reservationMaintenance = ReservationMaintenanceService(
-            productReader, statusUpdater, ExposedReservationRepository()
+            productReader,
+            statusUpdater,
+            ExposedReservationRepository(),
         )
         scheduler = ExpiryScheduler(reservationMaintenance, productReader, statusUpdater, clock)
     }
@@ -83,7 +90,8 @@ class ExpirySchedulerIntegrationTest {
         val products = productStatuses()
         // LISTED and past its date
         assertEquals(ProductStatus.EXPIRED, products["Griekse yoghurt"])
-        // RESERVED and past its date: it lapses first and then expires. LISTED here would mean the steps ran in the wrong order.
+        // RESERVED and past its date: it lapses first and then expires. LISTED here would mean the steps ran in the
+        // wrong order.
         assertEquals(ProductStatus.EXPIRED, products["Wit casinobrood"])
         // Lapsed reservations put their products back on the list
         assertEquals(ProductStatus.LISTED, products["Wraps kip-kerrie"])

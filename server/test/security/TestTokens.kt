@@ -8,22 +8,23 @@ import com.restpartijen.api.shared.Role
 import com.restpartijen.api.testsupport.FixedClock
 import java.util.Date
 import kotlin.time.Clock
-import kotlin.time.Instant
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 /**
  * Default JWT settings for tests, so tokens can be created without providing settings every time.
  */
 object TestJwtSettings {
+    /** Test values for every setting; tokens are valid for 24 hours, like in production. */
     val default = JwtSettings(
         secret = "test-secret-that-is-long-enough-to-work-in-production",
         issuer = "test-issuer",
         audience = "test-audience",
-        validity = 24.hours
+        validity = 24.hours,
     )
 }
 
-/** One fixed moment, shared by the token helper and the JwtConfig in tests. */
+/** The clocks for tests: one fixed moment, or a clock that stands still from the real "now". */
 object TestClock {
     /** One fixed moment, for tests that do not go through the JWT verifier (for example ExpirySchedulerTest). */
     val fixed = FixedClock(Instant.parse("2026-09-26T12:00:00Z"))
@@ -37,8 +38,8 @@ object TestClock {
 }
 
 /**
- * Helper class to create test tokens. It uses the default JWT settings and a fixed clock,
- * so token generation is consistent.
+ * Helper class to create test tokens. By default it uses the default JWT settings and
+ * [TestClock.fixedNow], so the JWT verifier accepts the token; a test can pass other settings or another clock.
  */
 class TestTokens {
 
@@ -47,7 +48,7 @@ class TestTokens {
         userId: Long,
         role: Role,
         settings: JwtSettings = TestJwtSettings.default,
-        clock: Clock = TestClock.fixedNow()
+        clock: Clock = TestClock.fixedNow(),
     ): String = createTestTokenWithRoleName(userId, role.name, settings, clock)
 
     /**
@@ -58,7 +59,7 @@ class TestTokens {
         userId: Long,
         roleName: String,
         settings: JwtSettings = TestJwtSettings.default,
-        clock: Clock = TestClock.fixedNow()
+        clock: Clock = TestClock.fixedNow(),
     ): String {
         val now = clock.now()
 

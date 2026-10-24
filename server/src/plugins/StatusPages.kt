@@ -25,7 +25,7 @@ import kotlinx.serialization.MissingFieldException
  */
 fun Application.configureStatusPages() {
     install(StatusPages) {
-        // 400: the only rule that fills `field`
+        // 400: a broken input rule; `field` names the input when the exception knows it
         exception<ValidationException> { call, cause ->
             call.respondError(HttpStatusCode.BadRequest, ErrorCode.VALIDATION_ERROR, cause.message, cause.field)
         }
@@ -44,10 +44,9 @@ fun Application.configureStatusPages() {
             call.respondError(
                 HttpStatusCode.BadRequest,
                 ErrorCode.VALIDATION_ERROR,
-                cause.reasons.joinToString("; ")
+                cause.reasons.joinToString("; "),
             )
         }
-
 
         // 401
         exception<UnauthorizedException> { call, cause ->
@@ -72,7 +71,12 @@ fun Application.configureStatusPages() {
 
         // 422
         exception<DomainRuleException> { call, cause ->
-            call.respondError(HttpStatusCode.UnprocessableEntity, ErrorCode.DOMAIN_RULE_VIOLATION, cause.message, cause.field)
+            call.respondError(
+                HttpStatusCode.UnprocessableEntity,
+                ErrorCode.DOMAIN_RULE_VIOLATION,
+                cause.message,
+                cause.field,
+            )
         }
         // 500: anything unexpected. Stacktrace in the log, never in the response (decision 4.4)
         exception<Throwable> { call, cause ->
@@ -80,7 +84,7 @@ fun Application.configureStatusPages() {
             call.respondError(
                 HttpStatusCode.InternalServerError,
                 ErrorCode.INTERNAL_ERROR,
-                "An unexpected error occurred"
+                "An unexpected error occurred",
             )
         }
     }
@@ -101,9 +105,8 @@ private suspend fun ApplicationCall.respondError(
  * Returns null for other read errors (unknown enum value, wrong type), where the field is not reliably known.
  */
 @OptIn(ExperimentalSerializationApi::class)
-private fun Throwable.missingField(): String? =
-    generateSequence(this) { it.cause }
-        .filterIsInstance<MissingFieldException>()
-        .firstOrNull()
-        ?.missingFields
-        ?.firstOrNull()
+private fun Throwable.missingField(): String? = generateSequence(this) { it.cause }
+    .filterIsInstance<MissingFieldException>()
+    .firstOrNull()
+    ?.missingFields
+    ?.firstOrNull()

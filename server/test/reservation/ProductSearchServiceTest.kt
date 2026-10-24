@@ -23,7 +23,10 @@ class ProductSearchServiceTest {
 
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
-    /** FakeProduct counts its shelf life to the end of the pickup window, so [hoursLeft] sets the remaining shelf life. */
+    /**
+     * FakeProduct counts its shelf life to the end of the pickup window, so [hoursLeft] sets the remaining shelf
+     * life.
+     */
     private fun product(
         id: Long,
         hoursLeft: Int,
@@ -31,18 +34,29 @@ class ProductSearchServiceTest {
         originalCents: Long = 500,
         status: ProductStatus = ProductStatus.LISTED,
     ) = FakeProduct(
-        id = id, pickupWindow = PickupWindow(now - 1.hours, now + hoursLeft.hours),
-        status = status, category = category, originalPrice = Money.fromCents(originalCents),
+        id = id,
+        pickupWindow = PickupWindow(now - 1.hours, now + hoursLeft.hours),
+        status = status,
+        category = category,
+        originalPrice = Money.fromCents(originalCents),
     )
 
-    // 60% off by default, so the current price always differs from the original one
+    /**
+     * The service over these products with a fixed clock.
+     * 60% off by default, so the current price always differs from the original one.
+     */
     private fun service(vararg products: ProductView, prices: PriceProvider = DiscountPriceProvider(60)) =
         ProductSearchService(FakeProductReader(products.toList()), prices, FixedClock(now))
 
     @Test
     fun `without filters only listed products come back, soonest best-before first`() = runTest {
         // Arrange
-        val service = service(product(1, hoursLeft = 30), product(2, hoursLeft = 5), product(3, hoursLeft = 10, status = ProductStatus.RESERVED))
+        val service =
+            service(
+                product(1, hoursLeft = 30),
+                product(2, hoursLeft = 5),
+                product(3, hoursLeft = 10, status = ProductStatus.RESERVED),
+            )
         // Act
         val results = service.search(SearchCriteria())
         // Assert
@@ -52,7 +66,11 @@ class ProductSearchServiceTest {
     @Test
     fun `filtering on category returns only that category`() = runTest {
         // Arrange
-        val service = service(product(1, hoursLeft = 5, category = ProductCategory.FRESH), product(2, hoursLeft = 5, category = ProductCategory.FROZEN))
+        val service =
+            service(
+                product(1, hoursLeft = 5, category = ProductCategory.FRESH),
+                product(2, hoursLeft = 5, category = ProductCategory.FROZEN),
+            )
         // Act
         val results = service.search(SearchCriteria(category = ProductCategory.FRESH))
         // Assert
@@ -62,7 +80,8 @@ class ProductSearchServiceTest {
     @Test
     fun `filtering on maxPrice uses the discounted price, not the original one`() = runTest {
         // Arrange: 5.00 becomes 2.00 (fits under 3.00), 10.00 becomes 4.00 (does not)
-        val service = service(product(1, hoursLeft = 5, originalCents = 500), product(2, hoursLeft = 5, originalCents = 1000))
+        val service =
+            service(product(1, hoursLeft = 5, originalCents = 500), product(2, hoursLeft = 5, originalCents = 1000))
         // Act
         val results = service.search(SearchCriteria(maxPrice = Money.fromEuros(3.00)))
         // Assert
@@ -105,7 +124,11 @@ class ProductSearchServiceTest {
     }
 }
 
-/** Gives every product the same discount, so the current price is lower than the original one. */
+/**
+ * Gives every product the same discount, so the current price is lower than the original one.
+ *
+ * @property percentage the discount for every product
+ */
 private class DiscountPriceProvider(private val percentage: Int) : PriceProvider {
     override fun priceBreakdown(product: PricedProduct): PriceBreakdown {
         val current = Money.fromCents(product.originalPrice.cents * (100 - percentage) / 100)

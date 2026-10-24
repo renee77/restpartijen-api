@@ -8,6 +8,7 @@ import com.restpartijen.api.security.service.LoginService
 import com.restpartijen.api.security.service.PasswordHasher
 import com.restpartijen.api.shared.Role
 import com.restpartijen.api.shared.UnauthorizedException
+import com.restpartijen.api.testsupport.FakeSupplierIdLookup
 import com.restpartijen.api.testsupport.FakeUserRepository
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -16,8 +17,11 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Instant
-import com.restpartijen.api.testsupport.FakeSupplierIdLookup
 
+/**
+ * LoginService with an in-memory repository and a fake supplier lookup: the token, the shared error for
+ * wrong credentials, and the supplier id per role.
+ */
 class LoginServiceTest {
 
     private val email = "login@mail.com"
@@ -30,23 +34,23 @@ class LoginServiceTest {
         userRepository = repository,
         passwordHasher = passwordHasher,
         jwtConfig = JwtConfig(TestJwtSettings.default, TestClock.fixed),
-        supplierIdLookup = supplierLookup
-        )
+        supplierIdLookup = supplierLookup,
+    )
 
-    // Argon2id is slow, so hash once and reuse the hash in every test.
+    /** Argon2id is slow, so hash once and reuse the hash in every test. */
     private val storedHash = passwordHasher.hashPassword(password)
 
-    private suspend fun saveUser(role: Role = Role.COLLECTOR): User =
-        repository.create(
-            User(
-                id = 0,
-                email = email,
-                passwordHash = storedHash,
-                display_name = "TestName",
-                role = role,
-                createdAt = Instant.parse("2026-01-15T10:30:00Z"),
-            )
-        )
+    /** Stores a user with [email] and the hash of [password], with the given role. */
+    private suspend fun saveUser(role: Role = Role.COLLECTOR): User = repository.create(
+        User(
+            id = 0,
+            email = email,
+            passwordHash = storedHash,
+            displayName = "TestName",
+            role = role,
+            createdAt = Instant.parse("2026-01-15T10:30:00Z"),
+        ),
+    )
 
     @Test
     fun `valid credentials return a token with the user's role`() = runTest {

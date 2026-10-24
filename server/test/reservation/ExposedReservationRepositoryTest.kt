@@ -1,12 +1,12 @@
 package com.restpartijen.api.reservation
 
+import com.restpartijen.api.persistence.ProductsTable
+import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.reservation.model.Reservation
 import com.restpartijen.api.reservation.model.ReservationStatus
 import com.restpartijen.api.reservation.repository.ExposedReservationRepository
 import com.restpartijen.api.reservation.repository.ReservationsTable
 import com.restpartijen.api.shared.Money
-import com.restpartijen.api.persistence.ProductsTable
-import com.restpartijen.api.persistence.UsersTable
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
 import com.restpartijen.api.testsupport.insertProduct
 import com.restpartijen.api.testsupport.insertUser
@@ -23,16 +23,22 @@ import kotlin.time.Instant
 /** Integration test: the real repository against a fresh, empty H2 database per test. */
 class ExposedReservationRepositoryTest {
 
-    // Whole seconds: the database may store fewer digits than Instant has, and equality would fail.
+    /** Whole seconds: the database may store fewer digits than Instant has, and equality would fail. */
     private val now = Instant.parse("2026-10-20T12:00:00Z")
 
-    // Set by emptyDatabaseWithCollector(); JUnit makes a new instance per test, so no test sees another's id.
+    /** Set by emptyDatabaseWithCollector(); JUnit makes a new instance per test, so no test sees another's id. */
     private var collectorId = 0L
 
+    /** A new reservation (id 0) of the stored collector at 1.99, reserved 24 hours before [expiresAt]. */
     private fun reservation(productId: Long, expiresAt: Instant, status: ReservationStatus = ReservationStatus.ACTIVE) =
         Reservation(
-            id = 0, productId = productId, collectorId = collectorId, reservedPrice = Money.fromCents(199),
-            reservedAt = expiresAt - 24.hours, expiresAt = expiresAt, status = status
+            id = 0,
+            productId = productId,
+            collectorId = collectorId,
+            reservedPrice = Money.fromCents(199),
+            reservedAt = expiresAt - 24.hours,
+            expiresAt = expiresAt,
+            status = status,
         )
 
     @Test
@@ -75,7 +81,9 @@ class ExposedReservationRepositoryTest {
         val repository = ExposedReservationRepository()
         val firstRow = repository.create(reservation(productId = insertProduct(), expiresAt = now))
         repository.create(reservation(productId = insertProduct(), expiresAt = now + 1.hours))
-        repository.create(reservation(productId = insertProduct(), expiresAt = now - 1.hours, status = ReservationStatus.LAPSED))
+        repository.create(
+            reservation(productId = insertProduct(), expiresAt = now - 1.hours, status = ReservationStatus.LAPSED),
+        )
 
         // Act
         val overdue = repository.findOverdue(now)
@@ -136,7 +144,9 @@ class ExposedReservationRepositoryTest {
         val older = repository.create(reservation(productId = insertProduct(), expiresAt = now))
         val newer = repository.create(reservation(productId = insertProduct(), expiresAt = now + 2.hours))
         val otherCollectorId = insertUser()
-        repository.create(reservation(productId = insertProduct(), expiresAt = now + 1.hours).copy(collectorId = otherCollectorId))
+        repository.create(
+            reservation(productId = insertProduct(), expiresAt = now + 1.hours).copy(collectorId = otherCollectorId),
+        )
 
         // Act
         val found = repository.findByCollectorId(collectorId)
@@ -159,8 +169,10 @@ class ExposedReservationRepositoryTest {
         assertEquals(stored, repository.findById(stored.id))
     }
 
-    // A reservation must point to an existing product and collector (issue #36),
-    // so every test starts with one stored collector; products are stored per test.
+    /**
+     * A reservation must point to an existing product and collector (issue #36),
+     * so every test starts with one stored collector; products are stored per test.
+     */
     private fun emptyDatabaseWithCollector() {
         createEmptyTestDatabase(UsersTable, ProductsTable, ReservationsTable)
         collectorId = insertUser()

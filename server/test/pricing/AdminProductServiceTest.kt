@@ -5,12 +5,12 @@ import com.restpartijen.api.shared.IllegalStateTransitionException
 import com.restpartijen.api.shared.NotFoundException
 import com.restpartijen.api.shared.ProductStatus
 import com.restpartijen.api.testsupport.createEmptyTestDatabase
-import io.ktor.http.IllegalHeaderNameException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+/** AdminProductService with fakes behind the contracts (US-09): the order of the calls and the refusals. */
 class AdminProductServiceTest {
 
     @Test
@@ -21,7 +21,7 @@ class AdminProductServiceTest {
         val service = AdminProductService(
             productReader = FakeProductReader(products = listOf(FakeProductView(1, ProductStatus.RESERVED))),
             productStatusUpdater = FakeProductStatusUpdater(calls = calls),
-            reservationMaintenance = FakeReservationMaintenance(calls = calls)
+            reservationMaintenance = FakeReservationMaintenance(calls = calls),
         )
 
         // Act
@@ -31,54 +31,58 @@ class AdminProductServiceTest {
         assertEquals(listOf("lapseActiveFor(1)", "markRemoved(1)"), calls)
     }
 
-
     @Test
-    fun `trying to delete an unknown id will give an exception` () = runTest {
+    fun `trying to delete an unknown id will give an exception`() = runTest {
         // Arrange
         createEmptyTestDatabase()
         val calls = mutableListOf<String>()
         val service = AdminProductService(
             productReader = FakeProductReader(products = listOf()),
             productStatusUpdater = FakeProductStatusUpdater(calls = calls),
-            reservationMaintenance = FakeReservationMaintenance(calls = calls)
+            reservationMaintenance = FakeReservationMaintenance(calls = calls),
         )
 
         // Act and Assert
-        assertFailsWith<NotFoundException> { service.delete(1)}
+        assertFailsWith<NotFoundException> { service.delete(1) }
     }
 
     @Test
-    fun `trying to delete a listed product will call markRemoved and not lapseActivefor` () = runTest {
+    fun `trying to delete a listed product will call markRemoved and not lapseActivefor`() = runTest {
         // Arrange
         createEmptyTestDatabase()
         val calls = mutableListOf<String>()
         val service = AdminProductService(
             productReader = FakeProductReader(products = listOf(FakeProductView(1, ProductStatus.LISTED))),
             productStatusUpdater = FakeProductStatusUpdater(calls = calls),
-            reservationMaintenance = FakeReservationMaintenance(calls = calls)
+            reservationMaintenance = FakeReservationMaintenance(calls = calls),
         )
 
         // Act
         service.delete(1)
 
-        // Arrange
+        // Assert
         assertEquals(listOf("markRemoved(1)"), calls)
     }
 
     @Test
-    fun `delete of a product with status collected or expired will give an exception` () = runTest {
-        // Assert
+    fun `delete of a product with status collected or expired will give an exception`() = runTest {
+        // Arrange
         createEmptyTestDatabase()
         val calls = mutableListOf<String>()
         val service = AdminProductService(
-            productReader = FakeProductReader(products = listOf(FakeProductView(1, ProductStatus.EXPIRED), FakeProductView(2, ProductStatus.COLLECTED))),
+            productReader = FakeProductReader(
+                products = listOf(
+                    FakeProductView(1, ProductStatus.EXPIRED),
+                    FakeProductView(2, ProductStatus.COLLECTED),
+                ),
+            ),
             productStatusUpdater = FakeProductStatusUpdater(calls = calls),
-            reservationMaintenance = FakeReservationMaintenance(calls = calls)
+            reservationMaintenance = FakeReservationMaintenance(calls = calls),
         )
 
         // Act and Assert
-        assertFailsWith<IllegalStateTransitionException> { service.delete(1)}
-        assertFailsWith<IllegalStateTransitionException> { service.delete(2)}
+        assertFailsWith<IllegalStateTransitionException> { service.delete(1) }
+        assertFailsWith<IllegalStateTransitionException> { service.delete(2) }
     }
 
     @Test

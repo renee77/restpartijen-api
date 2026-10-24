@@ -11,7 +11,7 @@ import com.restpartijen.api.shared.ForbiddenException
  * This is the second, separate step after the role check in the route. The service first finds the
  * product (404); this guard then compares its supplier with the supplier of the user in the token.
  *
- * @param suppliers finds the supplier that belongs to the user in the token
+ * @property suppliers finds the supplier that belongs to the user in the token
  */
 class OwnershipGuard(private val suppliers: SupplierRepository) {
 
@@ -39,7 +39,12 @@ class OwnershipGuard(private val suppliers: SupplierRepository) {
         }
     }
 
-    // Shared by both checks, so "a user without a supplier gets 403" lives in one place.
+    /**
+     * The id of the supplier of [userId].
+     * Shared by both checks, so "a user without a supplier gets 403" lives in one place.
+     *
+     * @throws ForbiddenException when the user has no supplier (403)
+     */
     private suspend fun supplierIdOf(userId: Long): Long =
         suppliers.findByUserId(userId)?.id ?: throw ForbiddenException("This account has no supplier")
 }

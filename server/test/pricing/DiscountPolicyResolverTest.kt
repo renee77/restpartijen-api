@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
+/** DiscountPolicyResolver: every category gets its own policy, with the right maximum discount. */
 class DiscountPolicyResolverTest {
     @Test
     fun `fresh policy applies to fresh category`() {

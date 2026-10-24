@@ -18,20 +18,23 @@ import org.jetbrains.exposed.v1.jdbc.selectAll
 // Internal instead of private, so other files in this package can use them.
 // Internal means the whole server module; GI-5, not the compiler, keeps other features out.
 
-// The condition every query shares: a REMOVED product is invisible to the rest of the application.
+/** The condition every query shares: a REMOVED product is invisible to the rest of the application. */
 internal fun notRemoved(): Op<Boolean> = ProductsTable.status neq ProductStatus.REMOVED
 
-// The allergens of one product. They live in their own table, one row per allergen (§9.8).
-// No dbQuery here: the caller already runs inside a transaction.
-internal fun allergensOfProduct(productId: Long): Set<Allergen> =
-    ProductAllergensTable
-        .selectAll()
-        .where { ProductAllergensTable.productId eq productId }
-        .map { it[ProductAllergensTable.allergen] }
-        .toSet()
+/**
+ * The allergens of one product. They live in their own table, one row per allergen (§9.8).
+ * No dbQuery here: the caller already runs inside a transaction.
+ */
+internal fun allergensOfProduct(productId: Long): Set<Allergen> = ProductAllergensTable
+    .selectAll()
+    .where { ProductAllergensTable.productId eq productId }
+    .map { it[ProductAllergensTable.allergen] }
+    .toSet()
 
-// The one place that turns a row into the domain model, so every query builds a product the same way.
-// The row must come from a join with SuppliersTable; the allergens live in another table, so the caller passes them.
+/**
+ * The one place that turns a row into the domain model, so every query builds a product the same way.
+ * The row must come from a join with SuppliersTable; the allergens live in another table, so the caller passes them.
+ */
 internal fun ResultRow.toProduct(allergens: Set<Allergen>): SurplusProduct = SurplusProduct.create(
     category = this[ProductsTable.category],
     id = this[ProductsTable.id],
