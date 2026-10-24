@@ -2,6 +2,7 @@ package com.restpartijen.api.product
 
 import com.restpartijen.api.product.client.LookupResult
 import com.restpartijen.api.product.client.OpenFoodFactsClient
+import com.restpartijen.api.testsupport.NUTELLA_BODY
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
@@ -372,19 +373,14 @@ class OpenFoodFactsClientTest {
         const val NUTELLA_BARCODE = "3017620422003"
         const val UNKNOWN_BARCODE = "8712345678906"
 
-        // Real response of GET /api/v3/product/3017620422003?fields=product_name,allergens_tags.
-        const val NUTELLA_BODY =
-            """{"code":"3017620422003","errors":[]""" +
-                ""","product":{"allergens_tags":["en:milk","en:nuts","en:soybeans"],"product_name":"Nutella"}""" +
-                ""","result":{"id":"product_found","lc_name":"Product found","name":"Product found"}""" +
-                ""","status":"success","warnings":[]}"""
-
         // Real response of GET /api/v3/product/8712345678906?fields=product_name,allergens_tags.
         const val NOT_FOUND_BODY =
-            """{"code":"8712345678906","errors":[{"field":{"id":"code","value":"8712345678906"}""" +
-                ""","impact":{"id":"failure","lc_name":"Failure","name":"Failure"}""" +
-                ""","message":{"id":"product_not_found","lc_name":"","name":""}}]""" +
-                ""","result":{"id":"product_not_found","lc_name":"Product not found","name":"Product not found"}""" +
+            """{"code":"8712345678906","errors":[""" +
+                """{"field":{"id":"code","value":"8712345678906"},"impact":""" +
+                """{"id":"failure","lc_name":"Failure","name":"Failure"},"message":""" +
+                """{"id":"product_not_found","lc_name":"","name":""}}],"result":""" +
+                """{"id":"product_not_found","lc_name":"Product not found","name":"Product not found"}""" +
+                // The rest has no { or [ to split before and does not fit on the line above.
                 ""","status":"failure","warnings":[]}"""
     }
 }

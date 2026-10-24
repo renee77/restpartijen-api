@@ -7,6 +7,7 @@ import com.restpartijen.api.shared.Allergen
 import com.restpartijen.api.shared.NotFoundException
 import com.restpartijen.api.testsupport.FixedClock
 import com.restpartijen.api.testsupport.MovableClock
+import com.restpartijen.api.testsupport.NUTELLA_BODY
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.http.HttpHeaders
@@ -308,13 +309,6 @@ class ProductLookupServiceTest {
         const val THIRD_USER = 9L
 
         val nutella = ProductLookup("Nutella", setOf(Allergen.MILK, Allergen.NUTS, Allergen.SOYBEANS), false)
-
-        // Real response of GET /api/v3/product/3017620422003?fields=product_name,allergens_tags, 22 Oct 2026.
-        const val NUTELLA_BODY =
-            """{"code":"3017620422003","errors":[]""" +
-                ""","product":{"allergens_tags":["en:milk","en:nuts","en:soybeans"],"product_name":"Nutella"}""" +
-                ""","result":{"id":"product_found","lc_name":"Product found","name":"Product found"}""" +
-                ""","status":"success","warnings":[]}"""
 
         const val NOT_FOUND_BODY = """{"status":"failure"}"""
     }
