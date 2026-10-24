@@ -45,7 +45,7 @@ import kotlin.time.Clock
 import kotlin.time.Duration.Companion.hours
 
 /**
- * Blok 5: POST /api/v1/reservations through all layers, with fakes behind the service.
+ * Block 5: POST /api/v1/reservations through all layers, with fakes behind the service.
  * Only COLLECTOR may reserve (§5.5, decision 3.6).
  */
 class ReservationRoutesTest {
