@@ -1,0 +1,6 @@
+# Formatting-only commits that git blame skips (git config blame.ignoreRevsFile .git-blame-ignore-revs).
+
+# style(server): format the code base with ktlint
+0800ddd86a45ace8581d69021eb8e6a98d9ab3e8
+# style(server): fix the ktlint findings formatting cannot fix
+3b3c3005ba957d22fe9fcff8552301ad0cdc586c
