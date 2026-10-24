@@ -41,6 +41,14 @@ fun Application.configureReservationRouting() {
                 service.cancel(id, collectorId = call.currentUser().id)
                 call.respond(HttpStatusCode.NoContent)
             }
+
+            // Confirming a pickup (US-11): 200 with the reservation, so the app can show the confirmation screen
+            post("/api/v1/reservations/{id}/collect") {
+                val id = call.parameters["id"]?.toLongOrNull()
+                    ?: throw ValidationException("Reservation id must be a number", field = "id")
+                val reservation = service.collect(id, collectorId = call.currentUser().id)
+                call.respond(HttpStatusCode.OK, reservation.toResponse())
+            }
         }
     }
 }

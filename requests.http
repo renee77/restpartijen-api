@@ -215,6 +215,35 @@ Authorization: Bearer {{collectorToken}}
 ### F2 - Cancel without a token: expect 401
 DELETE http://localhost:8080/api/v1/reservations/1
 
+### F2 - Confirm pickup of own reservation 2 (US-11, TC-11): expect 200, status COLLECTED with collectedAt
+# Reservation 2 is the chicken of collector A; its pickup window is open for hours after a fresh start.
+POST http://localhost:8080/api/v1/reservations/2/collect
+Authorization: Bearer {{collectorToken}}
+
+### F2 - Confirm reservation 2 again: expect 409, it is already COLLECTED
+POST http://localhost:8080/api/v1/reservations/2/collect
+Authorization: Bearer {{collectorToken}}
+
+### F2 - Confirm reservation 4 after its pickup window: expect 422
+# Only in the first 5 minutes after starting: after that the status monitor has set it to LAPSED, and the answer is 409.
+POST http://localhost:8080/api/v1/reservations/4/collect
+Authorization: Bearer {{collectorToken}}
+
+### F2 - Confirm reservation 3 of collector B: expect 403
+POST http://localhost:8080/api/v1/reservations/3/collect
+Authorization: Bearer {{collectorToken}}
+
+### F2 - Confirm lapsed reservation 9: expect 409
+POST http://localhost:8080/api/v1/reservations/9/collect
+Authorization: Bearer {{collectorToken}}
+
+### F2 - Confirm as a supplier: expect 403
+POST http://localhost:8080/api/v1/reservations/2/collect
+Authorization: Bearer {{supplierToken}}
+
+### F2 - Confirm without a token: expect 401
+POST http://localhost:8080/api/v1/reservations/2/collect
+
 ### F3 - Register: expect 201 Created
 POST http://localhost:8080/api/v1/auth/register
 Content-Type: application/json

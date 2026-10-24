@@ -46,7 +46,7 @@ class SeedDataTest {
     )
     private data class ReservationRow(
         val productId: Long, val collectorId: Long, val priceCents: Long,
-        val reservedAt: Instant, val expiresAt: Instant, val status: ReservationStatus,
+        val reservedAt: Instant, val expiresAt: Instant, val status: ReservationStatus, val collectedAt: Instant?,
     )
 
     private fun users() = transaction {
@@ -74,6 +74,7 @@ class SeedDataTest {
             ReservationRow(
                 it[ReservationsTable.productId], it[ReservationsTable.collectorId], it[ReservationsTable.reservedPriceCents],
                 it[ReservationsTable.reservedAt], it[ReservationsTable.expiresAt], it[ReservationsTable.status],
+                it[ReservationsTable.collectedAt],
             )
         }
     }
@@ -250,6 +251,22 @@ class SeedDataTest {
         assertTrue(ofA.any { it.status == ReservationStatus.COLLECTED })
         assertTrue(ofA.any { it.status == ReservationStatus.CANCELLED })
         assertTrue(ofA.any { it.status == ReservationStatus.LAPSED })
+    }
+
+    @Test
+    fun `only a collected reservation has a pickup moment, after reserving and inside the window`() {
+        val productById = products().associateBy { it.id }
+        for (reservation in reservations()) {
+            val collectedAt = reservation.collectedAt
+            if (reservation.status != ReservationStatus.COLLECTED) {
+                assertEquals(null, collectedAt, "Reservation of product ${reservation.productId} is not COLLECTED")
+                continue
+            }
+            val product = productById.getValue(reservation.productId)
+            assertTrue(collectedAt != null, "COLLECTED reservation of product ${reservation.productId} has no collectedAt")
+            assertTrue(collectedAt >= reservation.reservedAt, "Collected before it was reserved")
+            assertTrue(collectedAt in product.pickupFrom..product.pickupUntil, "Collected outside the pickup window")
+        }
     }
 
     @Test

@@ -51,6 +51,24 @@ class ExposedReservationRepositoryTest {
     }
 
     @Test
+    fun `update stores the status and the pickup moment`() = runTest {
+        // Arrange: a new reservation has no pickup moment yet
+        emptyDatabaseWithCollector()
+        val repository = ExposedReservationRepository()
+        val stored = repository.create(reservation(productId = insertProduct(), expiresAt = now + 1.hours))
+        assertEquals(null, repository.findById(stored.id)?.collectedAt)
+
+        // Act
+        val updated = repository.update(stored.copy(status = ReservationStatus.COLLECTED, collectedAt = now))
+
+        // Assert
+        assertTrue(updated)
+        val found = repository.findById(stored.id)
+        assertEquals(ReservationStatus.COLLECTED, found?.status)
+        assertEquals(now, found?.collectedAt)
+    }
+
+    @Test
     fun `findOverdue returns only active reservations at or before now`() = runTest {
         // Arrange
         emptyDatabaseWithCollector()
