@@ -55,11 +55,10 @@ class ValidationTests {
         assertEquals("Authentication required", error.message)
     }
 
-    // Sad path: expired token
-
     /** Stands still from the real "now", because the verifier checks expiry against the real time. */
     private val testClock = TestClock.fixedNow()
 
+    // Sad path: expired token
     @Test
     fun `expired token gets 401`() = testApplication {
         // Arrange: a token that was issued 48 hours ago, so it expired 24 hours ago

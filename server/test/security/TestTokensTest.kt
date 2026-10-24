@@ -77,7 +77,7 @@ class TestTokensTest {
     // SignatureVerificationException.
     @Test
     fun `token signed with another secret fails`() {
-        // Arange. Create a test token with the default settings and clock.
+        // Arrange. Create a test token with the default settings and clock.
         val token = TestTokens().createTestToken(
             userId = 1L,
             role = Role.COLLECTOR,
@@ -85,7 +85,7 @@ class TestTokensTest {
         // Act. We define the other secret.
         val otherSecret = "this-is-another-test-secret-that-is-long-enough"
 
-        // Assert.We expect it will throw a SignatureVerificationException, because the token was signed with a
+        // Assert. We expect it will throw a SignatureVerificationException, because the token was signed with a
         // different secret.
         assertFailsWith<SignatureVerificationException> { verifyToken(token, otherSecret) }
     }
@@ -94,7 +94,8 @@ class TestTokensTest {
     @Test
     fun `token is expired and rejected`() {
         // Arrange. Create the clock with a time in the past, so the token will be expired when we verify it.
-        val pastClock = FixedClock(Instant.parse("2026-09-25T12:00:00Z")) // 24 hours in the past
+        // The token is valid for 24 hours after this fixed moment; verifyToken checks expiry against the real time.
+        val pastClock = FixedClock(Instant.parse("2026-09-25T12:00:00Z"))
         val testToken = TestTokens().createTestToken(
             userId = 1L,
             role = Role.COLLECTOR,

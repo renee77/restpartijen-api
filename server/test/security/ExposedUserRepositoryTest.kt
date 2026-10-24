@@ -21,7 +21,6 @@ import kotlin.time.Instant
  * Integration test: the real repository against a real, empty H2 database per test (E4).
  * Shows table, repository, transaction and test database working together.
  */
-
 class ExposedUserRepositoryTest {
     private val fixedNow = Instant.parse("2026-01-15T10:30:00Z")
 

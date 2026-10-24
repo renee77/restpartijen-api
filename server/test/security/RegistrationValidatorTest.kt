@@ -6,7 +6,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-/** RegistrationValidator: the limits of every field, with the boundary values on both sides (A11). */
+/**
+ * RegistrationValidator: the rules of every field (A11). The password and e-mail limits are tested on both
+ * sides of the boundary; the display name one character above and one character below its maximum.
+ */
 class RegistrationValidatorTest {
 
     // Password tests
@@ -211,7 +214,7 @@ class RegistrationValidatorTest {
 
     @Test
     fun `username of 50 characters is accepted`() {
-        // Arrange: a username one character at the maximum, and otherwise valid input
+        // Arrange: a username one character below the maximum, and otherwise valid input
         val justRight = "a".repeat(RegistrationValidator.DISPLAY_NAME_MAX_LENGTH - 1)
 
         // Act and Assert: No exception
