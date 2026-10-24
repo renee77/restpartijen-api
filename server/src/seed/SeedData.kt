@@ -23,13 +23,26 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
-/** One account to seed; every account gets the demo password. */
+/**
+ * One account to seed; every account gets the demo password.
+ *
+ * @property email the login name, in lower case; suppliers, products and reservations refer to the account by it.
+ * @property displayName the name shown for the account.
+ * @property role the one role of the account.
+ */
 private data class SeedUser(val email: String, val displayName: String, val role: Role)
 
 /**
  * One supplier to seed, linked to its account by [ownerEmail].
  * An email instead of a user id: the database chooses the id, so the data can only name the account.
  * [openingHours] uses the model, so a closing time before the opening time fails at startup (§5.10).
+ *
+ * @property ownerEmail the email of the SUPPLIER account this supplier belongs to.
+ * @property name the company name shown in search results.
+ * @property address the street address.
+ * @property latitude the latitude of the location, for the distance in search results.
+ * @property longitude the longitude of the location.
+ * @property openingHours the hours per open day; a day that is not listed is closed.
  */
 private data class SeedSupplier(
     val ownerEmail: String,
@@ -40,16 +53,29 @@ private data class SeedSupplier(
     val openingHours: List<OpeningHours>,
 )
 
-// The same hours on each of [days]; a day that is not listed is closed.
+/** The same hours, from [opensAt] to [closesAt], on each of [days]; a day that is not listed is closed. */
 private fun openOn(days: List<DayOfWeek>, opensAt: LocalTime, closesAt: LocalTime) =
     days.map { OpeningHours(it, opensAt, closesAt) }
 
+/** The working week, for suppliers that are open on the same hours every weekday. */
 private val mondayToFriday =
     listOf(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY)
 
 /**
  * One product to seed. [key] is a name of our own, so a reservation can refer to the product before it has an id.
  * The times are offsets from the moment of seeding (§9.7): `6.hours` is six hours from now, `-2.hours` two hours ago.
+ *
+ * @property key our own name for the product; must be unique within the seed data.
+ * @property supplierEmail the email of the account of the supplier that offers the product.
+ * @property category the product kind, which decides the discount tiers.
+ * @property name the product name shown to collectors.
+ * @property priceCents the original price in cents, before discount.
+ * @property bestBefore the offset of the best-before moment.
+ * @property pickupFrom the offset of the start of the pickup window.
+ * @property pickupUntil the offset of the end of the pickup window.
+ * @property status the lifecycle status; LISTED unless the product shows another state.
+ * @property quantity the number of units.
+ * @property allergens the allergens of the product; none by default.
  */
 private data class SeedProduct(
     val key: String,
@@ -68,6 +94,13 @@ private data class SeedProduct(
 /**
  * One reservation to seed, linked to its product by [productKey] and to its collector by [collectorEmail].
  * [reservedAgo] is how long before the moment of seeding it was made; expiresAt is computed, as reserve() does.
+ *
+ * @property productKey the [SeedProduct.key] of the reserved product.
+ * @property collectorEmail the email of the COLLECTOR account that reserved it.
+ * @property priceCents the price fixed at reserving: the original price minus the discount at that moment.
+ * @property reservedAgo how long before the moment of seeding the reservation was made.
+ * @property status the reservation status; ACTIVE by default.
+ * @property collectedAgo how long ago it was picked up; null when it was never collected (US-11).
  */
 private data class SeedReservation(
     val productKey: String,
@@ -75,7 +108,6 @@ private data class SeedReservation(
     val priceCents: Long,
     val reservedAgo: Duration,
     val status: ReservationStatus = ReservationStatus.ACTIVE,
-    // How long ago it was picked up; null when it was never collected (US-11).
     val collectedAgo: Duration? = null,
 )
 
@@ -87,7 +119,7 @@ private data class SeedReservation(
  * It writes into the tables directly instead of through the contracts; §12.1 allows that for the seed only.
  */
 object SeedData {
-    // Six accounts (§9.7). The emails are lower case, because login normalises them.
+    /** Six accounts (§9.7). The emails are lower case, because login normalises them. */
     private val users = listOf(
         SeedUser("admin@mail.com", "Pad Min", Role.ADMIN),
         SeedUser("supermarkt@mail.com", "Supermarkt Breda Centrum", Role.SUPPLIER),
@@ -97,8 +129,10 @@ object SeedData {
         SeedUser("afhaler-b@mail.com", "Afhaler B", Role.COLLECTOR),
     )
 
-    // A supermarket, a bakery and a wholesaler in Breda, so the distance in search results means something.
-    // Each has its own opening hours with closed days, so the derived pickup window has something to skip (§9.7).
+    /**
+     * A supermarket, a bakery and a wholesaler in Breda, so the distance in search results means something.
+     * Each has its own opening hours with closed days, so the derived pickup window has something to skip (§9.7).
+     */
     private val suppliers = listOf(
         SeedSupplier(
             "supermarkt@mail.com",
@@ -140,6 +174,10 @@ object SeedData {
         ),
     )
 
+    /**
+     * Products for every discount tier, every status and the demo scenarios of each feature (§9.7).
+     * The comments in the list say which scenario each product serves.
+     */
     private val products = listOf(
         // One LISTED product per discount tier (§9.4), all with an open pickup window (-2h to +6h).
         // FRESH: more than 48h (0%), up to 48h (10%), up to 24h (40%), up to 12h (60%).
@@ -288,14 +326,18 @@ object SeedData {
         ),
     )
 
-    // Each price is the original price minus the discount of the tier the product was in when it was reserved.
+    /**
+     * One reservation per demo scenario, linked to the products above.
+     * Each price is the original price minus the discount of the tier the product was in when it was reserved.
+     */
     private val reservations = listOf(
         // Collector A, live in the demo: one to cancel, one to collect. Both stay ACTIVE for hours.
         SeedReservation("bakker-croissants", "afhaler-a@mail.com", priceCents = 270, reservedAgo = 1.hours),
         SeedReservation("supermarkt-kip", "afhaler-a@mail.com", priceCents = 809, reservedAgo = 2.hours),
         // Collector B, fixed price: reserved 20 hours ago at 10%, the product is now at 60% (€5,40 against €2,40).
         SeedReservation("groothandel-soep", "afhaler-b@mail.com", priceCents = 540, reservedAgo = 20.hours),
-        // lapseOverdue: one past its pickup window, one older than 24 hours.
+        // lapseOverdue: one past its pickup window, one older than 24 hours,
+        // and the one of the RESERVED product past its date, whose pickup window has ended too.
         SeedReservation("supermarkt-wraps", "afhaler-a@mail.com", priceCents = 239, reservedAgo = 3.hours),
         SeedReservation("groothandel-yoghurt", "afhaler-b@mail.com", priceCents = 250, reservedAgo = 25.hours),
         SeedReservation("supermarkt-brood", "afhaler-a@mail.com", priceCents = 120, reservedAgo = 6.hours),
@@ -325,7 +367,7 @@ object SeedData {
         ),
     )
 
-    // Demo only: public on purpose, because README.md and requests.http name it for every seed account.
+    /** Demo only: public on purpose, because README.md and requests.http name it for every seed account. */
     private const val DEMO_PASSWORD = "Demo-Restpartij-2026"
 
     /**
