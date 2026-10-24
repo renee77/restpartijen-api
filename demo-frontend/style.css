@@ -1,0 +1,172 @@
+/* House style from "Hoe onze codebase eruitziet.pptx": the orange and leaf green of the useITtoo logo,
+   the dark greens and greys of the slides, Arial. */
+:root {
+  --orange: #ED8938;
+  --leaf: #98B870;
+  --green-dark: #2F5233;
+  --green: #3E762A;
+  --green-soft: #D5ECD4;
+  --grey-soft: #F0F0F0;
+  --grey-line: #CBCBCB;
+  --text: #3E3E3E;
+  --text-muted: #666666;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background: #fff;
+}
+
+code {
+  font-family: "DejaVu Sans Mono", Consolas, monospace;
+  font-size: 0.9em;
+  background: var(--grey-soft);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* Banner */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 24px;
+  border-bottom: 4px solid var(--orange);
+  background: var(--green-soft);
+}
+.logo { height: 56px; }
+.banner h1 { margin: 0 0 4px; font-size: 22px; color: var(--green-dark); }
+.banner p { margin: 0; color: var(--text-muted); max-width: 70ch; }
+
+/* Two columns: the steps on the left, the call panel fixed on the right. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 520px;
+  gap: 24px;
+  padding: 24px;
+}
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; }
+  .panel { position: static !important; }
+}
+
+/* Steps */
+.part {
+  margin: 24px 0 8px;
+  font-size: 18px;
+  color: var(--green-dark);
+  border-bottom: 2px solid var(--leaf);
+  padding-bottom: 4px;
+}
+.step {
+  border: 1px solid var(--grey-line);
+  border-left: 5px solid var(--orange);
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+}
+.step h2 { margin: 0 0 4px; font-size: 17px; color: var(--green-dark); }
+.step .meta { margin: 0 0 10px; color: var(--text-muted); font-size: 13.5px; }
+.step .story {
+  margin: 6px 0 8px;
+  padding: 8px 12px;
+  border-left: 4px solid var(--leaf);
+  background: var(--green-soft);
+  border-radius: 0 6px 6px 0;
+  font-size: 14.5px;
+  color: var(--green-dark);
+}
+.step .hint { margin: 6px 0; color: var(--text-muted); font-size: 13px; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #fff;
+  vertical-align: middle;
+}
+.badge-orange { background: var(--orange); }
+.badge-green { background: var(--green); }
+.badge-dark { background: var(--green-dark); }
+
+/* Forms */
+form.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px 16px;
+  align-items: end;
+}
+form.row { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+.wide { grid-column: 1 / -1; }
+label { display: flex; flex-direction: column; gap: 3px; font-size: 13px; color: var(--text-muted); }
+label.inline { flex-direction: row; align-items: center; gap: 6px; margin-right: 12px; color: var(--text); font-size: 14px; }
+input, select {
+  font: inherit;
+  padding: 5px 7px;
+  border: 1px solid var(--grey-line);
+  border-radius: 4px;
+  color: var(--text);
+}
+fieldset { border: 1px solid var(--grey-line); border-radius: 4px; padding: 6px 10px; }
+legend { font-size: 13px; color: var(--text-muted); }
+.buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+
+button {
+  font: inherit;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 4px;
+  background: var(--orange);
+  color: #fff;
+  cursor: pointer;
+}
+button:hover { filter: brightness(0.93); }
+button.secondary { background: var(--green); }
+button.danger { background: var(--text-muted); }
+button:disabled { opacity: 0.6; cursor: wait; }
+
+.status { margin: 8px 0 0; font-size: 13.5px; color: var(--green); }
+
+/* Opening hours table */
+table.hours { border-collapse: collapse; margin-bottom: 6px; }
+table.hours td, table.hours th { padding: 3px 10px 3px 0; text-align: left; font-size: 14px; }
+table.hours th { color: var(--text-muted); font-weight: normal; }
+
+/* Call panel */
+.panel {
+  position: sticky;
+  top: 16px;
+  align-self: start;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  border: 1px solid var(--grey-line);
+  border-top: 5px solid var(--green);
+  border-radius: 6px;
+  padding: 12px 16px;
+  background: #fff;
+}
+.panel h2 { margin: 0 0 8px; font-size: 17px; color: var(--green-dark); }
+.panel h3 { margin: 12px 0 4px; font-size: 14px; color: var(--text-muted); }
+.call-story { margin: 0 0 4px; font-size: 15px; font-weight: bold; color: var(--orange); }
+.call-story:empty { display: none; }
+.call-line { margin: 0; font-family: "DejaVu Sans Mono", Consolas, monospace; font-weight: bold; word-break: break-all; }
+.call-status { margin: 0 0 4px; font-weight: bold; }
+.call-status.ok { color: var(--green); }
+.call-status.error { color: #B3261E; }
+.code {
+  margin: 0;
+  padding: 8px 10px;
+  background: var(--grey-soft);
+  border-radius: 4px;
+  font-size: 12.5px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 40vh;
+  overflow: auto;
+}
