@@ -3,15 +3,20 @@ package com.restpartijen.api.reservation.model
 import com.restpartijen.api.shared.Money
 import kotlin.time.Instant
 
-/**
- * How a reservation ended; it keeps that after the product is free again (§9.5).
- *
- * - ACTIVE: reserved and not ended yet.
- * - COLLECTED: the collector picked the product up.
- * - CANCELLED: the collector cancelled it.
- * - LAPSED: it ran out, or an admin removed the product.
- */
-enum class ReservationStatus { ACTIVE, COLLECTED, CANCELLED, LAPSED }
+/** How a reservation ended; it keeps that after the product is free again (§9.5). */
+enum class ReservationStatus {
+    /** Reserved and not ended yet. */
+    ACTIVE,
+
+    /** The collector picked the product up. */
+    COLLECTED,
+
+    /** The collector cancelled it. */
+    CANCELLED,
+
+    /** It ran out, or an admin removed the product. */
+    LAPSED,
+}
 
 /**
  * One reservation of a whole product by one collector (US-05).

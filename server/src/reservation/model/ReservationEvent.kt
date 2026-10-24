@@ -1,11 +1,16 @@
 package com.restpartijen.api.reservation.model
 
-/**
- * What can happen to a reservation (§9.5).
- *
- * - RESERVE: a collector reserves a listed product.
- * - COLLECT: the collector picks the product up.
- * - CANCEL: the collector cancels the reservation.
- * - LAPSE: the reservation runs out, or an admin removes the product.
- */
-enum class ReservationEvent { RESERVE, COLLECT, CANCEL, LAPSE }
+/** What can happen to a reservation (§9.5). */
+enum class ReservationEvent {
+    /** A collector reserves a listed product. */
+    RESERVE,
+
+    /** The collector picks the product up. */
+    COLLECT,
+
+    /** The collector cancels the reservation. */
+    CANCEL,
+
+    /** The reservation runs out, or an admin removes the product. */
+    LAPSE,
+}
