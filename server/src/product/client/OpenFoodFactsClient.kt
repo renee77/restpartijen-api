@@ -137,7 +137,7 @@ class OpenFoodFactsClient(engine: HttpClientEngine, settings: OpenFoodFactsSetti
 /**
  * Only the outer envelope of the Open Food Facts answer; every other field is skipped.
  *
- * @property product the product fields
+ * @property product the product fields; required, so a 200 without a product counts as a broken body
  */
 @Serializable
 private data class OpenFoodFactsResponse(

@@ -36,7 +36,7 @@ class ExposedProductReader(private val repository: ProductRepository) : ProductR
 
 /**
  * Every query of this reader: products with their supplier, filtered by [condition].
- * Each function above only decides the condition; fetching and mapping rows happens here, in one transaction.
+ * Each function of this reader only decides the condition; fetching and mapping rows happens here, in one transaction.
  */
 private suspend fun productsWhere(condition: Op<Boolean>): List<ProductView> = dbQuery {
     (ProductsTable innerJoin SuppliersTable).selectAll()
