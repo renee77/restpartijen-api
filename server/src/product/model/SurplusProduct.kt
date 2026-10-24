@@ -25,7 +25,8 @@ const val BEST_BEFORE_PASSED = "bestBeforeAt must be in the future"
  * @property bestBeforeAt the moment the best-before date ends; from then on the product has expired
  * @property quantity how many units are offered; at least 1 when listed
  * @property allergens the EU allergens the product contains; empty when none were entered
- * @param status the lifecycle status of the product, as stored or LISTED for a new one
+ * @property status the lifecycle status of the product, as stored or LISTED for a new one;
+ * other features change the status only through ProductStatusUpdater
  */
 sealed class SurplusProduct(
     override val id: Long,
@@ -35,17 +36,10 @@ sealed class SurplusProduct(
     override val originalPrice: Money,
     val bestBeforeAt: Instant,
     val quantity: Int,
-    status: ProductStatus,
+    override val status: ProductStatus,
     override val pickupWindow: PickupWindow,
     val allergens: Set<Allergen>,
 ) : ProductView {
-
-    /**
-     * The lifecycle status this product was built with.
-     *
-     * Other features change the status only through ProductStatusUpdater.
-     */
-    override val status: ProductStatus = status
 
     /** Each subclass returns its own kind (§9.3). */
     abstract override val category: ProductCategory
