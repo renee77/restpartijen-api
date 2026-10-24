@@ -11,6 +11,7 @@ abstract class DomainException(message: String) : RuntimeException(message)
 /**
  * 400 Bad Request — structural error in the request.
  *
+ * @param message the text StatusPages puts in the error response
  * @property field the offending field, sent along in the error response; null when no single field is to blame
  */
 class ValidationException(message: String, val field: String? = null) : DomainException(message)
@@ -18,6 +19,7 @@ class ValidationException(message: String, val field: String? = null) : DomainEx
 /**
  * 422 Unprocessable Entity — well-formed request that breaks a domain rule.
  *
+ * @param message the text StatusPages puts in the error response
  * @property field the field that breaks the rule, sent along in the error response;
  *   null when no single field is to blame
  */
