@@ -54,3 +54,14 @@ test-dependencies:
   - io.mockk:mockk:1.14.11
   - org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0
 
+mavenPlugins:
+  # prepare-agent attaches the JaCoCo agent to the test JVM; report turns the result into HTML.
+  # The agent appends to build/maven-target/jacoco.exec on every test run, and the toolchain rejects
+  # the `append` parameter, so delete that file first for a measurement of only the latest run.
+  jacoco-maven-plugin.prepare-agent: enabled
+  jacoco-maven-plugin.report:
+    enabled: true
+    configuration:
+      # The toolchain does not resolve the default ${project.reporting.outputDirectory}, and references
+      # are not supported in this file, so the path is relative to server/, next to jacoco.exec.
+      outputDirectory: ../build/maven-target/reports/jacoco
