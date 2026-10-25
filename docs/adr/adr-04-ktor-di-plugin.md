@@ -3,12 +3,12 @@ type: ADR
 title: "ADR-04 — Ktor's eigen dependency-injectionplugin"
 description: "De ingebouwde dependency-injectionplugin van Ktor in plaats van Koin of handmatige constructor injection."
 tags: [adr, restpartijen, ktor, dependency-injection]
-timestamp: 2026-10-04T00:00:00
+timestamp: 2026-10-24T00:00:00
 ---
 
 # ADR-04 — Ktor's eigen dependency-injectionplugin
 
-> Tot en met v2.3 stond dit ADR in §8.6 van het FTD. Het staat nu alleen hier. Verwijzingen naar paragrafen (§) gaan over het FTD ([[FTD-restpartijen-webapi-v2_4]]).
+> Tot en met v2.3 stond dit ADR in §8.6 van het FTD. Het staat nu alleen hier. Verwijzingen naar paragrafen (§) gaan over het FTD ([[FTD-restpartijen-webapi-v3_0]]).
 
 - **Context.** De services moeten in tests door fakes vervangen kunnen worden zonder dat de productiecode verandert.
 - **Besluit.** De ingebouwde DI-plugin van Ktor (`io.ktor.server.plugins.di`) wordt gebruikt in plaats van Koin of handmatige constructor injection.

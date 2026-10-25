@@ -3,12 +3,21 @@ type: Log
 title: "Log architectuurbeslissingen — Restpartijenplatform Web API"
 description: "Wijzigingen aan de ADR's, de nieuwste bovenaan. De versies voor oktober 2026 zijn afgeleid uit de revisiehistorie van het FTD."
 tags: [adr, restpartijen, log]
-timestamp: 2026-10-08T00:00:00
+timestamp: 2026-10-24T00:00:00
 ---
 
 # Log architectuurbeslissingen
 
 De nieuwste wijziging staat bovenaan. Het overzicht van alle ADR's staat in de [index](index.md).
+
+## 2026-10-24 — ADR's naast de code en FTD v3.0 gelegd
+
+- Alle ADR's en de index verwijzen nu naar FTD v3.0 in plaats van v2.4. De §-nummers zijn gelijk gebleven.
+- ADR-01: `security` staat bij de featurepackages, en de gedeelde packages zijn genoemd. De laagindeling geldt voor zover een feature de laag nodig heeft: `pricing` heeft geen `repository`.
+- ADR-02: `shelfLifeRemaining(clock)` met de `Clock` als parameter, zoals in de code.
+- ADR-05: de reden voor `CORS` is de demo-frontend in de browser. De Android-app heeft CORS niet nodig, want alleen browsers handhaven het. Er is een bronnenlijst bij gekomen. De tekst bij Gevolgen is opgeschoond. Het besluit zelf is niet veranderd.
+- ADR-06: het polymorfisme zit in `tiers()`. `discountPercentage(remaining)` staat één keer in de interface.
+- ADR-07: `shared` is een package in de module `server`, geen aparte module.
 
 ## 2026-10-08 — ADR-05 bijgewerkt
 

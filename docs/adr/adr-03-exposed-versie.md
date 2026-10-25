@@ -3,12 +3,12 @@ type: ADR
 title: "ADR-03 — Exposed 0.x in plaats van 1.0"
 description: "Vervallen sinds v1.1. In v1.0 koos de profgroep voor Exposed 0.x; de module schrijft inmiddels Exposed 1.5.0 voor."
 tags: [adr, restpartijen, exposed, vervallen]
-timestamp: 2026-10-04T00:00:00
+timestamp: 2026-10-24T00:00:00
 ---
 
 # ADR-03 — Exposed 0.x in plaats van 1.0
 
-> Tot en met v2.3 stond dit ADR in §8.6 van het FTD. Het staat nu alleen hier. Verwijzingen naar paragrafen (§) gaan over het FTD ([[FTD-restpartijen-webapi-v2_4]]).
+> Tot en met v2.3 stond dit ADR in §8.6 van het FTD. Het staat nu alleen hier. Verwijzingen naar paragrafen (§) gaan over het FTD ([[FTD-restpartijen-webapi-v3_0]]).
 >
 > Dit besluit geldt niet meer. Het blijft staan, zodat te zien is wat er in v1.0 is besloten en waarom het is vervallen. Context, besluit, gevolgen en alternatieven zijn de tekst uit FTD v1.0.
 
