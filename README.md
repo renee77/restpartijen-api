@@ -18,6 +18,10 @@ On Windows: `kotlin.bat run`
 
     ./kotlin test
 
+Coverage (NFR-03): runs the tests and writes the JaCoCo report to `build/maven-target/reports/jacoco/index.html`.
+
+    ./coverage.sh        # Windows: coverage.bat
+
 Tests live in `server/test`, not in `server/src`.
 
 ## Demo accounts
