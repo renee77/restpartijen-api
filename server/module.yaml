@@ -3,7 +3,8 @@ product: jvm/app
 settings:
   kotlin:
     version: 2.4.20
-    serialization: json
+    # The format is added as a dependency ($kotlin.serialization.json) instead of the deprecated `format` shortcut.
+    serialization: enabled
     allWarningsAsErrors: true
   ktor:
     enabled: true
@@ -14,45 +15,46 @@ settings:
       version: 25
 
 dependencies:
-  - io.ktor:ktor-server-core
-  - io.ktor:ktor-server-di
-  - io.ktor:ktor-server-netty
-  - io.ktor:ktor-server-config-yaml
-  - io.ktor:ktor-server-content-negotiation
-  - io.ktor:ktor-serialization-kotlinx-json
-  - org.jetbrains.exposed:exposed-core:1.5.0
-  - org.jetbrains.exposed:exposed-jdbc:1.5.0
-  - org.jetbrains.exposed:exposed-kotlin-datetime:1.5.0
+  - $ktor.server.core
+  - $libs.ktor.server.di
+  - $ktor.server.netty
+  - $ktor.server.config.yaml
+  - $ktor.server.contentNegotiation
+  - $ktor.serialization.kotlinx.json
+  - $kotlin.serialization.json
+  - $libs.exposed.core
+  - $libs.exposed.jdbc
+  - $libs.exposed.kotlin.datetime
   # Used directly for opening hours (DayOfWeek, LocalTime; US-10), so declared here instead of relying on
   # Exposed and Ktor to bring it along. Same version they resolve to; both depend on this compat variant,
   # so a plain 0.8.0 could replace the variant they expect.
-  - org.jetbrains.kotlinx:kotlinx-datetime:0.8.0-0.6.x-compat
-  - com.h2database:h2:2.4.240
-  - org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0
-  - io.ktor:ktor-server-status-pages
-  - io.ktor:ktor-server-request-validation
-  - io.ktor:ktor-server-cors
-  - io.ktor:ktor-server-call-logging
-  - ch.qos.logback:logback-classic:1.5.38
+  - $libs.kotlinx.datetime
+  - $libs.h2
+  - $libs.kotlinx.coroutines.core
+  - $ktor.server.statusPages
+  - $ktor.server.requestValidation
+  - $ktor.server.cors
+  - $ktor.server.callLogging
+  - $libs.logback.classic
   ############ HTTP client dependencies ############
   # Calls the Open Food Facts API for the barcode lookup (US-02, A5).
-  - io.ktor:ktor-client-core
-  - io.ktor:ktor-client-cio
+  - $ktor.client.core
+  - $ktor.client.cio
   ############ Security dependencies ############
-  - io.ktor:ktor-server-auth
-  - io.ktor:ktor-server-auth-jwt
+  - $ktor.server.auth
+  - $ktor.server.auth.jwt
   # Library. Chosen because it is a well-known and widely used library for password hashing in Java/Kotlin applications.
-  - org.springframework:spring-core:7.0.9
-  - org.springframework.security:spring-security-crypto:7.1.1
-  - org.bouncycastle:bcprov-jdk18on:1.86
-  - commons-logging:commons-logging:1.3.5
+  - $libs.spring.core
+  - $libs.spring.security.crypto
+  - $libs.bouncycastle.bcprov
+  - $libs.commons.logging
 
 test-dependencies:
-  - io.ktor:ktor-server-test-host
+  - $ktor.server.testHost
   # Replaces the real Open Food Facts API in the client tests.
-  - io.ktor:ktor-client-mock
-  - io.mockk:mockk:1.14.11
-  - org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0
+  - $ktor.client.mock
+  - $libs.mockk
+  - $libs.kotlinx.coroutines.test
 
 mavenPlugins:
   # prepare-agent attaches the JaCoCo agent to the test JVM; report turns the result into HTML.
