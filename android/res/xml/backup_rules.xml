@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Skeleton: empty on purpose, and the manifest does not refer to this file yet.
+     Lonneke fills it in GB-3 (keeps the stored session out of backups; Android 11 and lower). -->
+<full-backup-content>
+</full-backup-content>
