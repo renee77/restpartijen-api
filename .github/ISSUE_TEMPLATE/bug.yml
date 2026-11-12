@@ -1,13 +1,12 @@
 name: Bug
 description: Iets werkt niet zoals het hoort.
-title: "[Bug] "
-labels: ["bug"]
+type: Bug
 body:
   - type: textarea
     id: wat-gebeurt-er
     attributes:
       label: Wat gebeurt er?
-      description: Beschrijf wat je ziet, inclusief foutmelding.
+      description: Beschrijf alleen wat je ziet, inclusief foutmelding.
     validations:
       required: true
   - type: textarea
@@ -26,17 +25,18 @@ body:
         3.
     validations:
       required: true
-  - type: dropdown
-    id: onderdeel
+  - type: input
+    id: omgeving
     attributes:
-      label: Onderdeel
-      options:
-        - server
-        - android
-        - shared
-        - demo-frontend
+      label: Omgeving
+      description: Branch of commit, en het apparaat of de emulator.
     validations:
       required: true
+  - type: textarea
+    id: vermoeden
+    attributes:
+      label: Vermoeden
+      description: Wat je denkt dat de oorzaak is. Houd dit los van wat je hebt gezien.
   - type: textarea
     id: logs
     attributes:

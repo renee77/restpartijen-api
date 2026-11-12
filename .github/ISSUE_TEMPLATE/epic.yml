@@ -1,22 +1,16 @@
 name: Epic
 description: Een groot doel dat je opdeelt in meerdere user stories.
-title: "[Epic] "
-labels: ["epic"]
+type: Epic
 body:
+  - type: markdown
+    attributes:
+      value: Koppel de user stories na het aanmaken als sub-issues aan deze epic.
   - type: textarea
     id: doel
     attributes:
       label: Doel
     validations:
       required: true
-  - type: textarea
-    id: stories
-    attributes:
-      label: Stories
-      description: Issuenummers van de user stories onder deze epic.
-      placeholder: |
-        - [ ] #
-        - [ ] #
   - type: textarea
     id: klaar-als
     attributes:

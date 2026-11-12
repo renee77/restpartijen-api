@@ -1,7 +1,6 @@
 name: Overleg
 description: Iets dat je met het team wilt delen of afstemmen.
-title: "[Overleg] "
-labels: ["overleg"]
+type: Overleg
 body:
   - type: input
     id: onderwerp

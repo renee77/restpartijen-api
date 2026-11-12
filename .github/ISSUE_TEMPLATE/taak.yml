@@ -1,7 +1,6 @@
 name: Taak
 description: Technisch werk zonder user story, zoals refactor, build of documentatie.
-title: "[Taak] "
-labels: ["taak"]
+type: Task
 body:
   - type: textarea
     id: wat
@@ -22,16 +21,5 @@ body:
       placeholder: |
         - [ ]
         - [ ]
-    validations:
-      required: true
-  - type: dropdown
-    id: onderdeel
-    attributes:
-      label: Onderdeel
-      options:
-        - server
-        - android
-        - shared
-        - demo-frontend
     validations:
       required: true

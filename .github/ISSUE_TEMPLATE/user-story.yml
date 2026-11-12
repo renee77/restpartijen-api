@@ -1,7 +1,6 @@
 name: User story
 description: Functionaliteit vanuit het perspectief van een gebruiker.
-title: "[Story] "
-labels: ["user story"]
+type: Feature
 body:
   - type: textarea
     id: story
@@ -27,8 +26,3 @@ body:
     attributes:
       label: Link naar FTD
       description: Sectie in docs/FTD-restpartijen-webapi-v3_0.md.
-  - type: input
-    id: epic
-    attributes:
-      label: Epic
-      description: Issuenummer van de epic, bijvoorbeeld #12.
