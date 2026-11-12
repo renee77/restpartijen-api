@@ -1,7 +1,7 @@
 # Restpartijen API
 
 Ktor Web API for the restpartijenplatform (proftaak, AI-powered software development, period 1).
-The design is described in `docs/FTD-restpartijen-webapi-v2_4.md`; the architecture decisions are in `docs/adr/`.
+The design is described in `docs/FTD-restpartijen-webapi-v3_0.md`; the architecture decisions are in `docs/adr/`.
 
 ## Requirements
 

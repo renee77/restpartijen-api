@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Skeleton: empty on purpose, and the manifest does not refer to this file yet.
+     Eva fills it in GB-1 (plain http only to the development laptop, FTD 11.3). -->
+<network-security-config>
+</network-security-config>
