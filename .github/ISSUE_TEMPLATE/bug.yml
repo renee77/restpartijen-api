@@ -1,0 +1,45 @@
+name: Bug
+description: Iets werkt niet zoals het hoort.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: wat-gebeurt-er
+    attributes:
+      label: Wat gebeurt er?
+      description: Beschrijf wat je ziet, inclusief foutmelding.
+    validations:
+      required: true
+  - type: textarea
+    id: wat-verwacht-je
+    attributes:
+      label: Wat verwacht je?
+    validations:
+      required: true
+  - type: textarea
+    id: stappen
+    attributes:
+      label: Stappen om te herhalen
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: dropdown
+    id: onderdeel
+    attributes:
+      label: Onderdeel
+      options:
+        - server
+        - android
+        - shared
+        - demo-frontend
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Plak relevante logregels of een stacktrace.
+      render: shell

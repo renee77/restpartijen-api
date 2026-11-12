@@ -1,0 +1,28 @@
+name: Epic
+description: Een groot doel dat je opdeelt in meerdere user stories.
+title: "[Epic] "
+labels: ["epic"]
+body:
+  - type: textarea
+    id: doel
+    attributes:
+      label: Doel
+    validations:
+      required: true
+  - type: textarea
+    id: stories
+    attributes:
+      label: Stories
+      description: Issuenummers van de user stories onder deze epic.
+      placeholder: |
+        - [ ] #
+        - [ ] #
+  - type: textarea
+    id: klaar-als
+    attributes:
+      label: Klaar als
+      placeholder: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true

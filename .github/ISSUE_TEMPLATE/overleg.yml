@@ -1,0 +1,30 @@
+name: Overleg
+description: Iets dat je met het team wilt delen of afstemmen.
+title: "[Overleg] "
+labels: ["overleg"]
+body:
+  - type: input
+    id: onderwerp
+    attributes:
+      label: Onderwerp
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+    validations:
+      required: true
+  - type: textarea
+    id: delen-of-overleggen
+    attributes:
+      label: Wat wil je delen of overleggen?
+    validations:
+      required: true
+  - type: input
+    id: met-wie
+    attributes:
+      label: Met wie?
+      placeholder: "Bijvoorbeeld: Stefan en Lonneke"
+    validations:
+      required: true

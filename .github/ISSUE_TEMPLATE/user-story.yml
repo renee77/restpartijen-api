@@ -1,0 +1,34 @@
+name: User story
+description: Functionaliteit vanuit het perspectief van een gebruiker.
+title: "[Story] "
+labels: ["user story"]
+body:
+  - type: textarea
+    id: story
+    attributes:
+      label: User story
+      placeholder: |
+        Als ...
+        wil ik ...
+        zodat ...
+    validations:
+      required: true
+  - type: textarea
+    id: acceptatiecriteria
+    attributes:
+      label: Acceptatiecriteria
+      placeholder: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+  - type: input
+    id: ftd
+    attributes:
+      label: Link naar FTD
+      description: Sectie in docs/FTD-restpartijen-webapi-v3_0.md.
+  - type: input
+    id: epic
+    attributes:
+      label: Epic
+      description: Issuenummer van de epic, bijvoorbeeld #12.
