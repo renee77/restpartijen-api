@@ -1,0 +1,25 @@
+name: Taak
+description: Technisch werk zonder user story, zoals refactor, build of documentatie.
+type: Task
+body:
+  - type: textarea
+    id: wat
+    attributes:
+      label: Wat moet er gebeuren?
+    validations:
+      required: true
+  - type: textarea
+    id: waarom
+    attributes:
+      label: Waarom?
+    validations:
+      required: true
+  - type: textarea
+    id: klaar-als
+    attributes:
+      label: Klaar als
+      placeholder: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
