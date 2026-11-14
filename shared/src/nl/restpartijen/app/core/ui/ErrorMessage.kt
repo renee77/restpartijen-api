@@ -15,11 +15,7 @@ import shared.generated.resources.common_retry
  * [message] is a text from strings.xml, never the server's message (FTD §11.2).
  */
 @Composable
-fun ErrorMessage(
-    message: String,
-    onRetry: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun ErrorMessage(message: String, onRetry: () -> Unit, modifier: Modifier = Modifier) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = message)
         Button(onClick = onRetry) { Text(text = stringResource(Res.string.common_retry)) }

@@ -101,10 +101,7 @@ private fun restpartijenTypography(): Typography {
  * Follows the device's dark mode unless [darkTheme] is given, for example in a preview.
  */
 @Composable
-fun RestpartijenTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable () -> Unit,
-) {
+fun RestpartijenTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = if (darkTheme) DarkColors else LightColors,
         typography = restpartijenTypography(),

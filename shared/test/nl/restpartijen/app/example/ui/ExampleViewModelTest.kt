@@ -28,18 +28,16 @@ class ExampleViewModelTest {
     }
 
     @Test
-    fun showsTheItemsWhenLoadingSucceeds() =
-        runTest {
-            val viewModel = ExampleViewModel(FakeExampleRepository(ApiResult.Success(listOf("first", "second"))))
+    fun showsTheItemsWhenLoadingSucceeds() = runTest {
+        val viewModel = ExampleViewModel(FakeExampleRepository(ApiResult.Success(listOf("first", "second"))))
 
-            assertEquals(ExampleUiState.Success(listOf("first", "second")), viewModel.uiState.value)
-        }
+        assertEquals(ExampleUiState.Success(listOf("first", "second")), viewModel.uiState.value)
+    }
 
     @Test
-    fun showsAnErrorWhenLoadingFails() =
-        runTest {
-            val viewModel = ExampleViewModel(FakeExampleRepository(ApiResult.Failure(ApiError.Network)))
+    fun showsAnErrorWhenLoadingFails() = runTest {
+        val viewModel = ExampleViewModel(FakeExampleRepository(ApiResult.Failure(ApiError.Network)))
 
-            assertEquals(ExampleUiState.Error, viewModel.uiState.value)
-        }
+        assertEquals(ExampleUiState.Error, viewModel.uiState.value)
+    }
 }

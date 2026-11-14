@@ -1,8 +1,8 @@
 package nl.restpartijen.app.example.ui
 
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,15 +18,14 @@ import shared.generated.resources.common_error
 
 /** Draws [uiState]; remembers nothing itself, so a test or preview can pass in any state (state hoisting). */
 @Composable
-fun ExampleScreen(
-    uiState: ExampleUiState,
-    onRetry: () -> Unit,
-) {
+fun ExampleScreen(uiState: ExampleUiState, onRetry: () -> Unit) {
     Scaffold { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
         when (uiState) {
             ExampleUiState.Loading -> LoadingIndicator(modifier)
+
             ExampleUiState.Error -> ErrorMessage(stringResource(Res.string.common_error), onRetry, modifier)
+
             is ExampleUiState.Success ->
                 LazyColumn(modifier) {
                     items(uiState.items) { item -> Text(text = item) }

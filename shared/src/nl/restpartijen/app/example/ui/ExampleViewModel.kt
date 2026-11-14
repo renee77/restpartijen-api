@@ -10,9 +10,7 @@ import nl.restpartijen.app.core.network.ApiResult
 import nl.restpartijen.app.example.data.ExampleRepository
 
 /** Loads the example list once on creation; [load] tries again, for example after an error. */
-class ExampleViewModel(
-    private val repository: ExampleRepository,
-) : ViewModel() {
+class ExampleViewModel(private val repository: ExampleRepository) : ViewModel() {
     private val _uiState = MutableStateFlow<ExampleUiState>(ExampleUiState.Loading)
     val uiState: StateFlow<ExampleUiState> = _uiState.asStateFlow()
 
