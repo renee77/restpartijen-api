@@ -1,3 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Dutch texts: every name in values/strings.xml needs a translation here. -->
 <resources>
+    <string name="app_name">Restpartijen</string>
+    <string name="common_retry">Opnieuw</string>
 </resources>
