@@ -11,7 +11,7 @@ The restpartijenplatform (proftaak, AI-powered software development). The reposi
 Design documents in `docs/`:
 
 - Web API: `docs/FTD-restpartijen-webapi-v3_0.md`, with the architecture decisions in `docs/adr/`.
-- App: `docs/FTD-restpartijen-app-v2_4.md`, with the background of its decisions in `docs/besluiten-ftd-app.md`.
+- App: `docs/ftd-restpartijen-android-app-v2-4.md`, with the background of its decisions in `docs/besluiten-ftd-app.md`.
 
 ## Requirements
 
