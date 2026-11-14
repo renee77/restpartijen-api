@@ -24,3 +24,9 @@ dependencies:
   # Koin for Compose, such as koinViewModel() in a composable.
   - $libs.koin.compose
   - $libs.koin.compose.viewmodel
+  # collectAsStateWithLifecycle()
+  - $libs.lifecycle.runtime.compose
+
+test-dependencies:
+  # runTest and a test Main dispatcher, so viewModelScope works in a plain JVM test.
+  - $libs.kotlinx.coroutines.test
