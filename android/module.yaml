@@ -1,0 +1,23 @@
+product: android/app
+
+settings:
+  kotlin:
+    # Pinned, like the server. Must match shared/module.yaml.
+    version: 2.4.20
+  android:
+    # Package of the generated R class; also resolves ".MainActivity" in the manifest.
+    namespace: nl.restpartijen.app
+    # Name of the app on the device; cannot change after release.
+    applicationId: nl.restpartijen.app
+    # App version: set here, not in the manifest.
+    versionCode: 1
+    versionName: "0.1.0"
+  compose:
+    enabled: true
+    # Must match shared/module.yaml, otherwise the modules use different Compose versions.
+    version: 1.12.2
+
+dependencies:
+  - //shared
+  # Provides setContent { } so the activity can show Compose content.
+  - $libs.androidx.activity.compose

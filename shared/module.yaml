@@ -1,0 +1,21 @@
+product:
+  type: kmp/lib
+  platforms: [ android ]
+
+settings:
+  kotlin:
+    # Pinned, like the server. Must match android/module.yaml.
+    version: 2.4.20
+    # Compiler plugin + runtime for @Serializable. Navigation 3 needs it to save the back stack
+    # (routes are @Serializable). No format (json) here: routes don't need one.
+    serialization: enabled
+  compose:
+    enabled: true
+    # Must match android/module.yaml, otherwise the modules use different Compose versions.
+    version: 1.12.2
+
+dependencies:
+  - $compose.foundation: exported
+  # Pinned in libs.versions.toml, see step 1.3.
+  - $libs.compose.material3: exported
+  - $compose.components.resources: exported
