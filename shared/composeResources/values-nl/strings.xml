@@ -3,4 +3,5 @@
 <resources>
     <string name="app_name">Restpartijen</string>
     <string name="common_retry">Opnieuw</string>
+    <string name="common_back">Terug</string>
 </resources>
