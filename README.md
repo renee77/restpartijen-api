@@ -1,28 +1,48 @@
-# Restpartijen API
+# Restpartijen
 
-Ktor Web API for the restpartijenplatform (proftaak, AI-powered software development, period 1).
-The design is described in `docs/FTD-restpartijen-webapi-v3_0.md`; the architecture decisions are in `docs/adr/`.
+The restpartijenplatform (proftaak, AI-powered software development). The repository has three modules:
+
+| Module | What | Period |
+|---|---|---|
+| `server` | Ktor Web API | 1 |
+| `shared` | The app: screens, ViewModels, repositories and `core` (Kotlin Multiplatform, target Android) | 2 |
+| `android` | The thin Android app that starts `shared` | 2 |
+
+Design documents in `docs/`:
+
+- Web API: `docs/FTD-restpartijen-webapi-v3_0.md`, with the architecture decisions in `docs/adr/`.
+- App: `docs/FTD-restpartijen-app-v2_4.md`, with the background of its decisions in `docs/besluiten-ftd-app.md`.
 
 ## Requirements
 
-- IntelliJ IDEA 2026.2.1 or newer with the Kotlin Toolchain plugin
+- IntelliJ IDEA 2026.3 or newer with the Kotlin Toolchain plugin
 - No JDK needed: the Kotlin Toolchain downloads it on the first run
+- For the app: the Android SDK and an emulator (Device Manager in IntelliJ). An x86_64 image without Google Play, with 2048 MB RAM, keeps a 16 GB laptop responsive
 
 ## Run
 
-    ./kotlin run
+The server:
 
-On Windows: `kotlin.bat run`
+    ./kotlin run -m server
+
+On Windows: `kotlin.bat run -m server`. It needs the environment variables from [Configuration](#configuration).
+
+The app: start an emulator and choose *Run 'android'* in IntelliJ. `./kotlin build` builds the app but does not install it.
+
+After a change in only `android/src/AndroidManifest.xml` or in `android/res/`, the build still uses the old files. Stop the server, run `./kotlin clean` and build again. `clean` wipes the whole project, including the server.
 
 ## Test
 
-    ./kotlin test
+    ./kotlin test              # all modules
+    ./kotlin test -m shared    # only the app
 
 Coverage (NFR-03): runs the tests and writes the JaCoCo report to `build/maven-target/reports/jacoco/index.html`.
 
     ./coverage.sh        # Windows: coverage.bat
 
-Tests live in `server/test`, not in `server/src`.
+Coverage of the app: `./coverage-shared.sh` (Windows: `coverage-shared.bat`) writes the report to `build/coverage/shared/index.html`.
+
+Tests live in `<module>/test`, not in `<module>/src`.
 
 ## Demo accounts
 
@@ -45,7 +65,7 @@ first maintenance run, five minutes after the start.
 
 - `main` always works. Nobody commits directly to `main`.
 - Every change goes through a pull request with at least one review.
-- Changes in `shared` need a review from both other team members.
+- Changes in `shared/src/nl/restpartijen/app/core/` and in the shared files `App.kt`, `AppModule.kt`, `AppNavigation.kt`, `strings.xml`, `libs.versions.toml` and the `module.yaml` files need a review from both other team members: everyone builds on them.
 
 ## Configuration
 
@@ -108,7 +128,7 @@ Get-Content .env | Where-Object { $_ -match '^\s*[^#\s][^=]*=' } | ForEach-Objec
 Then start the application:
 
 ```powershell
-./kotlin.bat run
+./kotlin.bat run -m server
 ```
 
 To remove the variables before closing the window:
@@ -136,7 +156,7 @@ set -a; . ./.env; set +a
 Then start the application:
 
 ```bash
-./kotlin run
+./kotlin run -m server
 ```
 
 To remove the variables before closing the window:
@@ -147,7 +167,7 @@ unset JWT_SECRET OFF_CONTACT_EMAIL
 
 ## Code style
 
-The Kotlin code in `server/` is checked with ktlint 1.8.0. The rules are in `.editorconfig`: the `intellij_idea` code style with a maximum line length of 120 characters.
+The Kotlin code in `server/`, `shared/` and `android/` is checked with ktlint 1.8.0. The rules are in `.editorconfig`: the `intellij_idea` code style with a maximum line length of 120 characters.
 
 Install ktlint once:
 
@@ -160,14 +180,16 @@ ktlint needs a Java runtime on the `PATH`; the application itself does not.
 Check the code:
 
 ```bash
-ktlint "server/**/*.kt"
+ktlint "server/**/*.kt" "shared/**/*.kt" "android/**/*.kt"
 ```
 
 Fix what ktlint can fix by itself:
 
 ```bash
-ktlint --format "server/**/*.kt"
+ktlint --format "server/**/*.kt" "shared/**/*.kt" "android/**/*.kt"
 ```
+
+Until `shared/src/nl/restpartijen/app/AppNavigation.kt` has code, ktlint reports it as an empty file. That is expected.
 
 The formatting commits are listed in `.git-blame-ignore-revs`. Run this once, so `git blame` skips them and shows the real author of a line (GitHub does this automatically):
 
