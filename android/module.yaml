@@ -4,6 +4,8 @@ settings:
   kotlin:
     # Pinned, like the server. Must match shared/module.yaml.
     version: 2.4.20
+    # A warning stops the build, so warnings cannot pile up (NFR-A2).
+    allWarningsAsErrors: true
   android:
     # Package of the generated R class; also resolves ".MainActivity" in the manifest.
     namespace: nl.restpartijen.app

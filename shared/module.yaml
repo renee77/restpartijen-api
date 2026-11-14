@@ -9,6 +9,8 @@ settings:
     # Compiler plugin + runtime for @Serializable. Navigation 3 needs it to save the back stack
     # (routes are @Serializable). No format (json) here: routes don't need one.
     serialization: enabled
+    # A warning stops the build, so warnings cannot pile up (NFR-A2).
+    allWarningsAsErrors: true
   compose:
     enabled: true
     # Must match android/module.yaml, otherwise the modules use different Compose versions.
