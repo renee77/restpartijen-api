@@ -26,6 +26,8 @@ dependencies:
   - $libs.koin.compose.viewmodel
   # collectAsStateWithLifecycle()
   - $libs.lifecycle.runtime.compose
+  # Navigation 3: NavKey for the routes, later NavDisplay (GB-2).
+  - $libs.navigation3.ui
 
 test-dependencies:
   # runTest and a test Main dispatcher, so viewModelScope works in a plain JVM test.
