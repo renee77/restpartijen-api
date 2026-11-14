@@ -21,3 +21,5 @@ dependencies:
   - //shared
   # Provides setContent { } so the activity can show Compose content.
   - $libs.androidx.activity.compose
+  # startKoin, androidContext and androidLogger.
+  - $libs.koin.android

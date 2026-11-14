@@ -19,3 +19,6 @@ dependencies:
   # Pinned in libs.versions.toml, see step 1.3.
   - $libs.compose.material3: exported
   - $compose.components.resources: exported
+  # Koin for Compose, such as koinViewModel() in a composable.
+  - $libs.koin.compose
+  - $libs.koin.compose.viewmodel
