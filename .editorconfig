@@ -23,3 +23,5 @@ ktlint_code_style = intellij_idea
 # The intellij_idea style has no line-length limit by default; 120 is the team's choice.
 # IntelliJ also reads this value, so the IDE and ktlint wrap at the same width.
 max_line_length = 120
+# Composables start with a capital letter (Compose convention); without this ktlint reports each of them.
+ktlint_function_naming_ignore_when_annotated_with = Composable

@@ -1,3 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Dutch texts: every name in values/strings.xml needs a translation here. -->
 <resources>
+    <string name="app_name">Restpartijen</string>
+    <string name="common_retry">Opnieuw</string>
+    <string name="common_back">Terug</string>
+    <string name="common_error">Er ging iets mis.</string>
 </resources>

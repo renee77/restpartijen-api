@@ -1,0 +1,34 @@
+product:
+  type: kmp/lib
+  platforms: [ android ]
+
+settings:
+  kotlin:
+    # Pinned, like the server. Must match android/module.yaml.
+    version: 2.4.20
+    # Compiler plugin + runtime for @Serializable. Navigation 3 needs it to save the back stack
+    # (routes are @Serializable). No format (json) here: routes don't need one.
+    serialization: enabled
+    # A warning stops the build, so warnings cannot pile up (NFR-A2).
+    allWarningsAsErrors: true
+  compose:
+    enabled: true
+    # Must match android/module.yaml, otherwise the modules use different Compose versions.
+    version: 1.12.2
+
+dependencies:
+  - $compose.foundation: exported
+  # Pinned in libs.versions.toml, see step 1.3.
+  - $libs.compose.material3: exported
+  - $compose.components.resources: exported
+  # Koin for Compose, such as koinViewModel() in a composable.
+  - $libs.koin.compose
+  - $libs.koin.compose.viewmodel
+  # collectAsStateWithLifecycle()
+  - $libs.lifecycle.runtime.compose
+  # Navigation 3: NavKey for the routes, later NavDisplay (GB-2).
+  - $libs.navigation3.ui
+
+test-dependencies:
+  # runTest and a test Main dispatcher, so viewModelScope works in a plain JVM test.
+  - $libs.kotlinx.coroutines.test

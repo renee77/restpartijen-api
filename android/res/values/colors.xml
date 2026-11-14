@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Dark green from the theme (secondary), so the white and light green parts of the carrot stand out. -->
+    <color name="ic_launcher_background">#2F5233</color>
+</resources>
