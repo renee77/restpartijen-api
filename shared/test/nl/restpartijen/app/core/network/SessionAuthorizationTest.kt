@@ -5,6 +5,7 @@ import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
@@ -22,37 +23,37 @@ class SessionAuthorizationTest {
     private var lastRequest: HttpRequestData? = null
 
     // Creates a client with the SessionAuthorization plugin installed and a given session store.
-    private fun clientWith(store: FakeSessionStore) =
-        HttpClient(
-            MockEngine { request ->
-                lastRequest = request
-                respond(content = "", status = HttpStatusCode.OK)
-            },
-        ) {
-            install(SessionAuthorization) { sessionStore = store }
+    private fun clientWith(
+        store: FakeSessionStore,
+        host: String? = null,
+    ) = HttpClient(
+        MockEngine { request ->
+            lastRequest = request
+            respond(content = "", status = HttpStatusCode.OK)
+        },
+    ) {
+        install(SessionAuthorization) {
+            sessionStore = store
+            allowedHost = host
         }
+    }
+
+    private fun authorization() = lastRequest?.headers?.get(HttpHeaders.Authorization)
 
     @Test
     fun sendsTheTokenWhenThereIsASession() =
         runTest {
-            // Assemble: Create a client with a session store that has a session.
-            val client = clientWith(FakeSessionStore(session))
+            clientWith(FakeSessionStore(session)).get("https://api.example.test/products")
 
-            // Act: Make a request.
-            client.get("https://example.test/products")
-
-            // Assert: The request has the Authorization header with the token.
-            assertEquals("Bearer test-token", lastRequest?.headers?.get(HttpHeaders.Authorization))
+            assertEquals("Bearer test-token", authorization())
         }
 
     @Test
     fun sendsNoHeaderWithoutASession() =
         runTest {
-            val client = clientWith(FakeSessionStore())
+            clientWith(FakeSessionStore()).get("https://api.example.test/products")
 
-            client.get("https://example.test/products")
-
-            assertNull(lastRequest?.headers?.get(HttpHeaders.Authorization))
+            assertNull(authorization())
         }
 
     @Test
@@ -61,11 +62,37 @@ class SessionAuthorizationTest {
             val store = FakeSessionStore(session)
             val client = clientWith(store)
 
-            client.get("https://example.test/products")
-            assertEquals("Bearer test-token", lastRequest?.headers?.get(HttpHeaders.Authorization))
+            client.get("https://api.example.test/products")
+            assertEquals("Bearer test-token", authorization())
 
             store.clear()
-            client.get("https://example.test/products")
-            assertNull(lastRequest?.headers?.get(HttpHeaders.Authorization))
+            client.get("https://api.example.test/products")
+            assertNull(authorization())
+        }
+
+    @Test
+    fun keepsAnAuthorizationHeaderThatIsAlreadySet() =
+        runTest {
+            clientWith(FakeSessionStore(session)).get("https://api.example.test/products") {
+                header(HttpHeaders.Authorization, "Bearer other-token")
+            }
+
+            assertEquals("Bearer other-token", authorization())
+        }
+
+    @Test
+    fun sendsTheTokenToTheAllowedHost() =
+        runTest {
+            clientWith(FakeSessionStore(session), host = "api.example.test").get("https://api.example.test/products")
+
+            assertEquals("Bearer test-token", authorization())
+        }
+
+    @Test
+    fun sendsNoTokenToAnotherHost() =
+        runTest {
+            clientWith(FakeSessionStore(session), host = "api.example.test").get("https://other.example.test/products")
+
+            assertNull(authorization())
         }
 }
