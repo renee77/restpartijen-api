@@ -12,6 +12,7 @@ Design documents in `docs/`:
 
 - Web API: `docs/FTD-restpartijen-webapi-v3_0.md`, with the architecture decisions in `docs/adr/`.
 - App: `docs/FTD-restpartijen-android-app-v2_4.md`, with the background of its decisions in `docs/besluiten-ftd-app.md`.
+- Tooling: known problems with the Kotlin Toolchain and IntelliJ, with workarounds, in `docs/tooling-issues/`.
 
 ## Requirements
 
