@@ -1,6 +1,7 @@
 package nl.restpartijen.app.core.network
 
 import io.ktor.client.plugins.api.createClientPlugin
+import io.ktor.client.plugins.api.Send
 import io.ktor.http.HttpHeaders
 import kotlinx.coroutines.flow.firstOrNull
 import nl.restpartijen.app.core.session.SessionStore
@@ -38,5 +39,11 @@ val SessionAuthorization =
             if (session != null) {
                 request.headers.append(HttpHeaders.Authorization, "Bearer ${session.token}")
             }
+        }
+        // TEMPORARY (step 2): only look at what this hook sees. Remove in step 3.
+        on(Send) { request ->
+            val call = proceed(request)
+            println("SEND-HOOK saw status ${call.response.status}")
+            call
         }
     }
