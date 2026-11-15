@@ -14,7 +14,8 @@ class RestpartijenApplication : Application() {
             androidLogger()
             // Gives Koin the app's Context, so modules can use androidContext() (DataStore needs it).
             androidContext(this@RestpartijenApplication)
-            modules(appModule)
+            // appModule holds the shared code; platformModule the Android implementations of its interfaces (A-29).
+            modules(appModule, platformModule)
         }
     }
 }
