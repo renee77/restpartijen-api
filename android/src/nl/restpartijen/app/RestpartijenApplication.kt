@@ -14,7 +14,11 @@ class RestpartijenApplication : Application() {
             androidLogger()
             // Gives Koin the app's Context, so modules can use androidContext() (DataStore needs it).
             androidContext(this@RestpartijenApplication)
-            modules(appModule)
+            // A second definition of the same type fails at start-up instead of silently replacing the first,
+            // for example a FakeSessionStore winning over the encrypted one (Koin's strict mode).
+            allowOverride(false)
+            // The shared code and its Android implementations (A-29).
+            modules(koinModules)
         }
     }
 }
