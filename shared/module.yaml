@@ -15,6 +15,12 @@ settings:
     enabled: true
     # Must match android/module.yaml, otherwise the modules use different Compose versions.
     version: 1.12.2
+  # ktor is used for the HttpClient, so we need to enable it here too. Must match server/module.yaml.
+  ktor:
+      # Turns on the $ktor catalog and the Ktor BOM, so the client artifacts get their version from it.
+      # Same version as server/module.yaml.
+      enabled: true
+      version: 3.6.0
 
 dependencies:
   - $compose.foundation: exported
@@ -28,9 +34,13 @@ dependencies:
   - $libs.lifecycle.runtime.compose
   # Navigation 3: NavKey for the routes, later NavDisplay (GB-2).
   - $libs.navigation3.ui
+  # Ktor Client core: the HttpClient and the plugin API for the Authorization header (GB-3, L4).
+  - $ktor.client.core
 
 test-dependencies:
   # runTest and a test Main dispatcher, so viewModelScope works in a plain JVM test.
   - $libs.kotlinx.coroutines.test
+  # MockEngine, so the plugin is tested without a network.
+  - $ktor.client.mock
   # Module.verify(): checks that Koin can build every definition (A-29).
   - $libs.koin.test
