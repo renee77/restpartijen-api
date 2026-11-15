@@ -28,11 +28,11 @@ description: "Ontwerp van de app (Kotlin Multiplatform met Compose Multiplatform
 
 | Veld | Waarde |
 |------|--------|
-| Document ID | FTD-restpartijen-app-v2.4 |
+| Document ID | FTD-restpartijen-android-app-v2.5 |
 | Scenario | project |
 | Auteurs | Eva Bouwman, Lonneke van Oers, Stefan Pellikaan |
 | Datum | 2026-11-15 |
-| Status | Concept. De besluiten van de startsessie van 14 november 2026 zijn verwerkt |
+| Status | Concept. De besluiten van de startsessie van 14 november 2026 en het nalopen van het draaiboek van sessie 2 (15 november) zijn verwerkt |
 | Classificatie | Intern (schoolproject) |
 | Module | AI-powered software development, periode 2, LU1 |
 | Akkoord | Besluiten A-01 t/m A-19: profgroep en vakdocent, 7 t/m 10 november 2026. A-20 t/m A-28: profgroep, startsessie 14 november 2026. A-29 en A-30: Eva, 15 november 2026. Het document zelf: nog door Stefan en Lonneke te lezen |
@@ -50,7 +50,8 @@ description: "Ontwerp van de app (Kotlin Multiplatform met Compose Multiplatform
 | 2.1 | 2026-11-10 | Eva Bouwman, samen met Claude | A-19 aangepast op advies van de vakdocent: voor iconen hoeft de groep niet te kiezen tussen de Valkyrie-plugin en Compose Multiplatform resources; welke past, hangt af van de situatie |
 | 2.2 | 2026-11-12 | Door Eva samen met Claude | Uitkomsten van de proef met de Kotlin Toolchain van 11 en 12 november verwerkt ([[eva-proef-kotlin-toolchain-android]]), met de besluiten van Eva. Geraakt: A-13, A-14, A-19, §3, §5.8, §6, §8.3, §8.4, §8.6, §8.7, §8.8, §9, §10, §11, §12, §13, §14, §15, §16, §17 en §19 |
 | 2.3 | 2026-11-12 | Door Eva samen met Claude | Grote check van 12 november verwerkt ([[status-grote-check-ftd-draaiboek-codebase]]): fouten gecorrigeerd, de besluiten van Eva verwerkt en de tekst ingekort. Het token met vingerafdruk is onderbouwd in [[literaire-onderbouwing-token-en-vingerafdruk]]. Geraakt: A-13, §2, §5, §8.3, §8.6, §9, §10, §11.2, §11.3, §12.1, §13, §14, §16.3, §16.4, §16.6, §17, §19 en §20. R-A1, O-1 en O-2 zijn weg (afgehandeld) |
-| 2.4 | 2026-11-14 | Door Eva samen met Claude | Besluiten van de startsessie van 14 november verwerkt ([[draaiboek-startsessie-android-v2]]; gebouwd in PR #88). Nieuw: A-20 t/m A-28 (beslispunten 1, 3, 4, 5, 7, 8, 9 en 10, en de vorm van K-A3). Bevestigd: A-13 en de antwoorden op O-7. Ingevuld: A-15 (design patterns). Geraakt: §5.7, §8.3, §8.5, §8.6, §8.8, §9, §11.2, §16.3 en §19.2 Aangevuld op 15 nov, bij het nalopen van het draaiboek van sessie 2: A-29 (Koin per feature, platformcode in `platformModule`), A-30 (token en `401` via de `Auth`-plugin), eigenaren van `formatPrice` en de toestemming voor het lokale netwerk, en O-17. Geraakt: §8.3, §8.6, §8.8, §9, §11.4, §16.1 en §19.2 |
+| 2.4 | 2026-11-14 | Door Eva samen met Claude | Besluiten van de startsessie van 14 november verwerkt ([[draaiboek-startsessie-android-v2]]; gebouwd in PR #88). Nieuw: A-20 t/m A-28 (beslispunten 1, 3, 4, 5, 7, 8, 9 en 10, en de vorm van K-A3). Bevestigd: A-13 en de antwoorden op O-7. Ingevuld: A-15 (design patterns). Geraakt: §5.7, §8.3, §8.5, §8.6, §8.8, §9, §11.2, §16.3 en §19.2 |
+| 2.5 | 2026-11-15 | Door Eva samen met Claude | Keuzes bij het nalopen van het draaiboek van sessie 2 ([[draaiboek-sessie-2-android]]) en de review van de Koin-opzet verwerkt: A-29 (een Koin-module per feature, Android-code in `platformModule`, strenge modus tegen dubbele definities), A-30 (token en `401` via de `Auth`-plugin), de eigenaren van `formatPrice` en van de toestemming voor het lokale netwerk, O-16 afgehandeld en O-17 nieuw. Geraakt: §8.3, §8.6, §8.8, §9, §11.4, §16.1 en §19.2 |
 
 ## Besluiten
 
@@ -86,7 +87,7 @@ De nummering begint bij A-01, zodat zij niet botst met B-01 tot en met B-64 in F
 | A-26 | Platformcode | Android-code staat in `src@android/`, gedeelde code in `src/` (§8.8) | Startsessie, 14 nov (beslispunt 9) | Vast |
 | A-27 | Inloggen en terug (K-A3) | Een ViewModel meldt "inloggen nodig" als toestand in de UiState, niet als losse gebeurtenis. De ViewModel onthoudt de actie die wacht en voert haar uit zodra `SessionStore.session` niet meer `null` is (§8.5) | Startsessie, 14 nov | Vast |
 | A-28 | Prijsweergave | Een prijs staat altijd in euro, ook in de Engelse interface. De notatie (decimaalteken, plek van het €-teken) volgt de taal van het toestel: EN `€2.39`, NL `€ 2,39`. De prijs komt binnen als centen (A-25) en wordt op één plek in `core` omgezet naar tekst (`formatPrice`); Lonneke bouwt die (GB-3, Eva 15 nov) | Startsessie, 14 nov (beslispunt 10) | Vast |
-| A-29 | Koin-modules | Een Koin-module per feature en één `coreModule`, samengevoegd in `appModule` met `includes()`; `startKoin` laadt alleen `appModule`. De Android-implementaties staan per feature in een platform-module in `src@android/`, samen in `platformModule`, die `RestpartijenApplication` naast `appModule` laadt. Koin raadt `includes()` aan en laat meerdere modules aan `startKoin` toe (Koin, z.j.-a). Code in `src/` kan geen klasse uit `src@android/` zien, en met een module per feature schrijft ieder alleen in de eigen feature (§8.3, §8.8). `expect`/`actual` (Koin, z.j.-b) werkt met de toolchain, maar IntelliJ markeert het bij één platform als fout; daarom niet gebruikt (`docs/tooling-issues/`). Eva bouwde het geraamte op 15 nov (GB-1) | Eva, 15 nov | Vast |
+| A-29 | Koin-modules | Een Koin-module per feature en één `coreModule`, samengevoegd in `appModule` met `includes()`. De Android-implementaties staan per feature in een platform-module in `src@android/`, samen in `platformModule`. `startKoin` laadt `appModule` en `platformModule` (de lijst `koinModules`), in strenge modus: een tweede definitie van hetzelfde type geeft een fout bij het starten in plaats van de eerste stil te vervangen (Koin, z.j.-a). `AppModuleTest` controleert met dezelfde lijst dat elke constructor-afhankelijkheid een definitie heeft en dat geen type dubbel is gedefinieerd. Koin raadt `includes()` aan en laat meerdere modules aan `startKoin` toe (Koin, z.j.-a). Code in `src/` kan geen klasse uit `src@android/` zien, en met een module per feature schrijft ieder alleen in de eigen feature (§8.3, §8.8). `expect`/`actual` (Koin, z.j.-b) werkt met de toolchain, maar IntelliJ markeert het bij één platform als fout; daarom niet gebruikt (`docs/tooling-issues/`). Eva bouwde het geraamte op 15 nov (GB-1) | Eva, 15 nov | Vast |
 | A-30 | Token en `401` | De `Auth`-plugin van de Ktor Client met `bearer`: `loadTokens` leest het token uit `SessionStore`, `sendWithoutRequest` stuurt het direct mee, en `refreshTokens` wist de sessie, want er zijn geen refresh tokens. Een `401` op `POST /auth/login` is een verkeerd wachtwoord en wist niets (§5.6). Dit is de standaard van Ktor hiervoor (JetBrains, z.j.-k). Lonneke bouwt het (GB-3) | Eva, 15 nov | Vast; het overslaan van het login-request nog te bewijzen met een test |
 
 ## Inhoudsopgave
@@ -367,6 +368,7 @@ restpartijen-api/
 │   │   ├── App.kt                   Scaffold + NavDisplay
 │   │   ├── AppNavigation.kt         routes → schermen (A-23)
 │   │   ├── AppModule.kt             Koin: voegt de modules van core en de features samen (A-29)
+│   │   ├── <feature>/<Feature>Module.kt   Koin-module per feature en voor core (A-29)
 │   │   ├── core/                    gedeeld, iedereen
 │   │   │   ├── network/             HttpClient (GB-1), ApiResult en ApiError (A-22)
 │   │   │   ├── session/             SessionStore-interface + nepversie (GB-3, K-A4)
@@ -390,6 +392,8 @@ restpartijen-api/
 │   │   │   └── data/                ProductDetailRepository
 │   │   └── example/                 tijdelijk: het voorbeeld van de startsessie; weg vóór inlevering
 │   ├── src@android/<package>/       Android-implementaties (§8.8, A-26)
+│   │   ├── PlatformModule.kt        platformModule en koinModules (A-29)
+│   │   ├── <feature>/<Feature>PlatformModule.kt   Koin-module met de Android-implementaties per feature
 │   │   ├── core/session/            EncryptedSessionStore
 │   │   ├── product/data/            BarcodeScanner met CameraX + ML Kit
 │   │   ├── reservation/data/        LocationProvider
