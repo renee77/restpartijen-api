@@ -51,13 +51,11 @@ class PriceFormatTest {
         assertTrue(formatPrice(239, "nl").contains("€"))
     }
 
-    // Provisional: A-28 does not define grouping yet (open question 6). Confirm with Eva.
     @Test
     fun `Formats amounts above one thousand euros in English with grouping`() {
         assertEquals("€1,234.56", formatPrice(123456, "en"))
     }
 
-    // Provisional: see above. Remove this comment before merging to main.
     @Test
     fun `Formats amounts above one thousand euros in Dutch with grouping`() {
         assertEquals("€ 1.234,56", formatPrice(123456, "nl"))
