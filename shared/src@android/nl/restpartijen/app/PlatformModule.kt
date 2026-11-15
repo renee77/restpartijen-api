@@ -19,3 +19,9 @@ val platformModule =
             securityPlatformModule,
         )
     }
+
+/**
+ * Every module the app loads at start-up: the shared code and its Android implementations.
+ * RestpartijenApplication and AppModuleTest both use this list, so the test checks exactly what the app loads.
+ */
+val koinModules = listOf(appModule, platformModule)
