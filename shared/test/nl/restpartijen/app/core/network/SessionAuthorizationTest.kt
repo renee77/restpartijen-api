@@ -23,10 +23,7 @@ class SessionAuthorizationTest {
     private var lastRequest: HttpRequestData? = null
 
     // Creates a client with the SessionAuthorization plugin installed and a given session store.
-    private fun clientWith(
-        store: FakeSessionStore,
-        host: String? = null,
-    ) = HttpClient(
+    private fun clientWith(store: FakeSessionStore, host: String? = null) = HttpClient(
         MockEngine { request ->
             lastRequest = request
             respond(content = "", status = HttpStatusCode.OK)
@@ -41,58 +38,52 @@ class SessionAuthorizationTest {
     private fun authorization() = lastRequest?.headers?.get(HttpHeaders.Authorization)
 
     @Test
-    fun sendsTheTokenWhenThereIsASession() =
-        runTest {
-            clientWith(FakeSessionStore(session)).get("https://api.example.test/products")
+    fun sendsTheTokenWhenThereIsASession() = runTest {
+        clientWith(FakeSessionStore(session)).get("https://api.example.test/products")
 
-            assertEquals("Bearer test-token", authorization())
-        }
-
-    @Test
-    fun sendsNoHeaderWithoutASession() =
-        runTest {
-            clientWith(FakeSessionStore()).get("https://api.example.test/products")
-
-            assertNull(authorization())
-        }
+        assertEquals("Bearer test-token", authorization())
+    }
 
     @Test
-    fun stopsSendingTheTokenAfterTheSessionIsCleared() =
-        runTest {
-            val store = FakeSessionStore(session)
-            val client = clientWith(store)
+    fun sendsNoHeaderWithoutASession() = runTest {
+        clientWith(FakeSessionStore()).get("https://api.example.test/products")
 
-            client.get("https://api.example.test/products")
-            assertEquals("Bearer test-token", authorization())
-
-            store.clear()
-            client.get("https://api.example.test/products")
-            assertNull(authorization())
-        }
+        assertNull(authorization())
+    }
 
     @Test
-    fun keepsAnAuthorizationHeaderThatIsAlreadySet() =
-        runTest {
-            clientWith(FakeSessionStore(session)).get("https://api.example.test/products") {
-                header(HttpHeaders.Authorization, "Bearer other-token")
-            }
+    fun stopsSendingTheTokenAfterTheSessionIsCleared() = runTest {
+        val store = FakeSessionStore(session)
+        val client = clientWith(store)
 
-            assertEquals("Bearer other-token", authorization())
-        }
+        client.get("https://api.example.test/products")
+        assertEquals("Bearer test-token", authorization())
 
-    @Test
-    fun sendsTheTokenToTheAllowedHost() =
-        runTest {
-            clientWith(FakeSessionStore(session), host = "api.example.test").get("https://api.example.test/products")
-
-            assertEquals("Bearer test-token", authorization())
-        }
+        store.clear()
+        client.get("https://api.example.test/products")
+        assertNull(authorization())
+    }
 
     @Test
-    fun sendsNoTokenToAnotherHost() =
-        runTest {
-            clientWith(FakeSessionStore(session), host = "api.example.test").get("https://other.example.test/products")
-
-            assertNull(authorization())
+    fun keepsAnAuthorizationHeaderThatIsAlreadySet() = runTest {
+        clientWith(FakeSessionStore(session)).get("https://api.example.test/products") {
+            header(HttpHeaders.Authorization, "Bearer other-token")
         }
+
+        assertEquals("Bearer other-token", authorization())
+    }
+
+    @Test
+    fun sendsTheTokenToTheAllowedHost() = runTest {
+        clientWith(FakeSessionStore(session), host = "api.example.test").get("https://api.example.test/products")
+
+        assertEquals("Bearer test-token", authorization())
+    }
+
+    @Test
+    fun sendsNoTokenToAnotherHost() = runTest {
+        clientWith(FakeSessionStore(session), host = "api.example.test").get("https://other.example.test/products")
+
+        assertNull(authorization())
+    }
 }
