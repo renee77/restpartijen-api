@@ -52,107 +52,99 @@ class SessionAuthorizationUnauthorizedTest {
     // is on? This test fails (red) until step 3 is done. If the first assertion passes and only
     // the last one fails, you have learned that the exception is thrown as expected.
     @Test
-    fun `a 401 With ExpectSuccess Throws And Clears The Session` () =
-        runTest {
-            val store = FakeSessionStore(session)
-            val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = true)
+    fun `a 401 With ExpectSuccess Throws And Clears The Session`() = runTest {
+        val store = FakeSessionStore(session)
+        val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = true)
 
-            // The caller must still get the error, so the repository can turn it into ApiError.Http(401).
-            val error = assertFailsWith<ClientRequestException> { client.get(url) }
+        // The caller must still get the error, so the repository can turn it into ApiError.Http(401).
+        val error = assertFailsWith<ClientRequestException> { client.get(url) }
 
-            assertEquals(HttpStatusCode.Unauthorized, error.response.status)
-            // The session is gone, because the request carried the token of the current session.
-            assertNull(store.session.first())
-        }
-
-    @Test
-    fun `a 401 Without ExpectSuccess Returns The Answer And Clears The Session` () =
-        runTest {
-            val store = FakeSessionStore(session)
-            val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
-
-            val response = client.get(url)
-
-            // Same behaviour when the setting is off: the 401 arrives as a normal answer.
-            assertEquals(HttpStatusCode.Unauthorized, response.status)
-            assertNull(store.session.first())
-        }
+        assertEquals(HttpStatusCode.Unauthorized, error.response.status)
+        // The session is gone, because the request carried the token of the current session.
+        assertNull(store.session.first())
+    }
 
     @Test
-    fun `a 200 Keeps The Session` () =
-        runTest {
-            val store = FakeSessionStore(session)
-            val client = clientWith(store, HttpStatusCode.OK, failOnError = true)
+    fun `a 401 Without ExpectSuccess Returns The Answer And Clears The Session`() = runTest {
+        val store = FakeSessionStore(session)
+        val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
 
-            client.get(url)
+        val response = client.get(url)
 
-            assertEquals(session, store.session.first())
-        }
-
-    @Test
-    fun `a 403 Keeps The Session` () =
-        runTest {
-            val store = FakeSessionStore(session)
-            val client = clientWith(store, HttpStatusCode.Forbidden, failOnError = true)
-
-            // 403 means "wrong kind of account" (FTD app §11.2), not "token expired".
-            assertFailsWith<ClientRequestException> { client.get(url) }
-
-            assertEquals(session, store.session.first())
-        }
+        // Same behaviour when the setting is off: the 401 arrives as a normal answer.
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertNull(store.session.first())
+    }
 
     @Test
-    fun `a 401 Without A Session Does Nothing` () =
-        runTest {
-            // A visitor doing a protected action: no token, the server answers 401 (K-A3).
-            val store = FakeSessionStore()
-            val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
+    fun `a 200 Keeps The Session`() = runTest {
+        val store = FakeSessionStore(session)
+        val client = clientWith(store, HttpStatusCode.OK, failOnError = true)
 
-            val response = client.get(url)
+        client.get(url)
 
-            // No crash, and the answer still reaches the caller.
-            assertEquals(HttpStatusCode.Unauthorized, response.status)
-            assertNull(store.session.first())
-        }
+        assertEquals(session, store.session.first())
+    }
 
     @Test
-    fun `a Request After A401 Carries No Header` () =
-        runTest {
-            val store = FakeSessionStore(session)
-            val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
+    fun `a 403 Keeps The Session`() = runTest {
+        val store = FakeSessionStore(session)
+        val client = clientWith(store, HttpStatusCode.Forbidden, failOnError = true)
 
-            client.get(url)
-            assertEquals("Bearer test-token", lastRequest?.headers?.get(HttpHeaders.Authorization))
+        // 403 means "wrong kind of account" (FTD app §11.2), not "token expired".
+        assertFailsWith<ClientRequestException> { client.get(url) }
 
-            // The session was cleared by the first answer, so the second request has no header (L4 + L5).
-            client.get(url)
-            assertNull(lastRequest?.headers?.get(HttpHeaders.Authorization))
-        }
+        assertEquals(session, store.session.first())
+    }
 
     @Test
-    fun `a 401 For Another Token Keeps The Session` () =
-        runTest {
-            val store = FakeSessionStore(session)
-            val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
+    fun `a 401 Without A Session Does Nothing`() = runTest {
+        // A visitor doing a protected action: no token, the server answers 401 (K-A3).
+        val store = FakeSessionStore()
+        val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
 
-            // The caller sets its own token, which is not the token of the current session.
-            // This stands for an old request answered after the user logged in again.
-            client.get(url) { header(HttpHeaders.Authorization, "Bearer other-token") }
+        val response = client.get(url)
 
-            assertEquals(session, store.session.first())
-        }
+        // No crash, and the answer still reaches the caller.
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertNull(store.session.first())
+    }
 
     @Test
-    fun `a 401 From Another Host Keeps The Session` () =
-        runTest {
-            val store = FakeSessionStore(session)
-            val client =
-                clientWith(store, HttpStatusCode.Unauthorized, failOnError = false, host = "api.example.test")
+    fun `a Request After A401 Carries No Header`() = runTest {
+        val store = FakeSessionStore(session)
+        val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
 
-            // A third party must never be able to end our session.
-            client.get("https://other.example.test/products")
+        client.get(url)
+        assertEquals("Bearer test-token", lastRequest?.headers?.get(HttpHeaders.Authorization))
 
-            assertNull(lastRequest?.headers?.get(HttpHeaders.Authorization))
-            assertEquals(session, store.session.first())
-        }
+        // The session was cleared by the first answer, so the second request has no header (L4 + L5).
+        client.get(url)
+        assertNull(lastRequest?.headers?.get(HttpHeaders.Authorization))
+    }
+
+    @Test
+    fun `a 401 For Another Token Keeps The Session`() = runTest {
+        val store = FakeSessionStore(session)
+        val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
+
+        // The caller sets its own token, which is not the token of the current session.
+        // This stands for an old request answered after the user logged in again.
+        client.get(url) { header(HttpHeaders.Authorization, "Bearer other-token") }
+
+        assertEquals(session, store.session.first())
+    }
+
+    @Test
+    fun `a 401 From Another Host Keeps The Session`() = runTest {
+        val store = FakeSessionStore(session)
+        val client =
+            clientWith(store, HttpStatusCode.Unauthorized, failOnError = false, host = "api.example.test")
+
+        // A third party must never be able to end our session.
+        client.get("https://other.example.test/products")
+
+        assertNull(lastRequest?.headers?.get(HttpHeaders.Authorization))
+        assertEquals(session, store.session.first())
+    }
 }

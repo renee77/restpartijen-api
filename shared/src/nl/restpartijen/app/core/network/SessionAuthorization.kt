@@ -1,7 +1,7 @@
 package nl.restpartijen.app.core.network
 
-import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.client.plugins.api.Send
+import io.ktor.client.plugins.api.createClientPlugin
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.firstOrNull
