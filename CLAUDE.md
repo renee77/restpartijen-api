@@ -37,3 +37,27 @@ issue through the REST API instead:
 gh api repos/renee77/restpartijen-api/issues \
   -f title="..." -f body="..." -f type="Bug" -f "labels[]=server"
 ```
+
+## Pull requests
+
+Every pull request follows `.github/pull_request_template.md`. Write the
+body in Dutch, like the issues.
+
+1. Fill in every heading of the template. Never leave a heading empty;
+   remove an optional heading ("Bekend en geaccepteerd") only when there is
+   nothing to say, and say "niet van toepassing" with a reason for a
+   checklist item that does not apply.
+2. Under "Issue", add one `Closes #<number>` line per issue that this pull
+   request completes, so GitHub closes the issue on merge and the epic
+   stays up to date. Use `Closes` only when every item under "Klaar als"
+   is done; otherwise write `Deel van #<number>` so the issue stays open.
+   Find the issue with `gh issue list` before writing the body; ask the
+   user when it is unclear which issue the work belongs to.
+3. Tick only what you actually checked, with the evidence in the text
+   (command and result). Leave a box unticked and say why when a check was
+   not run.
+4. The title follows Conventional Commits in English, like the commits.
+5. Keep any attribution lines that the session instructions require at the
+   top of the body.
+6. Show the title and body to the user and wait for approval before
+   creating the pull request.
