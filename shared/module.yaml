@@ -32,3 +32,5 @@ dependencies:
 test-dependencies:
   # runTest and a test Main dispatcher, so viewModelScope works in a plain JVM test.
   - $libs.kotlinx.coroutines.test
+  # Module.verify(): checks that Koin can build every definition (A-29).
+  - $libs.koin.test
