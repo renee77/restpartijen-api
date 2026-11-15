@@ -4,7 +4,7 @@ tags: [ftd, scenario-project, kotlin-multiplatform, compose-multiplatform, andro
 status: actueel
 oorsprong: samenwerking-eva-en-claude
 aangemaakt: 2026-11-10
-gewijzigd: 2026-11-14
+gewijzigd: 2026-11-15
 gerelateerd:
   - "[[FTD-restpartijen-webapi-v3_0]]"
   - "[[besluiten-ftd-app]]"
@@ -28,14 +28,14 @@ description: "Ontwerp van de app (Kotlin Multiplatform met Compose Multiplatform
 
 | Veld | Waarde |
 |------|--------|
-| Document ID | FTD-restpartijen-app-v2.4 |
+| Document ID | FTD-restpartijen-android-app-v2.5 |
 | Scenario | project |
 | Auteurs | Eva Bouwman, Lonneke van Oers, Stefan Pellikaan |
-| Datum | 2026-11-14 |
-| Status | Concept. De besluiten van de startsessie van 14 november 2026 zijn verwerkt |
+| Datum | 2026-11-15 |
+| Status | Concept. De besluiten van de startsessie van 14 november 2026 en het nalopen van het draaiboek van sessie 2 (15 november) zijn verwerkt |
 | Classificatie | Intern (schoolproject) |
 | Module | AI-powered software development, periode 2, LU1 |
-| Akkoord | Besluiten A-01 t/m A-19: profgroep en vakdocent, 7 t/m 10 november 2026. A-20 t/m A-28: profgroep, startsessie 14 november 2026. Het document zelf: nog door Stefan en Lonneke te lezen |
+| Akkoord | Besluiten A-01 t/m A-19: profgroep en vakdocent, 7 t/m 10 november 2026. A-20 t/m A-28: profgroep, startsessie 14 november 2026. A-29 en A-30: Eva, 15 november 2026. Het document zelf: nog door Stefan en Lonneke te lezen |
 | Hoort bij | [[FTD-restpartijen-webapi-v3_0\|FTD v3]]; [[besluiten-ftd-app]] |
 
 ## Revisiehistorie
@@ -51,6 +51,7 @@ description: "Ontwerp van de app (Kotlin Multiplatform met Compose Multiplatform
 | 2.2 | 2026-11-12 | Door Eva samen met Claude | Uitkomsten van de proef met de Kotlin Toolchain van 11 en 12 november verwerkt ([[eva-proef-kotlin-toolchain-android]]), met de besluiten van Eva. Geraakt: A-13, A-14, A-19, §3, §5.8, §6, §8.3, §8.4, §8.6, §8.7, §8.8, §9, §10, §11, §12, §13, §14, §15, §16, §17 en §19 |
 | 2.3 | 2026-11-12 | Door Eva samen met Claude | Grote check van 12 november verwerkt ([[status-grote-check-ftd-draaiboek-codebase]]): fouten gecorrigeerd, de besluiten van Eva verwerkt en de tekst ingekort. Het token met vingerafdruk is onderbouwd in [[literaire-onderbouwing-token-en-vingerafdruk]]. Geraakt: A-13, §2, §5, §8.3, §8.6, §9, §10, §11.2, §11.3, §12.1, §13, §14, §16.3, §16.4, §16.6, §17, §19 en §20. R-A1, O-1 en O-2 zijn weg (afgehandeld) |
 | 2.4 | 2026-11-14 | Door Eva samen met Claude | Besluiten van de startsessie van 14 november verwerkt ([[draaiboek-startsessie-android-v2]]; gebouwd in PR #88). Nieuw: A-20 t/m A-28 (beslispunten 1, 3, 4, 5, 7, 8, 9 en 10, en de vorm van K-A3). Bevestigd: A-13 en de antwoorden op O-7. Ingevuld: A-15 (design patterns). Geraakt: §5.7, §8.3, §8.5, §8.6, §8.8, §9, §11.2, §16.3 en §19.2 |
+| 2.5 | 2026-11-15 | Door Eva samen met Claude | Keuzes bij het nalopen van het draaiboek van sessie 2 ([[draaiboek-sessie-2-android]]) en de review van de Koin-opzet verwerkt: A-29 (een Koin-module per feature, Android-code in `platformModule`, strenge modus tegen dubbele definities), A-30 (token en `401` via de `Auth`-plugin), de eigenaren van `formatPrice` en van de toestemming voor het lokale netwerk, O-16 afgehandeld en O-17 nieuw. Geraakt: §8.3, §8.6, §8.8, §9, §11.4, §16.1 en §19.2 |
 
 ## Besluiten
 
@@ -85,7 +86,9 @@ De nummering begint bij A-01, zodat zij niet botst met B-01 tot en met B-64 in F
 | A-25 | Bedragen | Een bedrag is een `Long` in centen, zoals `reservedPriceInCents`; dezelfde regel als B-13 op de server | Startsessie, 14 nov (beslispunt 8) | Vast |
 | A-26 | Platformcode | Android-code staat in `src@android/`, gedeelde code in `src/` (§8.8) | Startsessie, 14 nov (beslispunt 9) | Vast |
 | A-27 | Inloggen en terug (K-A3) | Een ViewModel meldt "inloggen nodig" als toestand in de UiState, niet als losse gebeurtenis. De ViewModel onthoudt de actie die wacht en voert haar uit zodra `SessionStore.session` niet meer `null` is (§8.5) | Startsessie, 14 nov | Vast |
-| A-28 | Prijsweergave | Een prijs staat altijd in euro, ook in de Engelse interface. De notatie (decimaalteken, plek van het €-teken) volgt de taal van het toestel: EN `€2.39`, NL `€ 2,39`. De prijs komt binnen als centen (A-25) en wordt op één plek in `core` omgezet naar tekst | Startsessie, 14 nov (beslispunt 10) | Vast |
+| A-28 | Prijsweergave | Een prijs staat altijd in euro, ook in de Engelse interface. De notatie (decimaalteken, plek van het €-teken) volgt de taal van het toestel: EN `€2.39`, NL `€ 2,39`. De prijs komt binnen als centen (A-25) en wordt op één plek in `core` omgezet naar tekst (`formatPrice`); Lonneke bouwt die (GB-3, Eva 15 nov) | Startsessie, 14 nov (beslispunt 10) | Vast |
+| A-29 | Koin-modules | Een Koin-module per feature en één `coreModule`, samengevoegd in `appModule` met `includes()`. De Android-implementaties staan per feature in een platform-module in `src@android/`, samen in `platformModule`. `startKoin` laadt `appModule` en `platformModule` (de lijst `koinModules`), in strenge modus: een tweede definitie van hetzelfde type geeft een fout bij het starten in plaats van de eerste stil te vervangen (Koin, z.j.-a). `AppModuleTest` controleert met dezelfde lijst dat elke constructor-afhankelijkheid een definitie heeft en dat geen type dubbel is gedefinieerd. Koin raadt `includes()` aan en laat meerdere modules aan `startKoin` toe (Koin, z.j.-a). Code in `src/` kan geen klasse uit `src@android/` zien, en met een module per feature schrijft ieder alleen in de eigen feature (§8.3, §8.8). `expect`/`actual` (Koin, z.j.-b) werkt met de toolchain, maar IntelliJ markeert het bij één platform als fout; daarom niet gebruikt (`docs/tooling-issues/`). Eva bouwde het geraamte op 15 nov (GB-1) | Eva, 15 nov | Vast |
+| A-30 | Token en `401` | De `Auth`-plugin van de Ktor Client met `bearer`: `loadTokens` leest het token uit `SessionStore`, `sendWithoutRequest` stuurt het direct mee, en `refreshTokens` wist de sessie, want er zijn geen refresh tokens. Een `401` op `POST /auth/login` is een verkeerd wachtwoord en wist niets (§5.6). Dit is de standaard van Ktor hiervoor (JetBrains, z.j.-k). Lonneke bouwt het (GB-3) | Eva, 15 nov | Vast; het overslaan van het login-request nog te bewijzen met een test |
 
 ## Inhoudsopgave
 
@@ -364,7 +367,8 @@ restpartijen-api/
 │   ├── src/<package>/               nl.restpartijen.app (A-20)
 │   │   ├── App.kt                   Scaffold + NavDisplay
 │   │   ├── AppNavigation.kt         routes → schermen (A-23)
-│   │   ├── AppModule.kt             Koin, kent alle features
+│   │   ├── AppModule.kt             Koin: voegt de modules van core en de features samen (A-29)
+│   │   ├── <feature>/<Feature>Module.kt   Koin-module per feature en voor core (A-29)
 │   │   ├── core/                    gedeeld, iedereen
 │   │   │   ├── network/             HttpClient (GB-1), ApiResult en ApiError (A-22)
 │   │   │   ├── session/             SessionStore-interface + nepversie (GB-3, K-A4)
@@ -388,6 +392,8 @@ restpartijen-api/
 │   │   │   └── data/                ProductDetailRepository
 │   │   └── example/                 tijdelijk: het voorbeeld van de startsessie; weg vóór inlevering
 │   ├── src@android/<package>/       Android-implementaties (§8.8, A-26)
+│   │   ├── PlatformModule.kt        platformModule en koinModules (A-29)
+│   │   ├── <feature>/<Feature>PlatformModule.kt   Koin-module met de Android-implementaties per feature
 │   │   ├── core/session/            EncryptedSessionStore
 │   │   ├── product/data/            BarcodeScanner met CameraX + ML Kit
 │   │   ├── reservation/data/        LocationProvider
@@ -405,7 +411,7 @@ restpartijen-api/
 └── coverage-shared.sh/.bat          shared (GB-7)
 ```
 
-Een interface die maar één feature gebruikt, staat in `data/` van die feature. Interfaces die meerdere features gebruiken (`SessionStore`, `ReservationRepository`), staan in `core`. De nepversie van zo'n interface staat ernaast in `src/`, zolang de echte versie er nog niet is. Is de echte versie af, dan verhuist de nepversie naar `test/`, net als bij de server. `test/` volgt dezelfde packages als `src/`, de gangbare conventie. De besluiten van de startsessie staan als (A-nummer).
+Elke feature en `core` hebben een eigen Koin-module (A-29); de Android-implementaties staan in een platform-module in `src@android/`. Een interface die maar één feature gebruikt, staat in `data/` van die feature. Interfaces die meerdere features gebruiken (`SessionStore`, `ReservationRepository`), staan in `core`. De nepversie van zo'n interface staat ernaast in `src/`, zolang de echte versie er nog niet is. Is de echte versie af, dan verhuist de nepversie naar `test/`, net als bij de server. `test/` volgt dezelfde packages als `src/`, de gangbare conventie. De besluiten van de startsessie staan als (A-nummer).
 
 **Geen vaste domain-laag.** Elke feature heeft alleen `ui` en `data`. Google noemt een domain-laag met use cases optioneel: die is alleen nodig als meerdere ViewModels dezelfde bedrijfslogica gebruiken, of als één ViewModel te complex wordt (Android Developers, z.j.-r). In onze app rekent de server prijs en korting uit ([[FTD-restpartijen-webapi-v3_0#Besluiten van de startsessie en daarna (v2.2)|FTD v3, B-24]]), en rekent de repository euro's één keer om naar centen (§11.1). Ontstaat er toch zulke logica, dan krijgt die feature een map `domain/` met een `…UseCase`-klasse. Logica die meerdere features delen, gaat naar `core`.
 
@@ -436,7 +442,7 @@ De afspraken staan als code in `core` (PR #88): `ProductDetailRoute(productId)` 
 | Navigation 3, multiplatform-variant | Lesstof (les 10); advies vakdocent, 10 nov; bestaat voor Compose Multiplatform (§8.4) | Navigation Compose: oudere API |
 | ViewModel en Lifecycle, multiplatform-variant | Lesstof (les 10 t/m 12); bestaat voor Compose Multiplatform (JetBrains, z.j.-d). Lifecycle 2.11.0, de versie die bij Compose 1.12 hoort. Schermen verzamelen state met `collectAsStateWithLifecycle()` | – |
 | Ktor Client, kotlinx.serialization | Lesstof (les 11); zelfde libraries als de API; multiplatform. Ktor 3.6.0, dezelfde versie als de server, met de engine OkHttp. Eén `HttpClient` met `expectSuccess`, time-outs en logging zonder `Authorization` (proef, 12 nov) | Retrofit: door de docent verouderd genoemd; alleen Android |
-| Koin | Dependency injection uit de lessen; advies vakdocent, 10 nov; verbindt ook de platformcode met de gedeelde code (§8.8); eenvoudig te vervangen door nep-implementaties in tests. Koin 4.2.2, gestart in een eigen `Application`-klasse met `koin-android` (proef, 12 nov) | Hilt: meer configuratie, niet in de les; alleen Android |
+| Koin | Dependency injection uit de lessen; advies vakdocent, 10 nov; verbindt ook de platformcode met de gedeelde code (§8.8); eenvoudig te vervangen door nep-implementaties in tests. Koin 4.2.2, gestart in een eigen `Application`-klasse met `koin-android` (proef, 12 nov). Een module per feature; platformcode in `platformModule` (A-29) | Hilt: meer configuratie, niet in de les; alleen Android |
 | DataStore met `datastore-tink`, geen Room | De API is de database; de app bewaart alleen de sessie (A-13). DataStore 1.3.0 met `datastore-tink` versleutelt het hele sessiebestand; Tink 1.24.0 (proef, 12 nov) | Room: zou data dupliceren die de API al beheert. Preferences DataStore: niet nodig; de proef gebruikte een getypte DataStore met de `AeadSerializer` van `datastore-tink` |
 | Coil 3 | Lesstof; afbeeldingen van producten als die er komen. Productfoto's zijn gewenst (Eva, 12 nov), maar de API heeft nog geen veld voor een afbeelding (O-13, W-A2). Niet in de proef getest; multiplatform (Claude, na te kijken) | – |
 | MapLibre Compose, `FusedLocationProviderClient` | Advies van de docent (A-12). MapLibre Compose is multiplatform en op Android Beta (MapLibre, z.j.) | Google Maps: sleutel en account nodig |
@@ -468,7 +474,7 @@ Extra libraries buiten deze tabel mogen, als ze op klibs.io staan (akkoord vakdo
 
 ### 8.8 Platformcode
 
-Gedeelde code staat in `src/` van de module `shared`. Code die een Android-library nodig heeft, staat in `src@android/` (JetBrains, z.j.-c). De regel: de gedeelde code kent alleen een interface, en `src@android` levert de implementatie. Koin koppelt die twee (advies vakdocent, 10 nov). Het zijn dezelfde interfaces die we al voor de tests hadden (§10).
+Gedeelde code staat in `src/` van de module `shared`. Code die een Android-library nodig heeft, staat in `src@android/` (JetBrains, z.j.-c). De regel: de gedeelde code kent alleen een interface, en `src@android` levert de implementatie. Koin koppelt die twee (advies vakdocent, 10 nov), via een platform-module per feature in `src@android/`, samen in `platformModule` (A-29). Het zijn dezelfde interfaces die we al voor de tests hadden (§10).
 
 De proef van 12 nov liet zien dat code in `src/` ook Android-API's mag gebruiken, omdat Android het enige platform is. Toch houden we `src@android/` aan, zoals deze paragraaf voorschrijft (A-26, startsessie 14 nov).
 
@@ -485,15 +491,15 @@ Klaar in fase 1, voordat iemand aan de eigen schermen begint. Ieder bouwt het ge
 
 | # | Onderdeel | Inhoud | Eigenaar |
 |---|-----------|--------|----------|
-| GB-1 | Data- en netwerklaag | Ktor Client met kotlinx.serialization, basis-URL per omgeving (O-14), Koin-opzet, elke repository als interface (§8.2), DTO's van het foutmodel. Ook de netwerkregels uit §11.3 en loggen alleen in debug (§16.6) | Eva |
+| GB-1 | Data- en netwerklaag | Ktor Client met kotlinx.serialization, basis-URL per omgeving (O-14), Koin-opzet met een module per feature (A-29, gebouwd 15 nov), elke repository als interface (§8.2), DTO's van het foutmodel. Ook de netwerkregels uit §11.3, de vraag om toestemming voor het lokale netwerk (§11.4, §15) en loggen alleen in debug (§16.6) | Eva |
 | GB-2 | Navigatie en foutafhandeling | Navigation 3, bottom navigation, het foutmodel van de API op één plek omzetten naar een melding ([[FTD-restpartijen-webapi-v3_0#10.2 Validatie en foutafhandeling\|FTD v3 §10.2]]), K-A3 | Stefan |
-| GB-3 | Sessie en beveiliging | `SessionStore` op DataStore (A-13), token meesturen in de `Authorization`-header, https op de Ktor API (A-07) | Lonneke |
+| GB-3 | Sessie en beveiliging | `SessionStore` op DataStore (A-13), token en `401` via de `Auth`-plugin (A-30), https op de Ktor API (A-07), en `formatPrice` (A-28) | Lonneke |
 | GB-4 | Projectopzet | De twee modules uit §8.3, Kotlin Toolchain (A-14), ktlint, lege packages; de app start op de emulator | Samen |
 | GB-5 | Thema en teksten | Material 3-thema, teksten in NL en EN via Compose Multiplatform resources, iconen (A-19), gedeelde onderdelen voor laden en fouten | Samen |
 | GB-6 | Test-setup | Eén voorbeeld-unit test (ViewModel met nep-repository) en één voorbeeld-UI-test. De UI-test draait nog niet met de toolchain (§13, R-A9) | Samen |
 | GB-7 | Coverage-meting | De regeldekking van NFR-A3 in de module `shared` meten. De proef liet zien dat de JaCoCo-plugin van de server niet werkt voor `shared`: de toolchain draait Maven-plugins alleen voor JVM-modules. Daarom meten `coverage-shared.sh` en `coverage-shared.bat` met de JaCoCo-agent en de JaCoCo-CLI; het rapport staat in `build/coverage/shared/index.html`. De scripts komen mee met de pull request van het geraamte (PR #85); de `.bat` is nog niet op Windows getest. Daarna Stefan en Lonneke uitleggen hoe zij de meting draaien en het rapport lezen. Af voordat Eva aan haar eigen schermen begint | Eva |
 
-**Stand na de startsessie (14 nov).** GB-4, GB-5 en GB-6 zijn samen gebouwd, in PR #88: de twee modules, het thema met lettertypes, logo en app-icoon, de teksten in twee talen, de gedeelde onderdelen voor laden en fouten, het voorbeeld in `example` door alle lagen met twee unit tests, en de koppelvlakken van §8.5 in `core`. De UI-test van GB-6 wacht op O-12. Ieder bouwt nu het eigen deel (GB-1, GB-2, GB-3 en GB-7). Voor Stefan staat de overdracht in [[overdracht-stefan-startsessie]].
+**Stand na de startsessie (14 nov).** GB-4, GB-5 en GB-6 zijn samen gebouwd, in PR #88: de twee modules, het thema met lettertypes, logo en app-icoon, de teksten in twee talen, de gedeelde onderdelen voor laden en fouten, het voorbeeld in `example` door alle lagen met twee unit tests, en de koppelvlakken van §8.5 in `core`. De UI-test van GB-6 wacht op O-12. Ieder bouwt nu het eigen deel (GB-1, GB-2, GB-3 en GB-7). Voor Stefan staat de overdracht in [[overdracht-stefan-startsessie]]. Sessie 2, waarin ieder het eigen deel overdraagt, is op 28 november ([[draaiboek-sessie-2-android]]).
 
 Navigatie komt pas in les 10 en de Ktor Client in les 11; tot die tijd leert ieder vooruit met unit 3 en 4 en de voorbeeldcode van de docent.
 
@@ -570,7 +576,7 @@ Android staat standaard geen onversleuteld http toe. De API krijgt daarom https 
 
 De toolchain zet `targetSdk` gelijk aan `compileSdk`, en dat is 37 (Android 17). Vanaf `targetSdk` 37 is het lokale netwerk dicht. Een app moet dan `ACCESS_LOCAL_NETWORK` declareren, en de gebruiker moet toestemming geven: het is een runtime-permissie in de groep "Apparaten in de buurt" (Android Developers, z.j.-g). De proef van 12 nov mat dat `10.0.2.2` meetelt als lokaal netwerk: zonder toestemming een timeout, met toestemming de lijst.
 
-**Besluit Eva, 12 nov.** We houden `targetSdk` 37 en de app vraagt de toestemming. Toestemming vragen wordt de standaard, en we doen deze opdracht om te leren. `targetSdk` 36 stelt het probleem alleen uit. Op Android 16 en lager bestaat de permissie niet; daar vraagt de app niets. Risico: R-A8.
+**Besluit Eva, 12 nov.** We houden `targetSdk` 37 en de app vraagt de toestemming. Toestemming vragen wordt de standaard, en we doen deze opdracht om te leren. `targetSdk` 36 stelt het probleem alleen uit. Op Android 16 en lager bestaat de permissie niet; daar vraagt de app niets. Eva bouwt de vraag om toestemming in GB-1, op het moment en volgens de regel van §15 (Eva, 15 nov). Risico: R-A8.
 
 ## 12. Wijzigingen aan de Web API
 
@@ -662,7 +668,7 @@ De app verwerkt persoonsgegevens, maar alleen verzonnen seeddata en alleen voor 
 
 ### 16.1 Authenticatie en sessie
 
-- JWT van `POST /auth/login`, 24 uur geldig, geen refresh tokens ([[FTD-restpartijen-webapi-v3_0#16.1 Authenticatie en sessiebeheer|FTD v3 §16.1]]). De app stuurt het mee als `Authorization: Bearer <token>` via een plugin van de Ktor Client, op één plek (GB-3).
+- JWT van `POST /auth/login`, 24 uur geldig, geen refresh tokens ([[FTD-restpartijen-webapi-v3_0#16.1 Authenticatie en sessiebeheer|FTD v3 §16.1]]). De app stuurt het mee als `Authorization: Bearer <token>` via de `Auth`-plugin van de Ktor Client, op één plek (GB-3, A-30). Bij een `401` wist dezelfde plugin de sessie; daarna meldt de ViewModel "inloggen nodig" (K-A3, A-27). Een `401` bij het inloggen zelf wist niets (§5.6).
 - Alleen de server hasht wachtwoorden; de app stuurt het wachtwoord één keer over https en bewaart het nooit.
 - Biometrie vervangt het wachtwoord niet: zij ontgrendelt een bewaard token dat de server eerder uitgaf (§10).
 
@@ -767,7 +773,8 @@ Stand: de Ktor Client logt op `INFO` naar Logcat (tag `HttpClient`), nu nog in e
 | O-13 | Productfoto's in het productoverzicht (W-A2). De API heeft geen veld voor een afbeelding. Opties: de foto-URL uit Open Food Facts via de barcode, of een upload door de aanbieder. Eigenaar en bron nog te bepalen | Nog te bepalen | Nog te bepalen; niet in de startsessie |
 | O-14 | Het adres van de server per omgeving (per build type). Hoe dat met de toolchain moet, is onbekend. Voor de demo op de emulator is het niet nodig. Ook open: (a) de echte telefoon (§1.5): het certificaat geldt alleen voor `localhost` en `10.0.2.2` (§12.1) en http staat alleen aan voor `10.0.2.2` (§11.3), terwijl een telefoon de laptop op een ander adres bereikt; (b) hoe de app weet dat zij debuggable is (§16.6). Bekend over de release-build: `kotlin package -m android` maakt een release-AAB, met R8 (minify en shrink resources) standaard aan. Ondertekenen kan met `settings.android.signing: enabled` en `kotlin tool generate-keystore`; `keystore.properties` en de keystore komen nooit in Git (JetBrains, z.j.-h). De documentatie noemt geen aparte bronnen of manifest per build type. Niet getest | Eva (GB-1) | Fase 1 |
 | O-15 | GB-4: (a) uitzoeken hoe Android Lint draait met de Kotlin Toolchain (NFR-A1); `./kotlin build` draait geen Android Lint. ktlint en `allWarningsAsErrors` zijn getest op 12 nov (NFR-A2). (b) Dependabot aanzetten in GitHub, zodat de afhankelijkheden op bekende kwetsbaarheden worden gescand (§16.5) | Eva | Fase 1 |
-| O-16 | Het app-icoon krijgt op een Pixel 9-emulator met Android 17 (API 37) een lichtgroen randje, alsof de launcher het als niet-adaptief icoon behandelt. De APK bevat het adaptieve icoon wel goed. Oorzaak onbekend | Eva | 15 nov |
+| O-16 | Het lichtgroene randje om het app-icoon op een Pixel 9-emulator met Android 17 | Eva | Afgehandeld (15 nov): geen fout. Het icoon stond als app-suggestie in de favorietenrij; de Pixel Launcher geeft suggesties een gekleurde rand in de hoofdkleur van het icoon. In de app-lade is het icoon goed (gemeten op API 37) |
+| O-17 | Het foutmodel van de API heeft een `code` (§11.2); `ApiError.Http` (A-22) heeft die niet. Heeft de app `code` nodig, en zo ja hoe? | Stefan zoekt uit | Vóór hij de omzetting naar `ApiResult` bouwt (GB-2) |
 
 ## 20. Bronnen
 
@@ -805,6 +812,9 @@ Nog te controleren vóór inlevering (O-8). De bronnen van 12 november komen uit
 - JetBrains. (z.j.-h). *Android app* [Kotlin Toolchain user guide: Code shrinking, Signing]. GitHub. Geraadpleegd op 12 november 2026, van https://github.com/jetbrains/kotlin-toolchain/blob/main/docs/src/user-guide/product-types/android-app.md
 - JetBrains. (z.j.-i). *Using multiplatform resources in your app*. Kotlin Multiplatform. Geraadpleegd op 12 november 2026, van https://kotlinlang.org/docs/multiplatform/compose-multiplatform-resources-usage.html
 - JetBrains. (z.j.-j). *Setup and configuration for multiplatform resources* [Qualifiers]. Kotlin Multiplatform. Geraadpleegd op 12 november 2026, van https://kotlinlang.org/docs/multiplatform/compose-multiplatform-resources-setup.html
+- JetBrains. (z.j.-k). *Bearer authentication in Ktor Client*. Ktor. Geraadpleegd op 15 november 2026, van https://ktor.io/docs/client-bearer-auth.html
+- Koin. (z.j.-a). *Modules*. Geraadpleegd op 15 november 2026, van https://github.com/insertkoinio/koin/blob/main/docs/reference/koin-core/modules.md
+- Koin. (z.j.-b). *Kotlin Multiplatform shared modules*. Geraadpleegd op 15 november 2026, van https://github.com/insertkoinio/koin/blob/main/docs/reference/koin-core/kmp-shared-modules.md
 - MapLibre. (z.j.). *MapLibre Compose*. Geraadpleegd op 10 november 2026 (platformtabel), van https://maplibre.org/maplibre-compose/
 - OWASP. (z.j.). *MASTG-BEST-0036: Use cryptographic binding for biometric authentication*. Geraadpleegd op 12 november 2026, van https://raw.githubusercontent.com/OWASP/owasp-mastg/master/best-practices/MASTG-BEST-0036.md
 - Profgroep. (2026). *Restpartijenplatform — Functioneel Technisch Ontwerp Web API* (versie 3.0).

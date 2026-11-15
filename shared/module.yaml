@@ -42,3 +42,5 @@ test-dependencies:
   - $libs.kotlinx.coroutines.test
   # MockEngine, so the plugin is tested without a network.
   - $ktor.client.mock
+  # Module.verify(): checks that Koin can build every definition (A-29).
+  - $libs.koin.test
