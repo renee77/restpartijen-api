@@ -55,7 +55,7 @@ Bronnen: het FTD van de app (`docs/FTD-restpartijen-android-app-v2_5.md`, tabel 
 | Afspraak | Sinds |
 |---|---|
 | Per pull request een nieuwe branch vanaf een verse `main` (`git switch main`, `git pull`, `git switch -c <naam>`) | 21 nov |
-| Raakt een PR `core/`, `App.kt`, `AppModule.kt`, `AppNavigation.kt`, `strings.xml`, `libs.versions.toml` of een `module.yaml`? Dan reviewen beide anderen; anders één | 15 nov |
+| Raakt een PR `core/`, `App.kt`, `AppModule.kt`, `AppNavigation.kt`, `strings.xml`, `libs.versions.toml`, een `module.yaml`, `project.yaml` of `.github/CODEOWNERS`? Dan reviewen beide anderen; anders één. GitHub vraagt beide reviews automatisch aan via `.github/CODEOWNERS`. GitHub dwingt er één af; de tweede is onze afspraak | 15 nov, uitgebreid 21 nov |
 | Wie als tweede in hetzelfde bestand merget (bijvoorbeeld `coreModule`), haalt eerst `main` binnen en lost een conflict daar op | 21 nov |
 | Verwijs in een PR naar het issue: `Closes #<nummer>`, of `Deel van #<nummer>` als het issue nog niet af is | 15 nov |
 | Het FTD werken we één keer per week bij, na de samenkomst op zaterdag | 21 nov |

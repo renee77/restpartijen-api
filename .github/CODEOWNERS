@@ -1,0 +1,13 @@
+# Shared files: GitHub requests a review from both other team members
+# (the author is never requested). GitHub enforces only one approval
+# (ruleset "main"); the second review is a team agreement (15 nov,
+# extended 21 nov). See samenwerken/afspraken-app.md.
+core/                     @renee77 @Stepell @Lxnneke
+App.kt                    @renee77 @Stepell @Lxnneke
+AppModule.kt              @renee77 @Stepell @Lxnneke
+AppNavigation.kt          @renee77 @Stepell @Lxnneke
+strings.xml               @renee77 @Stepell @Lxnneke
+libs.versions.toml        @renee77 @Stepell @Lxnneke
+module.yaml               @renee77 @Stepell @Lxnneke
+/project.yaml             @renee77 @Stepell @Lxnneke
+/.github/CODEOWNERS       @renee77 @Stepell @Lxnneke
