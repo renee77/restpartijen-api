@@ -34,8 +34,16 @@ dependencies:
   - $libs.lifecycle.runtime.compose
   # Navigation 3: NavKey for the routes, later NavDisplay (GB-2).
   - $libs.navigation3.ui
+  # ContentNegotiation for the client: turns JSON bodies into @Serializable classes (GB-1, #94).
+  - $ktor.client.contentNegotiation
   # Ktor Client core: the HttpClient and the plugin API for the Authorization header (GB-3, L4).
   - $ktor.client.core
+  # Logging plugin: logs method, path and status per request, only in debug (GB-1, E4).
+  - $ktor.client.logging
+  # OkHttp engine: sends the requests in the app; tests use MockEngine instead (GB-1, #94).
+  - $ktor.client.okhttp
+  # Connects ContentNegotiation to kotlinx.serialization JSON (GB-1, #94).
+  - $ktor.serialization.kotlinx.json
   # JSON format for kotlinx.serialization: reads the API's JSON (GB-1, #94).
   - $kotlin.serialization.json
 
