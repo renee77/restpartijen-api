@@ -4,19 +4,27 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import nl.restpartijen.app.core.session.SessionStore
 
 /**
  * Creates the one HttpClient that every repository uses (FTD §8.6).
  *
- * The engine comes from the caller: OkHttp in the app, MockEngine in tests. So a test checks
- * exactly the settings the app uses.
+ * The engine and the session store come from the caller: OkHttp and the real store in the app,
+ * MockEngine and a fake store in tests. So a test checks exactly the settings the app uses.
  *
- * The client reads JSON into @Serializable classes, ignores fields it does not know, and throws
- * for a 4xx or 5xx response.
+ * The client sends a relative path such as `get("products")` to [ApiConfig.BASE_URL], adds the token of
+ * the current session for the API host only, reads JSON into @Serializable classes, ignores fields it
+ * does not know, and throws for a 4xx or 5xx response.
  */
-fun createHttpClient(engine: HttpClientEngine): HttpClient = HttpClient(engine) {
+fun createHttpClient(engine: HttpClientEngine, sessionStore: SessionStore): HttpClient = HttpClient(engine) {
+    // The base URL lives here, so no repository knows the address of the API.
+    defaultRequest {
+        url(ApiConfig.BASE_URL)
+    }
+
     install(ContentNegotiation) {
         // A new field on the server must not break the app.
         json(Json { ignoreUnknownKeys = true })
@@ -26,6 +34,13 @@ fun createHttpClient(engine: HttpClientEngine): HttpClient = HttpClient(engine) 
     install(HttpTimeout) {
         connectTimeoutMillis = 5_000
         requestTimeoutMillis = 15_000
+    }
+
+    // Lonneke's plugin adds the token (A-30). allowedHost keeps the token away from any other host;
+    // without it, every host would get it.
+    install(SessionAuthorization) {
+        this.sessionStore = sessionStore
+        allowedHost = ApiConfig.HOST
     }
 
     // A 4xx or 5xx throws, so the conversion to ApiResult sees every error (A-22).
