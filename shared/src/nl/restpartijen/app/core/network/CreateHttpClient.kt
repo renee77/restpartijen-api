@@ -14,10 +14,11 @@ import nl.restpartijen.app.core.session.SessionStore
  *
  * The engine and the session store come from the caller: OkHttp and the real store in the app,
  * MockEngine and a fake store in tests. So a test checks exactly the settings the app uses.
+ * The caller owns the engine: closing the client does not close it.
  *
  * The client sends a relative path such as `get("products")` to [ApiConfig.BASE_URL], adds the token of
  * the current session for the API host only, reads JSON into @Serializable classes, ignores fields it
- * does not know, and throws for a 4xx or 5xx response.
+ * does not know, does not follow redirects, and throws for a 3xx, 4xx or 5xx response.
  */
 fun createHttpClient(engine: HttpClientEngine, sessionStore: SessionStore): HttpClient = HttpClient(engine) {
     // The base URL lives here, so no repository knows the address of the API.
@@ -36,13 +37,18 @@ fun createHttpClient(engine: HttpClientEngine, sessionStore: SessionStore): Http
         requestTimeoutMillis = 15_000
     }
 
-    // Lonneke's plugin adds the token (A-30). allowedHost keeps the token away from any other host;
-    // without it, every host would get it.
+    // The SessionAuthorization plugin adds the token (A-30). allowedHost keeps the token away from any other
+    // host; without it, every host would get it.
     install(SessionAuthorization) {
         this.sessionStore = sessionStore
         allowedHost = ApiConfig.HOST
     }
 
-    // A 4xx or 5xx throws, so the conversion to ApiResult sees every error (A-22).
+    // The API never redirects, so a redirect means a wrong address or something between app and server.
+    // Throwing makes that visible instead of silently following it. (Ktor already drops the token when a
+    // redirect goes to another host or port, so this is not about leaking the token.)
+    followRedirects = false
+
+    // A 3xx, 4xx or 5xx throws, so the conversion to ApiResult sees every error (A-22).
     expectSuccess = true
 }

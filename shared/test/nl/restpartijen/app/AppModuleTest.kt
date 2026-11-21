@@ -1,7 +1,6 @@
 package nl.restpartijen.app
 
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.HttpClientEngine
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
@@ -18,8 +17,7 @@ class AppModuleTest {
     @OptIn(KoinExperimentalAPI::class)
     @Test
     fun everyConstructorDependencyHasADefinition() {
-        // HttpClient's constructor takes an engine, but createHttpClient passes it in the lambda, not via Koin.
-        module { includes(koinModules) }.verify(extraTypes = listOf(HttpClientEngine::class))
+        module { includes(koinModules) }.verify()
     }
 
     @Test
@@ -36,11 +34,18 @@ class AppModuleTest {
     fun providesTheHttpClient() {
         val app = koinApplication { modules(koinModules) }
 
-        // Runs the definition for real, which verify() does not do.
-        val client = app.koin.getOrNull<HttpClient>()
+        try {
+            // Runs the definition for real, which verify() does not do.
+            val client = app.koin.getOrNull<HttpClient>()
 
-        assertNotNull(client, "coreModule has no HttpClient")
-        client.close()
-        app.close()
+            // Null when HttpClient or one of its dependencies (such as SessionStore) has no definition.
+            assertNotNull(client, "Koin cannot build the HttpClient from koinModules")
+
+            // The client does not close an engine it was given (manageEngine = false), so close both.
+            client.close()
+            client.engine.close()
+        } finally {
+            app.close()
+        }
     }
 }
