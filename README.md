@@ -30,6 +30,8 @@ On Windows: `kotlin.bat run -m server`. It needs the environment variables from 
 
 The app: start an emulator and choose *Run 'android'* in IntelliJ. `./kotlin build` builds the app but does not install it.
 
+The app reaches the server at `http://10.0.2.2:8080`, the emulator's address for your laptop. On a real phone, change `HOST` in `shared/src/nl/restpartijen/app/core/network/ApiConfig.kt` and build again.
+
 After a change in only `android/src/AndroidManifest.xml` or in `android/res/`, the build still uses the old files. Stop the server, run `./kotlin clean` and build again. `clean` wipes the whole project, including the server.
 
 ## Test
