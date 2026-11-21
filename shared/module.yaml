@@ -36,6 +36,8 @@ dependencies:
   - $libs.navigation3.ui
   # Ktor Client core: the HttpClient and the plugin API for the Authorization header (GB-3, L4).
   - $ktor.client.core
+  # JSON format for kotlinx.serialization: reads the API's JSON (GB-1, #94).
+  - $kotlin.serialization.json
 
 test-dependencies:
   # runTest and a test Main dispatcher, so viewModelScope works in a plain JVM test.
