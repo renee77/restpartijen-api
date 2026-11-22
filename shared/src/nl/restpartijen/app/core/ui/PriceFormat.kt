@@ -2,8 +2,7 @@ package nl.restpartijen.app.core.ui
 
 /**
  * Formats an amount in whole euro cents as euros, using the notation of the given language.
- * The currency is always the euro, in every language (A-28). Without a language,
- * the language of the device is used.
+ * The currency is always the euro, in every language (A-28).
  */
 fun formatPrice(cents: Long, languageTag: String): String {
     // Format the price in cents to a string with the euro sign and appropriate decimal separator based on the language tag.
