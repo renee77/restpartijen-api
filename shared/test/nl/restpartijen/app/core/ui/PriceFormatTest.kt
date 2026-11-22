@@ -6,58 +6,73 @@ import kotlin.test.assertTrue
 
 class PriceFormatTest {
     @Test
-    fun `Formats cents in English with euro sign before number`() {
+    fun formatsCentsInEnglishWithEuroSignBeforeNumber() {
         assertEquals("€2.39", formatPrice(239, "en"))
     }
 
     @Test
-    fun `Formats cents in Dutch with euro sign and space before number`() {
+    fun formatsCentsInDutchWithEuroSignAndSpaceBeforeNumber() {
         assertEquals("€ 2,39", formatPrice(239, "nl"))
     }
 
     @Test
-    fun `Formats zero cents in English as zero euros with two decimals`() {
+    fun formatsZeroCentsInEnglishAsZeroEurosWithTwoDecimals() {
         assertEquals("€0.00", formatPrice(0, "en"))
     }
 
     @Test
-    fun `Formats zero cents in Dutch as zero euros with two decimals`() {
+    fun formatsZeroCentsInDutchAsZeroEurosWithTwoDecimals() {
         assertEquals("€ 0,00", formatPrice(0, "nl"))
     }
 
     @Test
-    fun `Pads single digit cents to two digits in English`() {
+    fun padsSingleDigitCentsToTwoDigitsInEnglish() {
         assertEquals("€0.05", formatPrice(5, "en"))
     }
 
     @Test
-    fun `Pads single digit cents to two digits in Dutch`() {
+    fun padsSingleDigitCentsToTwoDigitsInDutch() {
         assertEquals("€ 0,05", formatPrice(5, "nl"))
     }
 
     @Test
-    fun `Shows two decimals for whole euros in English`() {
+    fun showsTwoDecimalsForWholeEurosInEnglish() {
         assertEquals("€1.00", formatPrice(100, "en"))
     }
 
     @Test
-    fun `Shows two decimals for whole euros in Dutch`() {
+    fun showsTwoDecimalsForWholeEurosInDutch() {
         assertEquals("€ 1,00", formatPrice(100, "nl"))
     }
 
     @Test
-    fun `Uses the euro sign in every language`() {
+    fun usesTheEuroSignInEveryLanguage() {
         assertTrue(formatPrice(239, "en").contains("€"))
         assertTrue(formatPrice(239, "nl").contains("€"))
     }
 
     @Test
-    fun `Formats amounts above one thousand euros in English with grouping`() {
+    fun groupsThousandsInEnglish() {
         assertEquals("€1,234.56", formatPrice(123456, "en"))
     }
 
     @Test
-    fun `Formats amounts above one thousand euros in Dutch with grouping`() {
+    fun groupsThousandsInDutch() {
         assertEquals("€ 1.234,56", formatPrice(123456, "nl"))
+    }
+
+    @Test
+    fun usesEnglishNotationForEnglishWithRegionUs() {
+        assertEquals("€2.39", formatPrice(239, "en-US"))
+    }
+
+    @Test
+    fun usesEnglishNotationForEnglishWithRegionGb() {
+        assertEquals("€2.39", formatPrice(239, "en-GB"))
+    }
+
+    @Test
+    fun usesDutchNotationForDutchWithRegionNl() {
+        assertEquals("€ 2,39", formatPrice(239, "nl-NL"))
     }
 }
