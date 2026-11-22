@@ -48,9 +48,6 @@ class SessionAuthorizationUnauthorizedTest {
         }
     }
 
-    // Does the plugin still see the 401 when `expectSuccess`
-    // is on? This test fails (red) until step 3 is done. If the first assertion passes and only
-    // the last one fails, you have learned that the exception is thrown as expected.
     @Test
     fun `a 401 With ExpectSuccess Throws And Clears The Session`() = runTest {
         val store = FakeSessionStore(session)
@@ -111,7 +108,7 @@ class SessionAuthorizationUnauthorizedTest {
     }
 
     @Test
-    fun `a Request After A401 Carries No Header`() = runTest {
+    fun `a Request After A 401 Carries No Header`() = runTest {
         val store = FakeSessionStore(session)
         val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
 
