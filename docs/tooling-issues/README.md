@@ -13,4 +13,4 @@ Add an issue when you lose time on the tooling, so the next person does not. Mar
 | [`./kotlin build` does not run Android Lint](no-android-lint.md) | `android`, `shared` | None yet (FTD O-15) | No |
 | [JDK download fails on a fresh checkout](jdk-download-fails.md) | all modules | Copy the build state or download the JDK by hand | No |
 
-Versions at the time of writing: Kotlin Toolchain 0.13.0, IntelliJ IDEA 2026.3, Kotlin 2.4.20.
+Versions at the time of writing: Kotlin Toolchain 0.14.1, IntelliJ IDEA 2026.3, Kotlin 2.4.20.

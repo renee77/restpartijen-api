@@ -48,11 +48,8 @@ class SessionAuthorizationUnauthorizedTest {
         }
     }
 
-    // Does the plugin still see the 401 when `expectSuccess`
-    // is on? This test fails (red) until step 3 is done. If the first assertion passes and only
-    // the last one fails, you have learned that the exception is thrown as expected.
     @Test
-    fun `a 401 With ExpectSuccess Throws And Clears The Session`() = runTest {
+    fun `a401WithExpectSuccessThrowsAndClearsTheSession`() = runTest {
         val store = FakeSessionStore(session)
         val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = true)
 
@@ -65,7 +62,7 @@ class SessionAuthorizationUnauthorizedTest {
     }
 
     @Test
-    fun `a 401 Without ExpectSuccess Returns The Answer And Clears The Session`() = runTest {
+    fun `a401WithoutExpectSuccessReturnsTheAnswerAndClearsTheSession`() = runTest {
         val store = FakeSessionStore(session)
         val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
 
@@ -77,7 +74,7 @@ class SessionAuthorizationUnauthorizedTest {
     }
 
     @Test
-    fun `a 200 Keeps The Session`() = runTest {
+    fun `a200KeepsTheSession`() = runTest {
         val store = FakeSessionStore(session)
         val client = clientWith(store, HttpStatusCode.OK, failOnError = true)
 
@@ -87,7 +84,7 @@ class SessionAuthorizationUnauthorizedTest {
     }
 
     @Test
-    fun `a 403 Keeps The Session`() = runTest {
+    fun `a403KeepsTheSession`() = runTest {
         val store = FakeSessionStore(session)
         val client = clientWith(store, HttpStatusCode.Forbidden, failOnError = true)
 
@@ -98,7 +95,7 @@ class SessionAuthorizationUnauthorizedTest {
     }
 
     @Test
-    fun `a 401 Without A Session Does Nothing`() = runTest {
+    fun `a401WithoutASessionDoesNothing`() = runTest {
         // A visitor doing a protected action: no token, the server answers 401 (K-A3).
         val store = FakeSessionStore()
         val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
@@ -111,7 +108,7 @@ class SessionAuthorizationUnauthorizedTest {
     }
 
     @Test
-    fun `a Request After A401 Carries No Header`() = runTest {
+    fun `aRequestAfterA401CarriesNoHeader`() = runTest {
         val store = FakeSessionStore(session)
         val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
 
@@ -124,7 +121,7 @@ class SessionAuthorizationUnauthorizedTest {
     }
 
     @Test
-    fun `a 401 For Another Token Keeps The Session`() = runTest {
+    fun `a401ForAnotherTokenKeepsTheSession`() = runTest {
         val store = FakeSessionStore(session)
         val client = clientWith(store, HttpStatusCode.Unauthorized, failOnError = false)
 
@@ -136,7 +133,7 @@ class SessionAuthorizationUnauthorizedTest {
     }
 
     @Test
-    fun `a 401 From Another Host Keeps The Session`() = runTest {
+    fun `a401FromAnotherHostKeepsTheSession`() = runTest {
         val store = FakeSessionStore(session)
         val client =
             clientWith(store, HttpStatusCode.Unauthorized, failOnError = false, host = "api.example.test")

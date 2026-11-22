@@ -18,3 +18,5 @@ GitHub sends a `content-security-policy` header of about 9200 characters; the HT
 ## Status
 
 Not reported to JetBrains yet. Check whether 0.13.0 still has this before reporting.
+
+Possibly fixed since the update to Kotlin Toolchain 0.14 (21 November 2026): the 0.14.0 release notes list KTC-6078 for this error. Not measured yet; check on a fresh checkout before closing this issue.
