@@ -2,7 +2,7 @@
 
 Eén overzicht van wat we samen hebben afgesproken voor de app: de besluiten uit het FTD en onze werkafspraken. Het FTD blijft de bron; hier staat de korte versie met de datum, zodat je snel ziet wat geldt.
 
-Stand: 21 november 2026. Bijwerken: één keer per week, na de samenkomst op zaterdag.
+Stand: 22 november 2026. Bijwerken: één keer per week, na de samenkomst op zaterdag.
 
 Bronnen: het FTD van de app (`docs/FTD-restpartijen-android-app-v2_5.md`, tabel "Besluiten") en `docs/besluiten-ftd-app.md`.
 
@@ -49,6 +49,8 @@ Bronnen: het FTD van de app (`docs/FTD-restpartijen-android-app-v2_5.md`, tabel 
 | Eva installeert de plugin `SessionAuthorization` van Lonneke in haar `HttpClient`, met `allowedHost` | Eva | 21 nov (PR #117) |
 | Eva bouwt de vraag om toestemming voor het lokale netwerk (GB-1) | Eva | 15 nov |
 | Lonneke bouwt `formatPrice` | Lonneke | 15 nov |
+| De fout-DTO houdt `code` (O-17), maar alleen voor de logs. `ApiError.Http` krijgt geen `code`: elke status heeft precies één code (FTD v3 §10.2), dus de app beslist op de status. Stefan meldt niets aan in `coreModule` | Stefan, Eva | 22 nov (#104) |
+| Achter `LoginRoute` staat in fase 1 een tijdelijk scherm met één knop die een testsessie opslaat (via `FakeSessionStore`). Zo kun je schermen testen met een sessie zonder echte inlog. Het scherm gaat vóór inlevering weg. Lonneke bouwt het; Stefan kan S-5 al maken met een lege entry | Lonneke, Stefan | 22 nov (#120) |
 
 ## Werkafspraken
 
@@ -65,8 +67,6 @@ Bronnen: het FTD van de app (`docs/FTD-restpartijen-android-app-v2_5.md`, tabel 
 
 | Punt | Wie |
 |---|---|
-| Heeft de app de `code` uit het foutmodel nodig (O-17)? | Stefan |
-| Wat staat er in fase 1 achter `LoginRoute` (draaiboek sessie 2, punt 3)? | Stefan, Lonneke |
 | Wie verbergt de tab Mijn aanbod voor een afhaler (punt 6)? | Stefan |
 | Is https op de API af vóór sessie 2 (punt 8)? | Lonneke, samen |
 | Geeft het scherm de taal mee aan `formatPrice`? | Samen, sessie 2 |
