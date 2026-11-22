@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Skeleton: empty on purpose, and the manifest does not refer to this file yet.
-     Eva fills it in GB-1 (plain http only to the development laptop, FTD 11.3). -->
+<!-- Development setting: allows plain http only to the emulator's host machine (10.0.2.2), where the
+     local API runs. Every other host stays https-only, the Android default since API 28 (FTD 11.3).
+     It applies to every build, because the toolchain cannot use a file per build type (O-14).
+     Once the API has https (W-A1), this domain-config goes away. -->
 <network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
 </network-security-config>

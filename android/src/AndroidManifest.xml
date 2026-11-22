@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Needed for any call to the API. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- From targetSdk 37 (Android 17) the local network, including the emulator's 10.0.2.2, is blocked
+         without this runtime permission (FTD 11.4). The app also asks for it at runtime (FTD 15). -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK"/>
+
     <application
             android:name=".RestpartijenApplication"
             android:icon="@mipmap/ic_launcher"
             android:label="Restpartijen"
+            android:networkSecurityConfig="@xml/network_security_config"
             android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity
                 android:name=".MainActivity"
