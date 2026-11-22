@@ -7,7 +7,7 @@ settings:
     # Pinned, like the server. Must match android/module.yaml.
     version: 2.4.20
     # Compiler plugin + runtime for @Serializable. Navigation 3 needs it to save the back stack
-    # (routes are @Serializable). No format (json) here: routes don't need one.
+    # (routes are @Serializable). The JSON format is a dependency below ($kotlin.serialization.json).
     serialization: enabled
     # A warning stops the build, so warnings cannot pile up (NFR-A2).
     allWarningsAsErrors: true
@@ -34,8 +34,19 @@ dependencies:
   - $libs.lifecycle.runtime.compose
   # Navigation 3: NavKey for the routes, later NavDisplay (GB-2).
   - $libs.navigation3.ui
-  # Ktor Client core: the HttpClient and the plugin API for the Authorization header (GB-3, L4).
+  # The Ktor Client and its JSON support, for the one HttpClient in core/network (#94).
+  # ContentNegotiation turns JSON bodies into @Serializable classes.
+  - $ktor.client.contentNegotiation
+  # Core: the HttpClient and the plugin API for the Authorization header (GB-3, L4).
   - $ktor.client.core
+  # Logging plugin for debug-only request logging; not installed yet (#96).
+  - $ktor.client.logging
+  # OkHttp engine: sends the requests in the app; tests use MockEngine instead.
+  - $ktor.client.okhttp
+  # Connects ContentNegotiation to kotlinx.serialization JSON.
+  - $ktor.serialization.kotlinx.json
+  # JSON format for kotlinx.serialization: reads the API's JSON.
+  - $kotlin.serialization.json
 
 test-dependencies:
   # runTest and a test Main dispatcher, so viewModelScope works in a plain JVM test.
