@@ -27,6 +27,7 @@ koin = "4.2.2"
 navigation3 = "1.2.0"
 # The version that belongs to Compose 1.12 according to JetBrains.
 lifecycle = "2.11.0"
+datastore = "1.3.0"
 
 [libraries]
 # Not in the $ktor catalog; the version comes from the Ktor BOM (settings.ktor in server/module.yaml).
@@ -55,3 +56,4 @@ koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
 navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycle" }
 lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+datastore-tink = { module = "androidx.datastore:datastore-tink", version.ref = "datastore" }

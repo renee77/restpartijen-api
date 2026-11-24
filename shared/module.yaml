@@ -34,6 +34,8 @@ dependencies:
   - $libs.lifecycle.runtime.compose
   # Navigation 3: NavKey for the routes, later NavDisplay (GB-2).
   - $libs.navigation3.ui
+  # DataStore with Tink: the encrypted session file (GB-3, L1, A-13).
+  - $libs.datastore.tink
   # The Ktor Client and its JSON support, for the one HttpClient in core/network (#94).
   # ContentNegotiation turns JSON bodies into @Serializable classes.
   - $ktor.client.contentNegotiation
