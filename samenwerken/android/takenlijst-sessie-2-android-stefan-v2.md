@@ -118,28 +118,28 @@ Start na: phase 0 (wacht niet op Eva of Lonneke, zie A2)
 
 ### To-do
 
-- [ ] **Laat `App.kt` de schermen tonen met `NavDisplay` en een back stack.**
+- [x] **Laat `App.kt` de schermen tonen met `NavDisplay` en een back stack.**
   Waarom: dit is het hart van de navigatie. Naar een scherm gaan is een route op de stapel leggen; teruggaan is haar eraf halen. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
 
-- [ ] **Koppel in `AppNavigation.kt` elke route aan een scherm.**
+- [x] **Koppel in `AppNavigation.kt` elke route aan een scherm.**
   Waarom: één plek moet alle schermen kennen, terwijl features elkaar niet mogen gebruiken ([[FTD-restpartijen-android-app-v2_5#8.3 Modules en packages (A-14)|§8.3]]). ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
 
-- [ ] **Geef `NavDisplay` de twee decorators uit §8.4.**
+- [x] **Geef `NavDisplay` de twee decorators uit §8.4.**
   Waarom: dan krijgt elk scherm een eigen ViewModel, die verdwijnt als het scherm van de stapel gaat. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
 
-- [ ] **Geef een scherm een `onBack` mee, niet de back stack.**
+- [x] **Geef een scherm een `onBack` mee, niet de back stack.**
   Waarom: een scherm hoort niets van de navigatie te weten. Zo blijft het los te testen (§8.4). ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
 
-- [ ] **Controleer op de emulator: heen, terug, en het toestel draaien.**
+- [x] **Controleer op de emulator: heen, terug, en het toestel draaien.**
   Verwacht: na draaien sta je op hetzelfde scherm. Een scherm dat je opnieuw opent, begint met een nieuwe toestand. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
 
-- [ ] **Haal één decorator tijdelijk weg en herhaal de controle. Zet hem terug.**
+- [x] **Haal één decorator tijdelijk weg en herhaal de controle. Zet hem terug.**
   Waarom: je ziet dan zelf wat er zonder misgaat. Dat is vraag 2 van deel B. (aanvulling, [[#A1 Rood vóór groen bij elke controle|A1]])
 
 ### DoD
 
-- [ ] Heen, terug en draaien werken op de emulator. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
-- [ ] Je hebt gezien wat er zonder decorator misgaat, en kunt het vertellen. (aanvulling, [[#A1 Rood vóór groen bij elke controle|A1]])
+- [x] Heen, terug en draaien werken op de emulator. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
+- [x] Je hebt gezien wat er zonder decorator misgaat, en kunt het vertellen. (aanvulling, [[#A1 Rood vóór groen bij elke controle|A1]])
 
 ---
 
