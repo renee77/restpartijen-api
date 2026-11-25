@@ -204,7 +204,7 @@ Start na: phase 0b. Eigen tempo: niemand wacht hierop (zie "Prioriteit").
 ## Phase 2 — L2 en L3: de back-up, en de echte versie in de app (prio 2)
 
 Basis: [[draaiboek-sessie-2-android#A-Lonneke. Sessie en beveiliging (GB-3)|L2]], [[draaiboek-sessie-2-android#A-Lonneke. Sessie en beveiliging (GB-3)|L3]]
-Raakt: `android/res/xml/data_extraction_rules.xml`, `android/res/xml/backup_rules.xml`, `android/src/AndroidManifest.xml`, `shared/src@android/nl/restpartijen/app/core/CorePlatformModule.kt`, `shared/src/nl/restpartijen/app/core/session/FakeSessionStore.kt`, `shared/test/nl/restpartijen/app/core/session/`
+Raakt: `android/res/xml/data_extraction_rules.xml`, `android/res/xml/backup_rules.xml`, `android/src/AndroidManifest.xml`, `shared/src@android/nl/restpartijen/app/core/CorePlatformModule.kt`, `../../shared/test/nl/restpartijen/app/core/session/FakeSessionStore.kt`, `shared/test/nl/restpartijen/app/core/session/`
 Start na: phase 1
 
 ### To-do
