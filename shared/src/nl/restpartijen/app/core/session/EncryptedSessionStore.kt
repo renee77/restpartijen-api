@@ -7,7 +7,7 @@ package nl.restpartijen.app.core.session
  */
 public class EncryptedSessionStore private constructor(private val store: SessionStore) : SessionStore by store {
     /**
-     * Picks the store. When [keystoreIsUsed] is false, [encryptedDataStore] is never called, so nothing is written
+     * Picks the store. When [keystoreIsUsed] is false, [encryptedStore] is never called, so nothing is written
      * to disk.
      */
     public companion object {
