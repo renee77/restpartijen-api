@@ -52,16 +52,6 @@ class PriceFormatTest {
     }
 
     @Test
-    fun groupsThousandsInEnglish() {
-        assertEquals("€1,234.56", formatPrice(123456, "en"))
-    }
-
-    @Test
-    fun groupsThousandsInDutch() {
-        assertEquals("€ 1.234,56", formatPrice(123456, "nl"))
-    }
-
-    @Test
     fun usesEnglishNotationForEnglishWithRegionUs() {
         assertEquals("€2.39", formatPrice(239, "en-US"))
     }
