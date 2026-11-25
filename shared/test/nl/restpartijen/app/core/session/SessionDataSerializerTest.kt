@@ -1,31 +1,30 @@
 package nl.restpartijen.app.core.session
 
-import nl.restpartijen.app.core.model.Role
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import androidx.datastore.core.CorruptionException
-import kotlin.test.assertFailsWith
 import kotlinx.coroutines.runBlocking
+import nl.restpartijen.app.core.model.Role
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
-
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class SessionDataSerializerTest {
     private val testDataSupplier = SessionData(
         token = "test-token",
         role = Role.SUPPLIER.toString(),
-        supplierId = 1234L
+        supplierId = 1234L,
     )
 
     private val testDataCollector = SessionData(
         token = "test-token",
-        role = Role.COLLECTOR.toString()
+        role = Role.COLLECTOR.toString(),
     )
 
-    private val testDataFakeRole = SessionData (
+    private val testDataFakeRole = SessionData(
         token = "fake-test-token",
-        role = "FAKE_ROLE"
+        role = "FAKE_ROLE",
     )
 
     @Test
@@ -45,11 +44,10 @@ class SessionDataSerializerTest {
         }
 
         assertEquals(testDataSupplier.token, result.token)
-
     }
 
     @Test
-    fun roundTripKeepsRole () {
+    fun roundTripKeepsRole() {
         val output = ByteArrayOutputStream()
         runBlocking {
             SessionDataSerializer.writeTo(testDataSupplier, output)
@@ -64,7 +62,7 @@ class SessionDataSerializerTest {
     }
 
     @Test
-    fun roundTripKeepsNullSupplierIdAsNull () {
+    fun roundTripKeepsNullSupplierIdAsNull() {
         val output = ByteArrayOutputStream()
         runBlocking {
             SessionDataSerializer.writeTo(testDataCollector, output)
@@ -79,7 +77,7 @@ class SessionDataSerializerTest {
     }
 
     @Test
-    fun emptyDefaultMeansNoSession () {
+    fun emptyDefaultMeansNoSession() {
         val result = SessionDataSerializer.defaultValue
         assertTrue(result.token == null)
         assertTrue(result.role == null)
@@ -111,7 +109,7 @@ class SessionDataSerializerTest {
     }
 
     @Test
-    fun unknownRoleThrowsCorruptionException () {
+    fun unknownRoleThrowsCorruptionException() {
         val output = ByteArrayOutputStream()
         runBlocking {
             SessionDataSerializer.writeTo(testDataFakeRole, output)

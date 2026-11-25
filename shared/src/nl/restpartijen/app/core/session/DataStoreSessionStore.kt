@@ -10,15 +10,17 @@ import nl.restpartijen.app.core.model.Session
  * decides that, so the logic can be tested on the JVM with a plain file. [session] emits again after every
  * [save] and [clear].
  */
-internal class DataStoreSessionStore private constructor(private val dataStore: DataStore<SessionData>) : SessionStore {
+internal class DataStoreSessionStore(private val dataStore: DataStore<SessionData>) : SessionStore {
     override val session: Flow<Session?>
         get() = dataStore.data.map { it.toSessionOrNull() }
 
     override suspend fun save(session: Session) {
-        // TODO: Convert Session to SessionData
+        dataStore.updateData {
+            session.toData()
+        }
     }
 
     override suspend fun clear() {
-        // TODO: Return an empty SessionData
+        dataStore.updateData { SessionData() }
     }
 }

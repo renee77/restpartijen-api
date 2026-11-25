@@ -10,9 +10,10 @@ import java.io.InputStream
 import java.io.OutputStream
 
 /**
- * What the session file holds: the fields of a [Session] in a form that survives a round trip through JSON.
- * The role is stored by name, so a value that no longer exists in [Role] is recognised as damage and does not
- * crash the app. All fields are null when nobody is logged in; that is also what a new file starts with.
+ * Turns [SessionData] into bytes and back, for the DataStore. It does not encrypt: the AeadSerializer of
+ * datastore-tink wraps it (A-13). Anything that cannot be read, such as invalid JSON, a half-filled record
+ * or an unknown role, is reported as a [CorruptionException]. The DataStore then starts again with an empty
+ * session instead of crashing the app (FTD §16.3).
  */
 internal object SessionDataSerializer : Serializer<SessionData> {
 
