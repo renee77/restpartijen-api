@@ -15,12 +15,35 @@ import java.io.OutputStream
  * crash the app. All fields are null when nobody is logged in; that is also what a new file starts with.
  */
 internal object SessionDataSerializer : Serializer<SessionData> {
+
     override val defaultValue: SessionData = SessionData()
 
-    /** Converts a session to the form that is stored. */
-    override suspend fun readFrom(input: InputStream): SessionData = defaultValue
+    override suspend fun readFrom(input: InputStream): SessionData {
+        val jsonString = input.readBytes().toString(Charsets.UTF_8)
 
-    /** Returns the session that this record holds, or null when the record is empty. */
+        return try {
+            val data = Json.decodeFromString(SessionData.serializer(), jsonString)
+
+            val isEmpty = data.token == null &&
+                data.role == null &&
+                data.supplierId == null
+
+            val isComplete = data.token != null &&
+                data.role != null &&
+                Role.entries.any { it.name == data.role }
+
+            if (!isEmpty && !isComplete) {
+                throw CorruptionException("Incomplete or invalid session data")
+            }
+
+            data
+        } catch (e: SerializationException) {
+            throw CorruptionException("Cannot read session data", e)
+        }
+    }
+
     override suspend fun writeTo(t: SessionData, output: OutputStream) {
+        val json = Json.encodeToString(t)
+        output.write(json.toByteArray())
     }
 }
