@@ -14,16 +14,13 @@ import java.io.OutputStream
  * The role is stored by name, so a value that no longer exists in [Role] is recognised as damage and does not
  * crash the app. All fields are null when nobody is logged in; that is also what a new file starts with.
  */
-internal object SessionDataSerializer: Serializer<SessionData> {
+internal object SessionDataSerializer : Serializer<SessionData> {
     override val defaultValue: SessionData = SessionData()
 
     /** Converts a session to the form that is stored. */
-    override suspend fun readFrom(input: InputStream): SessionData {
-        return defaultValue
-    }
+    override suspend fun readFrom(input: InputStream): SessionData = defaultValue
 
     /** Returns the session that this record holds, or null when the record is empty. */
     override suspend fun writeTo(t: SessionData, output: OutputStream) {
     }
-
 }

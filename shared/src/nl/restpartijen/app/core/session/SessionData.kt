@@ -9,12 +9,7 @@ import nl.restpartijen.app.core.model.Session
  * crash the app. All fields are null when nobody is logged in; that is also what a new file starts with.
  */
 @Serializable
-internal data class SessionData (
-    val token: String? = null,
-    val role: String? = null,
-    val supplierId: Long? = null
-)
-
+internal data class SessionData(val token: String? = null, val role: String? = null, val supplierId: Long? = null)
 
 /** Converts a session to the form that is stored. */
 internal fun Session.toData(): SessionData = SessionData(token, role.name, supplierId)
