@@ -30,8 +30,7 @@ internal object SessionDataSerializer : Serializer<SessionData> {
                 data.supplierId == null
 
             val isComplete = data.token != null &&
-                data.role != null &&
-                Role.entries.any { it.name == data.role }
+                data.role != null
 
             if (!isEmpty && !isComplete) {
                 throw CorruptionException("Incomplete or invalid session data")
