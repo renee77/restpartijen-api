@@ -1,8 +1,8 @@
 package nl.restpartijen.app
 
+import io.ktor.client.HttpClient
 import nl.restpartijen.app.core.session.FakeSessionStore
 import nl.restpartijen.app.core.session.SessionStore
-import io.ktor.client.HttpClient
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
