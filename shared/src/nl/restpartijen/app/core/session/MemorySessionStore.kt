@@ -13,10 +13,10 @@ internal class MemorySessionStore : SessionStore {
     override val session = MutableStateFlow<Session?>(null)
 
     override suspend fun save(session: Session) {
-        // TODO: Convert Session to SessionData
+        this.session.value = session
     }
 
     override suspend fun clear() {
-        // TODO: Return an empty SessionData
+        this.session.value = null
     }
 }
