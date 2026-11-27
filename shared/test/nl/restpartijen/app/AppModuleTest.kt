@@ -44,7 +44,6 @@ class AppModuleTest {
             // Runs the definition for real, which verify() does not do.
             val client = app.koin.getOrNull<HttpClient>()
 
-            // Null when HttpClient or one of its dependencies (such as SessionStore) has no definition.
             assertNotNull(client, "Koin cannot build the HttpClient from koinModules")
 
             // The client does not close an engine it was given (manageEngine = false), so close both.

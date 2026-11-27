@@ -1,5 +1,6 @@
 package nl.restpartijen.app.core.ui
 
+import formatPrice
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -43,6 +44,16 @@ class PriceFormatTest {
     @Test
     fun showsTwoDecimalsForWholeEurosInDutch() {
         assertEquals("€ 1,00", formatPrice(100, "nl"))
+    }
+
+    @Test
+    fun groupsThousandsInEnglish() {
+        assertEquals("€1,234.56", formatPrice(123456, "en"))
+    }
+
+    @Test
+    fun groupsThousandsInDutch() {
+        assertEquals("€ 1.234,56", formatPrice(123456, "nl"))
     }
 
     @Test
