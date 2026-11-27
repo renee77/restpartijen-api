@@ -36,9 +36,9 @@ private class Keyset(val aead: Aead, val keystoreIsUsed: Boolean)
  */
 internal fun encryptedSessionStore(context: Context): SessionStore {
     val keyset = openKeyset(context) ?: return MemorySessionStore()
-    return EncryptedSessionStore.create(
+    return chooseSessionStore(
         keystoreIsUsed = keyset.keystoreIsUsed,
-        encryptedDataStore = { DataStoreSessionStore(createDataStore(context, keyset.aead)) },
+        encryptedStore = { DataStoreSessionStore(createDataStore(context, keyset.aead)) },
     )
 }
 

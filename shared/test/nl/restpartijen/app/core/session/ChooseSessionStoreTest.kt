@@ -7,15 +7,15 @@ import nl.restpartijen.app.core.model.Session
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class EncryptedSessionStoreTest {
+class ChooseSessionStoreTest {
     private val session = Session("token", Role.SUPPLIER, 7)
 
     @Test
     fun usesTheEncryptedStoreWhenKeystoreIsUsed() = runBlocking {
         val dataStore = FakeDataStore(SessionData())
-        val store = EncryptedSessionStore.create(
+        val store = chooseSessionStore(
             keystoreIsUsed = true,
-            encryptedDataStore = { DataStoreSessionStore(dataStore) },
+            encryptedStore = { DataStoreSessionStore(dataStore) },
         )
 
         store.save(session)
@@ -26,9 +26,9 @@ class EncryptedSessionStoreTest {
 
     @Test
     fun usesTheMemoryStoreWhenKeystoreIsNotUsed() = runBlocking {
-        val store = EncryptedSessionStore.create(
+        val store = chooseSessionStore(
             keystoreIsUsed = false,
-            encryptedDataStore = { DataStoreSessionStore(FakeDataStore(SessionData())) },
+            encryptedStore = { DataStoreSessionStore(FakeDataStore(SessionData())) },
         )
 
         store.save(session)
@@ -39,9 +39,9 @@ class EncryptedSessionStoreTest {
     @Test
     fun neverBuildsTheEncryptedStoreWithoutKeystore() = runBlocking {
         var builds = 0
-        val store = EncryptedSessionStore.create(
+        val store = chooseSessionStore(
             keystoreIsUsed = false,
-            encryptedDataStore = {
+            encryptedStore = {
                 builds++
                 DataStoreSessionStore(FakeDataStore(SessionData()))
             },
@@ -57,9 +57,9 @@ class EncryptedSessionStoreTest {
     @Test
     fun writesNothingToTheEncryptedDataStoreWithoutKeystore() = runBlocking {
         val dataStore = FakeDataStore(SessionData())
-        val store = EncryptedSessionStore.create(
+        val store = chooseSessionStore(
             keystoreIsUsed = false,
-            encryptedDataStore = { DataStoreSessionStore(dataStore) },
+            encryptedStore = { DataStoreSessionStore(dataStore) },
         )
 
         store.save(session)

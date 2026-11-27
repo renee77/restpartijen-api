@@ -4,16 +4,15 @@ import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.Serializer
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
-import nl.restpartijen.app.core.model.Role
-import nl.restpartijen.app.core.model.Session
 import java.io.InputStream
 import java.io.OutputStream
 
 /**
  * Turns [SessionData] into bytes and back, for the DataStore. It does not encrypt: the AeadSerializer of
- * datastore-tink wraps it (A-13). Anything that cannot be read, such as invalid JSON, a half-filled record
- * or an unknown role, is reported as a [CorruptionException]. The DataStore then starts again with an empty
- * session instead of crashing the app (FTD §16.3).
+ * datastore-tink wraps it (A-13). Anything that cannot be read, such as invalid JSON or a half-filled record,
+ * is reported as a [CorruptionException]. The DataStore then starts again with an empty session instead of
+ * crashing the app (FTD §16.3). A role that no longer exists is not checked here: `toSessionOrNull()` gives
+ * no session for it.
  */
 internal object SessionDataSerializer : Serializer<SessionData> {
 
