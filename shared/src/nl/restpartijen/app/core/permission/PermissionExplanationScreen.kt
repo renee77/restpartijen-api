@@ -1,6 +1,8 @@
 package nl.restpartijen.app.core.permission
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,7 +54,12 @@ fun PermissionExplanationScreen(
         Column(
             // The app draws edge-to-edge (MainActivity) and this screen has no Scaffold, so it keeps its content
             // clear of the system bars itself. The Surface stays full screen, so the background runs behind them.
-            modifier = Modifier.safeDrawingPadding().padding(Spacing.large),
+            // The content scrolls, because in landscape it does not fit and the buttons would be unreachable:
+            // the user could then not get into the app (FTD §15).
+            modifier = Modifier
+                .safeDrawingPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(Spacing.large),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(Spacing.medium),
         ) {
