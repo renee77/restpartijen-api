@@ -34,7 +34,6 @@ Let op:
 - [ ] Alle teksten staan in `strings.xml`, in het Nederlands en het Engels
 - [ ] Het FTD is bijgewerkt waar nodig (A-02)
 - [ ] Geen geheimen in de PR: geen `.env`, keystore of wachtwoord
-- [ ] Het gebruik van AI staat in het AI-logboek
 
 ## Review
 
