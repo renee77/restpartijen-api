@@ -37,3 +37,18 @@ enum class PermissionStep {
     // Our explanation screen that says where to turn the permission on, with "Niet nu".
     ExplainWhereToTurnOn,
 }
+
+/**
+ * Decides the next step from [facts]. The questions run top to bottom and the first that holds wins,
+ * so their order is part of the rule.
+ */
+fun nextPermissionStep(facts: PermissionFacts): PermissionStep =
+    when {
+        // "Niet nu" never blocks the app; its screens then show the network error with "Opnieuw" (FTD §11.2).
+        facts.granted || facts.notNow -> PermissionStep.ShowApp
+        // Before AskSystem: someone who denied once in an earlier run gets the explanation first (FTD §15, rule 1).
+        facts.showRationale -> PermissionStep.ExplainAndAskAgain
+        !facts.alreadyAsked -> PermissionStep.AskSystem
+        // Asked this run and no rationale allowed: Android will not show its dialog again (FTD §15, rule 2).
+        else -> PermissionStep.ExplainWhereToTurnOn
+    }
