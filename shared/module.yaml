@@ -32,8 +32,10 @@ dependencies:
   - $libs.koin.compose.viewmodel
   # collectAsStateWithLifecycle()
   - $libs.lifecycle.runtime.compose
-  # Navigation 3: NavKey for the routes, later NavDisplay (GB-2).
+  # Navigation 3: NavKey for the routes and NavDisplay (GB-2).
   - $libs.navigation3.ui
+  # Navigation 3: adds the decorator that gives each screen on the back stack its own ViewModel
+  - $libs.lifecycle.viewmodel.navigation3
   # The Ktor Client and its JSON support, for the one HttpClient in core/network (#94).
   # ContentNegotiation turns JSON bodies into @Serializable classes.
   - $ktor.client.contentNegotiation

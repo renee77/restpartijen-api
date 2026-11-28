@@ -70,9 +70,9 @@ Raakt: niets in de code
 Start na: de startsessie van 14 november
 
 ### Voordat je begint
-- [ ] `main` is opgehaald en bevat het werk van de startsessie, de Koin-modules (PR #91) en de plugin `SessionAuthorization` van Lonneke (PR #90). Controle: `git log --oneline -5` (laat de laatste vijf commits zien).
-- [ ] De build en de tests zijn groen. Controle: `./kotlin build` (bouwt alle modules) en `./kotlin test -m shared` (draait de tests van de app).
-- [ ] De app start op de emulator. Controle: Run 'android' in IntelliJ.
+- [x] `main` is opgehaald en bevat het werk van de startsessie, de Koin-modules (PR #91) en de plugin `SessionAuthorization` van Lonneke (PR #90). Controle: `git log --oneline -5` (laat de laatste vijf commits zien).
+- [x] De build en de tests zijn groen. Controle: `./kotlin build` (bouwt alle modules) en `./kotlin test -m shared` (draait de tests van de app).
+- [x] De app start op de emulator. Controle: Run 'android' in IntelliJ.
 
 ### To-do
 
@@ -83,17 +83,17 @@ Start na: de startsessie van 14 november
   Waarom: het draaiboek verwijst ernaar. Je controleert of daar staat wat het draaiboek beweert, en je moet het straks zelf uitleggen.
   Verwacht: je kunt de tabel van §11.2 navertellen. Klopt iets niet met het draaiboek, dan gaat het naar de open vragen. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|A-Stefan]])
 
-- [ ] **Zoek in `libs.versions.toml` op welke versie van Navigation 3 en van `lifecycle-viewmodel-navigation3` op `main` staat.**
+- [x] **Zoek in `libs.versions.toml` op welke versie van Navigation 3 en van `lifecycle-viewmodel-navigation3` op `main` staat.**
   Waarom: de volgende stap controleert de documentatie van precies die versie. (aanvulling, [[#A3 De documentatie van Navigation 3 nakijken|A3]])
 
-- [ ] **Zoek in de documentatie van Navigation 3 op hoe de twee decorators uit §8.4 heten en wat ze doen.**
+- [x] **Zoek in de documentatie van Navigation 3 op hoe de twee decorators uit §8.4 heten en wat ze doen.**
   Waarom: zonder de decorators hangt elke ViewModel aan de Activity en niet aan het scherm.
   Als het misgaat: vind je een andere naam dan in §8.4, bouw dan nog niets en vraag het na bij Eva. (aanvulling, [[#A3 De documentatie van Navigation 3 nakijken|A3]])
 
-- [ ] **Spreek met Eva beslissing 1 af: jij bouwt de plek waar een antwoord een `ApiResult` wordt; wat levert Eva daarvoor.**
+- [x] **Spreek met Eva beslissing 1 af: jij bouwt de plek waar een antwoord een `ApiResult` wordt; wat levert Eva daarvoor.**
   Waarom: het FTD geeft Eva de fout-DTO en jou het omzetten. Zonder afspraak bouwen jullie het allebei, of geen van beiden. ([[draaiboek-sessie-2-android#Eerst beslissen (vóór iemand begint)|beslissing 1]])
 
-- [ ] **Spreek met Lonneke beslissing 3 af: wat staat er in fase 1 achter `LoginRoute`.**
+- [x] **Spreek met Lonneke beslissing 3 af: wat staat er in fase 1 achter `LoginRoute`.**
   Waarom: K-A3 is zonder scherm niet te testen. Beslissing 4 is al besloten: de plugin van Lonneke wist de sessie bij een `401`, jij reageert op `loginRequired` (A-27, A-30). ([[draaiboek-sessie-2-android#Eerst beslissen (vóór iemand begint)|beslissing 3]])
 
 - [ ] **Beslis of jij de tab Mijn aanbod verbergt voor een afhaler (beslissing 6), en meld het aan de groep.**
@@ -118,28 +118,28 @@ Start na: phase 0 (wacht niet op Eva of Lonneke, zie A2)
 
 ### To-do
 
-- [ ] **Laat `App.kt` de schermen tonen met `NavDisplay` en een back stack.**
+- [x] **Laat `App.kt` de schermen tonen met `NavDisplay` en een back stack.**
   Waarom: dit is het hart van de navigatie. Naar een scherm gaan is een route op de stapel leggen; teruggaan is haar eraf halen. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
 
-- [ ] **Koppel in `AppNavigation.kt` elke route aan een scherm.**
+- [x] **Koppel in `AppNavigation.kt` elke route aan een scherm.**
   Waarom: één plek moet alle schermen kennen, terwijl features elkaar niet mogen gebruiken ([[FTD-restpartijen-android-app-v2_5#8.3 Modules en packages (A-14)|§8.3]]). ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
 
-- [ ] **Geef `NavDisplay` de twee decorators uit §8.4.**
+- [x] **Geef `NavDisplay` de twee decorators uit §8.4.**
   Waarom: dan krijgt elk scherm een eigen ViewModel, die verdwijnt als het scherm van de stapel gaat. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
 
-- [ ] **Geef een scherm een `onBack` mee, niet de back stack.**
+- [x] **Geef een scherm een `onBack` mee, niet de back stack.**
   Waarom: een scherm hoort niets van de navigatie te weten. Zo blijft het los te testen (§8.4). ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
 
-- [ ] **Controleer op de emulator: heen, terug, en het toestel draaien.**
+- [x] **Controleer op de emulator: heen, terug, en het toestel draaien.**
   Verwacht: na draaien sta je op hetzelfde scherm. Een scherm dat je opnieuw opent, begint met een nieuwe toestand. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
 
-- [ ] **Haal één decorator tijdelijk weg en herhaal de controle. Zet hem terug.**
+- [x] **Haal één decorator tijdelijk weg en herhaal de controle. Zet hem terug.**
   Waarom: je ziet dan zelf wat er zonder misgaat. Dat is vraag 2 van deel B. (aanvulling, [[#A1 Rood vóór groen bij elke controle|A1]])
 
 ### DoD
 
-- [ ] Heen, terug en draaien werken op de emulator. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
-- [ ] Je hebt gezien wat er zonder decorator misgaat, en kunt het vertellen. (aanvulling, [[#A1 Rood vóór groen bij elke controle|A1]])
+- [x] Heen, terug en draaien werken op de emulator. ([[draaiboek-sessie-2-android#A-Stefan. Navigatie en foutafhandeling (GB-2)|S1]])
+- [x] Je hebt gezien wat er zonder decorator misgaat, en kunt het vertellen. (aanvulling, [[#A1 Rood vóór groen bij elke controle|A1]])
 
 ---
 
