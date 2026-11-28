@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import nl.restpartijen.app.core.permission.LocalNetworkPermissionGate
 
 // Only starts the app: all screens live in the shared module, behind App().
 class MainActivity : ComponentActivity() {
@@ -11,6 +12,6 @@ class MainActivity : ComponentActivity() {
         // Before super.onCreate, otherwise the status bar icons are white on white.
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        setContent { App() }
+        setContent { App(permissionGate = { content -> LocalNetworkPermissionGate(content) }) }
     }
 }

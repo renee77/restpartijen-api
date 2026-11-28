@@ -32,6 +32,8 @@ dependencies:
   - $libs.koin.compose.viewmodel
   # collectAsStateWithLifecycle()
   - $libs.lifecycle.runtime.compose
+  # Activity Result API (rememberLauncherForActivityResult) for the permission gate in core/permission.
+  - $libs.androidx.activity.compose
   # Navigation 3: NavKey for the routes and NavDisplay (GB-2).
   - $libs.navigation3.ui
   # DataStore with Tink: the encrypted session file (GB-3, L1, A-13).
