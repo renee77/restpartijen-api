@@ -113,7 +113,8 @@ private val RestpartijenShapes =
         medium = RoundedCornerShape(8.dp),
     )
 
-// Montserrat for headings, Inter for running text (Lonneke). Font() loads a resource, so this must be composable.
+// Montserrat bold for headings and titles, as in Lonneke's design; Inter for running text (Lonneke).
+// Font() loads a resource, so this must be composable.
 // Only Regular and Bold are bundled; other weights fall back to the nearest of the two.
 @Composable
 private fun restpartijenTypography(): Typography {
@@ -129,15 +130,15 @@ private fun restpartijenTypography(): Typography {
         )
     val default = Typography()
     return Typography(
-        displayLarge = default.displayLarge.copy(fontFamily = montserrat),
-        displayMedium = default.displayMedium.copy(fontFamily = montserrat),
-        displaySmall = default.displaySmall.copy(fontFamily = montserrat),
-        headlineLarge = default.headlineLarge.copy(fontFamily = montserrat),
-        headlineMedium = default.headlineMedium.copy(fontFamily = montserrat),
-        headlineSmall = default.headlineSmall.copy(fontFamily = montserrat),
-        titleLarge = default.titleLarge.copy(fontFamily = montserrat),
-        titleMedium = default.titleMedium.copy(fontFamily = montserrat),
-        titleSmall = default.titleSmall.copy(fontFamily = montserrat),
+        displayLarge = default.displayLarge.copy(fontFamily = montserrat, fontWeight = FontWeight.Bold),
+        displayMedium = default.displayMedium.copy(fontFamily = montserrat, fontWeight = FontWeight.Bold),
+        displaySmall = default.displaySmall.copy(fontFamily = montserrat, fontWeight = FontWeight.Bold),
+        headlineLarge = default.headlineLarge.copy(fontFamily = montserrat, fontWeight = FontWeight.Bold),
+        headlineMedium = default.headlineMedium.copy(fontFamily = montserrat, fontWeight = FontWeight.Bold),
+        headlineSmall = default.headlineSmall.copy(fontFamily = montserrat, fontWeight = FontWeight.Bold),
+        titleLarge = default.titleLarge.copy(fontFamily = montserrat, fontWeight = FontWeight.Bold),
+        titleMedium = default.titleMedium.copy(fontFamily = montserrat, fontWeight = FontWeight.Bold),
+        titleSmall = default.titleSmall.copy(fontFamily = montserrat, fontWeight = FontWeight.Bold),
         bodyLarge = default.bodyLarge.copy(fontFamily = inter),
         bodyMedium = default.bodyMedium.copy(fontFamily = inter),
         bodySmall = default.bodySmall.copy(fontFamily = inter),
