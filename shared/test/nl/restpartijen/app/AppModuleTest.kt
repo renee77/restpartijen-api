@@ -1,6 +1,8 @@
 package nl.restpartijen.app
 
 import io.ktor.client.HttpClient
+import nl.restpartijen.app.core.session.FakeSessionStore
+import nl.restpartijen.app.core.session.SessionStore
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
@@ -32,13 +34,16 @@ class AppModuleTest {
     // Configuration check: can Koin build the HttpClient from koinModules? Its behaviour is tested in HttpClientTest.
     @Test
     fun providesTheHttpClient() {
-        val app = koinApplication { modules(koinModules) }
+        val app = koinApplication {
+            // The real SessionStore needs an Android Context, which a JVM test does not have.
+            allowOverride(true)
+            modules(koinModules + module { single<SessionStore> { FakeSessionStore() } })
+        }
 
         try {
             // Runs the definition for real, which verify() does not do.
             val client = app.koin.getOrNull<HttpClient>()
 
-            // Null when HttpClient or one of its dependencies (such as SessionStore) has no definition.
             assertNotNull(client, "Koin cannot build the HttpClient from koinModules")
 
             // The client does not close an engine it was given (manageEngine = false), so close both.
