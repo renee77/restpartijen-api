@@ -46,12 +46,6 @@ class PriceFormatTest {
     }
 
     @Test
-    fun usesTheEuroSignInEveryLanguage() {
-        assertTrue(formatPrice(239, "en").contains("€"))
-        assertTrue(formatPrice(239, "nl").contains("€"))
-    }
-
-    @Test
     fun groupsThousandsInEnglish() {
         assertEquals("€1,234.56", formatPrice(123456, "en"))
     }
@@ -59,6 +53,12 @@ class PriceFormatTest {
     @Test
     fun groupsThousandsInDutch() {
         assertEquals("€ 1.234,56", formatPrice(123456, "nl"))
+    }
+
+    @Test
+    fun usesTheEuroSignInEveryLanguage() {
+        assertTrue(formatPrice(239, "en").contains("€"))
+        assertTrue(formatPrice(239, "nl").contains("€"))
     }
 
     @Test
