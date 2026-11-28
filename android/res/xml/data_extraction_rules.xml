@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Skeleton: empty on purpose, and the manifest does not refer to this file yet.
-     Lonneke fills it in GB-3 (keeps the stored session out of backups; Android 12 and higher). -->
+<!-- Keeps the encrypted session and its Tink key set out of backups (GB-3, L2; Android 12 and higher).
+     Both kinds of transfer are covered: cloud backup and device-to-device transfer. -->
 <data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="file" path="session.bin" />
+        <exclude domain="sharedpref" path="session_keyset_prefs.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="file" path="session.bin" />
+        <exclude domain="sharedpref" path="session_keyset_prefs.xml" />
+    </device-transfer>
 </data-extraction-rules>

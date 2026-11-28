@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Skeleton: empty on purpose, and the manifest does not refer to this file yet.
-     Lonneke fills it in GB-3 (keeps the stored session out of backups; Android 11 and lower). -->
+<!-- Keeps the encrypted session and its Tink key set out of backups (GB-3, L2; Android 11 and lower).
+     The Keystore master key is never restored, so a restored copy could not be decrypted (FTD §16.3). -->
 <full-backup-content>
+    <exclude domain="file" path="session.bin" />
+    <exclude domain="sharedpref" path="session_keyset_prefs.xml" />
 </full-backup-content>

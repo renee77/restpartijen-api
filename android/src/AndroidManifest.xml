@@ -4,7 +4,9 @@
             android:name=".RestpartijenApplication"
             android:icon="@mipmap/ic_launcher"
             android:label="Restpartijen"
-            android:theme="@android:style/Theme.Material.Light.NoActionBar">
+            android:theme="@android:style/Theme.Material.Light.NoActionBar"
+            android:fullBackupContent="@xml/backup_rules"
+            android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
                 android:name=".MainActivity"
                 android:exported="true">
