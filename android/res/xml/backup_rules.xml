@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Keeps the encrypted session and its Tink key set out of backups (GB-3, L2; Android 11 and lower).
-     The Keystore master key is never restored, so a restored copy could not be decrypted (FTD §16.3). -->
+     The Keystore master key is never restored, so a restored copy could not be decrypted (FTD §16.3).
+     The paths must match SESSION_FILE_NAME and KEYSET_PREFS_NAME (plus ".xml") in AndroidSessionStorage.kt. -->
 <full-backup-content>
     <exclude domain="file" path="session.bin" />
     <exclude domain="sharedpref" path="session_keyset_prefs.xml" />
