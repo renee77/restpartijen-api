@@ -5,4 +5,10 @@
     <string name="common_retry">Opnieuw</string>
     <string name="common_back">Terug</string>
     <string name="common_error">Er ging iets mis.</string>
+    <!-- Local network permission (core/permission, FTD §15): explanation screen before and after a denial. -->
+    <string name="permission_network_title">Toegang tot het lokale netwerk</string>
+    <string name="permission_network_why">De app haalt de producten op bij de server op je netwerk. Zonder deze toestemming kan de app de server niet bereiken.</string>
+    <string name="permission_network_where">Je kunt de toestemming zelf aanzetten in de instellingen van je telefoon, bij Apps &gt; Restpartijen &gt; Toestemmingen.</string>
+    <string name="permission_ask_again">Opnieuw vragen</string>
+    <string name="permission_not_now">Niet nu</string>
 </resources>
