@@ -9,5 +9,4 @@ import kotlinx.serialization.Serializable
  * product puts a [ProductDetailRoute] on top (K-A1).
  */
 @Serializable // Lets Navigation 3 save the back stack, so it survives rotation.
-data object DiscoverRoute : NavKey {
-}
+data object DiscoverRoute : NavKey

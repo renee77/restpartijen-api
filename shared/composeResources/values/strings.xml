@@ -5,4 +5,8 @@
     <string name="common_retry">Retry</string>
     <string name="common_back">Back</string>
     <string name="common_error">Something went wrong.</string>
+    <string name="login_title">Login</string>
+    <string name="login_temporary_note">Temporary test screen. Choose a role to continue.</string>
+    <string name="login_as_collector">Continue as collector</string>
+    <string name="login_as_supplier">Continue as supplier</string>
 </resources>
