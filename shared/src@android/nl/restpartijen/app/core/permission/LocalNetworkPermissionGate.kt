@@ -84,16 +84,19 @@ fun LocalNetworkPermissionGate(content: @Composable () -> Unit) {
     )
     when (nextPermissionStep(facts)) {
         PermissionStep.ShowApp -> content()
+
         // Launching during composition crashes, so it runs in an effect.
         // Nothing is shown behind Android's dialog, so the app does not call the API yet.
         PermissionStep.AskSystem -> LaunchedEffect(Unit) {
             if (!dialogOpen) askAndroid()
         }
+
         PermissionStep.ExplainAndAskAgain -> PermissionExplanationScreen(
             canAskAgain = true,
             onAskAgain = { askAndroid() },
             onNotNow = { notNow = true },
         )
+
         PermissionStep.ExplainWhereToTurnOn -> PermissionExplanationScreen(
             canAskAgain = false,
             // The button is hidden here, Android no longer shows the dialog.
