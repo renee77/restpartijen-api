@@ -105,9 +105,7 @@ class LoginViewModelTest {
 private class FailingSessionStore : SessionStore {
     override val session: Flow<Session?> = flowOf(null)
 
-    override suspend fun save(session: Session) {
-        throw IOException("The disk is full.")
-    }
+    override suspend fun save(session: Session): Unit = throw IOException("The disk is full.")
 
     override suspend fun clear() = Unit
 }
