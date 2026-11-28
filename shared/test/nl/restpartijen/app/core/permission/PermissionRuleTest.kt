@@ -4,9 +4,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * The fixed permission rule of FTD §15, plus "Niet nu" (decision 22 Nov, see
- * gemaakte-keuzes/toestemming-lokaal-netwerk). The rule is shared by the local network, camera and
- * location permissions. For the local network, Android 16 and lower pass granted = true, because the
+ * The fixed permission rule of FTD §15, plus "Niet nu" (issue #95). The rule is shared by the local
+ * network, camera and location permissions. For the local network, Android 16 and lower pass granted = true, because the
  * permission does not exist there.
  */
 class PermissionRuleTest {
@@ -28,6 +27,7 @@ class PermissionRuleTest {
         assertEquals(PermissionStep.AskSystem, step)
     }
 
+    // Denied once in this run: Android still allows a rationale, so explain and offer to ask again (FTD §15, rule 1).
     @Test
     fun explainsAndOffersToAskAgainAfterTheFirstDenial() {
         val step = nextPermissionStep(
@@ -62,6 +62,26 @@ class PermissionRuleTest {
     fun showsTheAppAfterNotNow() {
         val step = nextPermissionStep(
             PermissionFacts(granted = false, notNow = true, showRationale = true, alreadyAsked = true),
+        )
+
+        assertEquals(PermissionStep.ShowApp, step)
+    }
+
+    // "Niet nu" on the where-to-turn-on screen must also open the app, or the user is stuck there.
+    @Test
+    fun showsTheAppAfterNotNowOnTheWhereToTurnOnScreen() {
+        val step = nextPermissionStep(
+            PermissionFacts(granted = false, notNow = true, showRationale = false, alreadyAsked = true),
+        )
+
+        assertEquals(PermissionStep.ShowApp, step)
+    }
+
+    // Granted after the dialog or in the settings: the app opens, whatever else Android or the gate still reports.
+    @Test
+    fun showsTheAppWhenGrantedEvenIfOtherFactsAreSet() {
+        val step = nextPermissionStep(
+            PermissionFacts(granted = true, notNow = false, showRationale = true, alreadyAsked = true),
         )
 
         assertEquals(PermissionStep.ShowApp, step)

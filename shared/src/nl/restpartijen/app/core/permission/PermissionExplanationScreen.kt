@@ -36,20 +36,15 @@ import shared.generated.resources.permission_not_now
  *
  * The screen holds no state and asks nothing itself: the caller decides what each button does.
  *
- * @param canAskAgain true: Android will still show its permission dialog, so the screen offers "Opnieuw vragen".
- *   false: Android no longer shows the dialog, so the screen says where to turn the permission on in the settings.
- * @param onAskAgain called when the user taps "Opnieuw vragen". That button appears only when [canAskAgain] is true.
+ * @param onAskAgain called when the user taps "Opnieuw vragen". Pass it while Android will still show its
+ *   permission dialog. Pass null when Android no longer shows the dialog: the button is then left out, and the
+ *   screen says where to turn the permission on in the settings.
  * @param onNotNow called when the user taps "Niet nu". That button always appears; the app then continues
  *   without the permission.
  * @param modifier applied to the whole screen.
  */
 @Composable
-fun PermissionExplanationScreen(
-    canAskAgain: Boolean,
-    onAskAgain: () -> Unit,
-    onNotNow: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
+fun PermissionExplanationScreen(onAskAgain: (() -> Unit)?, onNotNow: () -> Unit, modifier: Modifier = Modifier) {
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             // The app draws edge-to-edge (MainActivity) and this screen has no Scaffold, so it keeps its content
@@ -75,7 +70,7 @@ fun PermissionExplanationScreen(
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center,
             )
-            if (!canAskAgain) {
+            if (onAskAgain == null) {
                 Text(
                     text = stringResource(Res.string.permission_network_where),
                     style = MaterialTheme.typography.bodyLarge,
@@ -86,7 +81,7 @@ fun PermissionExplanationScreen(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Spacing.medium),
             ) {
-                if (canAskAgain) {
+                if (onAskAgain != null) {
                     PrimaryButton(
                         text = stringResource(Res.string.permission_ask_again),
                         onClick = onAskAgain,

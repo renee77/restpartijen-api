@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Development setting: allows plain http only to the emulator's host machine (10.0.2.2), where the
-     local API runs. Every other host stays https-only, the Android default since API 28 (FTD 11.3).
+     local API runs. Every other host stays https-only, the Android default since API 28 (FTD 11.3);
+     the base-config states that default explicitly, so a later edit cannot widen it by accident.
      It applies to every build, because the toolchain cannot use a file per build type (O-14).
+     The domain must match ApiConfig.HOST. For a real phone, add a second <domain> with the laptop's
+     address; never allow cleartext in the base-config, that would send the token in plain text to any host.
      Once the API has https (W-A1), this domain-config goes away. -->
 <network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="false">10.0.2.2</domain>
     </domain-config>

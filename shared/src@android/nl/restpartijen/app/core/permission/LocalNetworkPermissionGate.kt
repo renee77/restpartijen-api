@@ -8,6 +8,9 @@ import android.os.Build
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,11 +18,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 
 /**
- * Shows [content] only when the app may use the local network (FTD §15).
+ * Shows [content] when the app may use the local network, or when the user chose "Niet nu".
+ * In that last case [content] has no network access and must cope with network errors (FTD §11.2, §15).
  * Android 16 and lower always pass. On Android 17 and higher [nextPermissionStep] decides
  * what to show: the app, Android's permission dialog, or [PermissionExplanationScreen].
  * When the user comes back from the phone's settings, the gate checks again.
@@ -50,7 +56,8 @@ fun LocalNetworkPermissionGate(content: @Composable () -> Unit) {
     var notNow by rememberSaveable { mutableStateOf(false) }
 
     // True while Android's dialog is open. After a rotation the AskSystem effect below runs
-    // again; without this flag it would start a second dialog on top of the first.
+    // again, and a fast double tap on "Opnieuw vragen" calls askAndroid() twice; without this
+    // flag either would start a second dialog on top of the first.
     var dialogOpen by rememberSaveable { mutableStateOf(false) }
 
     // Starts Android's permission dialog. The lambda runs when the user has answered it:
@@ -63,6 +70,7 @@ fun LocalNetworkPermissionGate(content: @Composable () -> Unit) {
     }
 
     fun askAndroid() {
+        if (dialogOpen) return
         dialogOpen = true
         launcher.launch(Manifest.permission.ACCESS_LOCAL_NETWORK)
     }
@@ -70,10 +78,9 @@ fun LocalNetworkPermissionGate(content: @Composable () -> Unit) {
     // Runs every time the app comes back to the front (resume), for example from the phone's
     // settings, where the user may have turned the permission on (FTD §15, rule 2). Reading the
     // facts again changes the state, so the gate redraws and opens the app by itself.
-    LifecycleResumeEffect(Unit) {
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
         granted = context.hasLocalNetworkAccess()
         showRationale = activity.shouldShowLocalNetworkRationale()
-        onPauseOrDispose { }
     }
 
     val facts = PermissionFacts(
@@ -85,22 +92,21 @@ fun LocalNetworkPermissionGate(content: @Composable () -> Unit) {
     when (nextPermissionStep(facts)) {
         PermissionStep.ShowApp -> content()
 
-        // Launching during composition crashes, so it runs in an effect.
-        // Nothing is shown behind Android's dialog, so the app does not call the API yet.
-        PermissionStep.AskSystem -> LaunchedEffect(Unit) {
-            if (!dialogOpen) askAndroid()
+        // Launching during composition crashes, so it runs in an effect. Behind Android's dialog
+        // only the theme's background shows, also in dark mode, so the app does not call the API yet.
+        PermissionStep.AskSystem -> {
+            Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {}
+            LaunchedEffect(Unit) { askAndroid() }
         }
 
         PermissionStep.ExplainAndAskAgain -> PermissionExplanationScreen(
-            canAskAgain = true,
             onAskAgain = { askAndroid() },
             onNotNow = { notNow = true },
         )
 
+        // No onAskAgain: Android no longer shows its dialog, so the screen says where to turn it on.
         PermissionStep.ExplainWhereToTurnOn -> PermissionExplanationScreen(
-            canAskAgain = false,
-            // The button is hidden here, Android no longer shows the dialog.
-            onAskAgain = {},
+            onAskAgain = null,
             onNotNow = { notNow = true },
         )
     }

@@ -5,7 +5,8 @@ package nl.restpartijen.app.core.network
  *
  * A plain Kotlin object, because the Kotlin Toolchain cannot set a value per build type: it has no
  * buildConfigField or resValue (O-14). Running on a real phone instead of the emulator therefore means
- * changing [HOST] here and building again.
+ * changing [HOST] here, adding the same address as a domain in android/res/xml/network_security_config.xml
+ * (otherwise Android blocks plain http to it), and building again.
  */
 object ApiConfig {
     // The emulator's alias for 127.0.0.1 on the development machine, where the server runs.
