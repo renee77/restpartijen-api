@@ -5,4 +5,8 @@
     <string name="common_retry">Opnieuw</string>
     <string name="common_back">Terug</string>
     <string name="common_error">Er ging iets mis.</string>
+    <string name="login_title">Inloggen</string>
+    <string name="login_temporary_note">Tijdelijk test scherm. Kies een rol om door te gaan.</string>
+    <string name="login_as_collector">Doorgaan als afhaler</string>
+    <string name="login_as_supplier">Doorgaan als aanbieder</string>
 </resources>
