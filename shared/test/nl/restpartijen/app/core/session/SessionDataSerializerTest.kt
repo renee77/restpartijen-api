@@ -109,7 +109,7 @@ class SessionDataSerializerTest {
     }
 
     @Test
-    fun unknownRoleThrowsCorruptionException() {
+    fun unknownRoleIsReadButGivesNoSession() {
         val output = ByteArrayOutputStream()
         runBlocking {
             SessionDataSerializer.writeTo(testDataFakeRole, output)
@@ -121,7 +121,6 @@ class SessionDataSerializerTest {
         }
 
         assertTrue(result.role == "FAKE_ROLE")
-        // Check if the exception is thrown when converting to Session
         val session = result.toSessionOrNull()
         assertTrue(session == null)
     }

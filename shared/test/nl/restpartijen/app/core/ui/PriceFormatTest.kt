@@ -1,6 +1,5 @@
 package nl.restpartijen.app.core.ui
 
-import formatPrice
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

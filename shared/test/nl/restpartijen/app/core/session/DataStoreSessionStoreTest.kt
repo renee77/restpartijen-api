@@ -2,7 +2,6 @@ package nl.restpartijen.app.core.session
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.DataStoreFactory
-import androidx.datastore.core.handlers.ReplaceFileCorruptionHandler
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import nl.restpartijen.app.core.model.Role
