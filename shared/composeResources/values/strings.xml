@@ -5,4 +5,10 @@
     <string name="common_retry">Retry</string>
     <string name="common_back">Back</string>
     <string name="common_error">Something went wrong.</string>
+    <!-- Local network permission (core/permission, FTD §15): explanation screen before and after a denial. -->
+    <string name="permission_network_title">Access to the local network</string>
+    <string name="permission_network_why">The app gets the products from the server on your network. Without this permission the app cannot reach the server.</string>
+    <string name="permission_network_where">You can turn the permission on yourself in the settings of your phone, under Apps &gt; Restpartijen &gt; Permissions.</string>
+    <string name="permission_ask_again">Ask again</string>
+    <string name="permission_not_now">Not now</string>
 </resources>
